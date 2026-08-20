@@ -1276,17 +1276,49 @@ function formatTime(ms) {
 }
 
 // ===== TTS =====
-function speakText(text, lang = 'ko-KR') {
-  if (!window.speechSynthesis) return;
+function speakText(text, lang = 'ko-KR', preferredGender = 'male') {
+  if (!window.speechSynthesis) {
+    console.log('⚠️ TTS를 지원하지 않는 브라우저입니다');
+    return;
+  }
+  
+  // 🔥 새로 읽기 전에 기존 TTS 중지
   window.speechSynthesis.cancel();
+  
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.lang = lang;
-  utterance.rate = 0.85;
+  utterance.rate = 0.9;
   utterance.pitch = 1.0;
   utterance.volume = 1.0;
+  
   const voices = window.speechSynthesis.getVoices();
-  const koreanVoice = voices.find(v => v.lang.startsWith('ko'));
-  if (koreanVoice) utterance.voice = koreanVoice;
+  
+  // 한국어 남자 목소리 찾기
+  let selectedVoice = voices.find(v => 
+    v.lang.startsWith('ko') && 
+    (v.name.includes('InJoon') || v.name.includes('남자') || v.name.includes('Male'))
+  );
+  
+  if (!selectedVoice) {
+    selectedVoice = voices.find(v => 
+      v.lang.startsWith('ko') && 
+      (v.name.includes('SunHi') || v.name.includes('여자') || v.name.includes('Female') || v.name.includes('Google'))
+    );
+  }
+  
+  if (!selectedVoice) {
+    selectedVoice = voices.find(v => v.lang.startsWith('ko'));
+  }
+  
+  if (!selectedVoice && voices.length > 0) {
+    selectedVoice = voices[0];
+  }
+  
+  if (selectedVoice) {
+    utterance.voice = selectedVoice;
+    console.log('🎤 사용 중인 목소리:', selectedVoice.name);
+  }
+  
   window.speechSynthesis.speak(utterance);
 }
 
@@ -2755,13 +2787,20 @@ body.innerHTML = `
 }
 
 function closeModal() {
-  document.getElementById('cardModal').classList.remove('open');
+  // 🔥 TTS 즉시 중지
+  if (window.speechSynthesis) {
+    window.speechSynthesis.cancel();
+    console.log('🔇 TTS 중지됨');
+  }
+  
+  // 🔥 울음소리도 중지
   if (modalCryAudio) {
     modalCryAudio.pause();
     modalCryAudio = null;
   }
+  
+  document.getElementById('cardModal').classList.remove('open');
 }
-
 function extractEvoChain(chain) {
   const result = [];
   let current = chain;
