@@ -3849,57 +3849,46 @@ function setupTradeListener2(code) {
             document.getElementById('confirmTradeBtn').textContent = '✅ 최종 교환 (상대방 확인 완료!)';
             updateTradeUI2('🔥 상대방이 확인했어요! "최종 교환"을 눌러주세요.', 'confirm');
           }
-        }// ===== 🔥 수정된 completed 처리 =====
-else if (status === 'completed') {
-  document.getElementById('sendTradeBtn').style.display = 'none';
-  document.getElementById('confirmTradeBtn').style.display = 'none';
-  updateTradeUI2('✅ 교환이 완료되었어요! 🎉', 'completed');
-  document.getElementById('tradePartnerInfo').innerHTML = '✅ 교환 완료!';
-  
-  // 🔥🔥🔥 교환 결과 적용 (등급 유지!)
-  if (room.exchangeResult) {
-    const result = room.exchangeResult;
-    const mySide = myTradeRoom.side;
-    const myReceivedCard = mySide === 'host' ? result.oppCard : result.myCard;
-    const myReceivedRarity = mySide === 'host' ? result.oppRarity : result.myRarity;
-    const mySentCard = mySide === 'host' ? result.myCard : result.oppCard;
-    
-    if (!result._applied) {
-      // 내 카드 차감 (보낸 카드)
-      if (state.owned[mySentCard] && state.owned[mySentCard].count > 0) {
-        state.owned[mySentCard].count -= 1;
-        if (state.owned[mySentCard].count <= 0) {
-          delete state.owned[mySentCard];
-        }
-      }
-      
-      // 상대방 카드 추가 (받은 카드, 등급 유지!)
-      if (!state.owned[myReceivedCard]) {
-        state.owned[myReceivedCard] = { count: 1, rarity: myReceivedRarity };
-      } else {
-        state.owned[myReceivedCard].count += 1;
-      }
-      
-      result._applied = true;
-      saveState();
-      renderDex();
-      updateStatline();
-      
-      const pokemon = getPokemonByName(myReceivedCard);
-      alert(`✅ 교환 완료! ${pokemon ? pokemon.name : myReceivedCard} 카드를 받았어요! (${getRarityInfo(myReceivedRarity).label} 등급)`);
-    }
-  }
-  
-  renderDex();
-  updateStatline();
-}
+        } else if (status === 'completed') {
+          // 🔥 교환 완료 UI
+          document.getElementById('sendTradeBtn').style.display = 'none';
+          document.getElementById('confirmTradeBtn').style.display = 'none';
+          updateTradeUI2('✅ 교환이 완료되었어요! 🎉', 'completed');
+          document.getElementById('tradePartnerInfo').innerHTML = '✅ 교환 완료!';
+          
+          // 🔥🔥🔥 교환 결과 적용 (등급 유지!)
+          if (room.exchangeResult) {
+            const result = room.exchangeResult;
+            const myReceivedCard = mySide === 'host' ? result.oppCard : result.myCard;
+            const myReceivedRarity = mySide === 'host' ? result.oppRarity : result.myRarity;
+            const mySentCard = mySide === 'host' ? result.myCard : result.oppCard;
+            
+            if (!result._applied) {
+              // 내 카드 차감 (보낸 카드)
+              if (state.owned[mySentCard] && state.owned[mySentCard].count > 0) {
+                state.owned[mySentCard].count -= 1;
+                if (state.owned[mySentCard].count <= 0) {
+                  delete state.owned[mySentCard];
+                }
+              }
+              
+              // 상대방 카드 추가 (받은 카드, 등급 유지!)
+              if (!state.owned[myReceivedCard]) {
+                state.owned[myReceivedCard] = { count: 1, rarity: myReceivedRarity };
+              } else {
+                state.owned[myReceivedCard].count += 1;
+              }
+              
+              result._applied = true;
+              saveState();
+              renderDex();
+              updateStatline();
               
               const pokemon = getPokemonByName(myReceivedCard);
               alert(`✅ 교환 완료! ${pokemon ? pokemon.name : myReceivedCard} 카드를 받았어요! (${getRarityInfo(myReceivedRarity).label} 등급)`);
             }
           }
         }
-        
       } catch (e) {
         console.error('교환 리스너 처리 오류:', e);
       }
