@@ -3849,36 +3849,50 @@ function setupTradeListener2(code) {
             document.getElementById('confirmTradeBtn').textContent = '✅ 최종 교환 (상대방 확인 완료!)';
             updateTradeUI2('🔥 상대방이 확인했어요! "최종 교환"을 눌러주세요.', 'confirm');
           }
-        } else if (status === 'completed') {
-          document.getElementById('sendTradeBtn').style.display = 'none';
-          document.getElementById('confirmTradeBtn').style.display = 'none';
-          updateTradeUI2('✅ 교환이 완료되었어요! 🎉', 'completed');
-          document.getElementById('tradePartnerInfo').innerHTML = '✅ 교환 완료!';
-          
-          if (room.exchangeResult) {
-            const result = room.exchangeResult;
-            const myReceivedCard = mySide === 'host' ? result.oppCard : result.myCard;
-            const myReceivedRarity = mySide === 'host' ? result.oppRarity : result.myRarity;
-            const mySentCard = mySide === 'host' ? result.myCard : result.oppCard;
-            
-            if (!result._applied) {
-              if (state.owned[mySentCard] && state.owned[mySentCard].count > 0) {
-                state.owned[mySentCard].count -= 1;
-                if (state.owned[mySentCard].count <= 0) {
-                  delete state.owned[mySentCard];
-                }
-              }
-              
-              if (!state.owned[myReceivedCard]) {
-                state.owned[myReceivedCard] = { count: 1, rarity: myReceivedRarity };
-              } else {
-                state.owned[myReceivedCard].count += 1;
-              }
-              
-              result._applied = true;
-              saveState();
-              renderDex();
-              updateStatline();
+        }// ===== 🔥 수정된 completed 처리 =====
+else if (status === 'completed') {
+  document.getElementById('sendTradeBtn').style.display = 'none';
+  document.getElementById('confirmTradeBtn').style.display = 'none';
+  updateTradeUI2('✅ 교환이 완료되었어요! 🎉', 'completed');
+  document.getElementById('tradePartnerInfo').innerHTML = '✅ 교환 완료!';
+  
+  // 🔥🔥🔥 교환 결과 적용 (등급 유지!)
+  if (room.exchangeResult) {
+    const result = room.exchangeResult;
+    const mySide = myTradeRoom.side;
+    const myReceivedCard = mySide === 'host' ? result.oppCard : result.myCard;
+    const myReceivedRarity = mySide === 'host' ? result.oppRarity : result.myRarity;
+    const mySentCard = mySide === 'host' ? result.myCard : result.oppCard;
+    
+    if (!result._applied) {
+      // 내 카드 차감 (보낸 카드)
+      if (state.owned[mySentCard] && state.owned[mySentCard].count > 0) {
+        state.owned[mySentCard].count -= 1;
+        if (state.owned[mySentCard].count <= 0) {
+          delete state.owned[mySentCard];
+        }
+      }
+      
+      // 상대방 카드 추가 (받은 카드, 등급 유지!)
+      if (!state.owned[myReceivedCard]) {
+        state.owned[myReceivedCard] = { count: 1, rarity: myReceivedRarity };
+      } else {
+        state.owned[myReceivedCard].count += 1;
+      }
+      
+      result._applied = true;
+      saveState();
+      renderDex();
+      updateStatline();
+      
+      const pokemon = getPokemonByName(myReceivedCard);
+      alert(`✅ 교환 완료! ${pokemon ? pokemon.name : myReceivedCard} 카드를 받았어요! (${getRarityInfo(myReceivedRarity).label} 등급)`);
+    }
+  }
+  
+  renderDex();
+  updateStatline();
+}
               
               const pokemon = getPokemonByName(myReceivedCard);
               alert(`✅ 교환 완료! ${pokemon ? pokemon.name : myReceivedCard} 카드를 받았어요! (${getRarityInfo(myReceivedRarity).label} 등급)`);
@@ -4013,14 +4027,19 @@ async function confirmTrade() {
 }
 
 // ===== 🔥 통째로 교체 =====
+// ===== 수정된 executeSafeTrade2 (등급 저장 강화) =====
 async function executeSafeTrade2(roomRef, room) {
   const mySide = myTradeRoom.side;
   const oppSide = mySide === 'host' ? 'guest' : 'host';
   const myCard = room[mySide].card;
   const oppCard = room[oppSide].card;
   
+  // 🔥🔥🔥 양쪽 등급을 확실히 저장
   const myRarity = state.owned[myCard]?.rarity || 'common';
   const oppRarity = state.owned[oppCard]?.rarity || 'common';
+  
+  console.log('📤 보낼 카드:', myCard, '등급:', myRarity);
+  console.log('📥 받을 카드:', oppCard, '등급:', oppRarity);
   
   try {
     if (room.completed || room.status === 'completed') {
@@ -4028,28 +4047,25 @@ async function executeSafeTrade2(roomRef, room) {
       return;
     }
     
-    console.log('📤 보낼 카드:', myCard, myRarity);
-    console.log('📥 받을 카드:', oppCard, oppRarity);
-    
-    // 1️⃣ 내 카드 차감
+    // 1️⃣ 내 카드 차감 (내가 보낸 카드)
     state.owned[myCard].count -= 1;
     if (state.owned[myCard].count <= 0) {
       delete state.owned[myCard];
     }
     
-    // 2️⃣ 상대방 카드 추가 (등급 유지)
+    // 2️⃣ 상대방 카드 추가 (🔥 oppRarity 사용!)
     if (!state.owned[oppCard]) {
       state.owned[oppCard] = { count: 1, rarity: oppRarity };
     } else {
       state.owned[oppCard].count += 1;
     }
     
-    console.log('✅ 교환 후 내 카드 목록:', state.owned);
+    console.log('✅ 교환 후 내 카드 목록:', JSON.stringify(state.owned, null, 2));
     
     // 3️⃣ 저장
     saveState();
     
-    // 4️⃣ Firebase에 완료 기록
+    // 🔥🔥🔥 Firebase에 교환 결과 저장 (등급 정보 포함!)
     await roomRef.update({
       status: 'completed',
       completed: true,
@@ -4063,7 +4079,10 @@ async function executeSafeTrade2(roomRef, room) {
       }
     });
     
-    // 5️⃣ 화면 새로고침
+    console.log('🔥 Firebase 저장 완료:', {
+      myCard, oppCard, myRarity, oppRarity
+    });
+    
     renderDex();
     updateStatline();
     
