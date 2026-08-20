@@ -1321,41 +1321,49 @@ function speakPokemonInfo(pokemon) {
 }
 
 // ===== 🔥 수정된 speakText (성별 선택 가능) =====
-function speakText(text, lang = 'ko-KR', gender = 'male') {
+function speakText(text, lang = 'ko-KR', preferredGender = 'male') {
   if (!window.speechSynthesis) return;
   
   window.speechSynthesis.cancel();
   
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.lang = lang;
-  utterance.rate = 0.85;
-  utterance.pitch = gender === 'male' ? 0.9 : 1.2;  // 남자: 낮은 음, 여자: 높은 음
+  utterance.rate = 0.9;   // 속도 살짝 느리게 (자연스러움)
+  utterance.pitch = 1.0;  // 남/녀 모두 자연스러운 톤
   utterance.volume = 1.0;
   
-  // 🔥 한국어 남자 목소리 찾기
+  // 🔥 사용 가능한 모든 목소리 가져오기
   const voices = window.speechSynthesis.getVoices();
-  let selectedVoice = null;
   
-  if (gender === 'male') {
-    // 남자 목소리 우선 선택
+  // 1순위: 한국어 남자 목소리
+  let selectedVoice = voices.find(v => 
+    v.lang.startsWith('ko') && 
+    (v.name.includes('InJoon') || v.name.includes('남자') || v.name.includes('Male'))
+  );
+  
+  // 2순위: 한국어 여자 목소리 (남자가 없으면)
+  if (!selectedVoice) {
     selectedVoice = voices.find(v => 
       v.lang.startsWith('ko') && 
-      (v.name.includes('Male') || v.name.includes('남자') || v.name.includes('Google 한국어'))
-    );
-  } else {
-    selectedVoice = voices.find(v => 
-      v.lang.startsWith('ko') && 
-      (v.name.includes('Female') || v.name.includes('여자'))
+      (v.name.includes('SunHi') || v.name.includes('여자') || v.name.includes('Female') || v.name.includes('Google'))
     );
   }
   
-  // 남자 목소리가 없으면 기본 한국어 목소리
+  // 3순위: 아무 한국어 목소리
   if (!selectedVoice) {
     selectedVoice = voices.find(v => v.lang.startsWith('ko'));
   }
   
+  // 4순위: 한국어가 없으면 영어라도
+  if (!selectedVoice && voices.length > 0) {
+    selectedVoice = voices[0];
+  }
+  
   if (selectedVoice) {
     utterance.voice = selectedVoice;
+    console.log('🎤 사용 중인 목소리:', selectedVoice.name);
+  } else {
+    console.log('⚠️ 사용 가능한 목소리가 없어요');
   }
   
   window.speechSynthesis.speak(utterance);
