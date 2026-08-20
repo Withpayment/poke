@@ -2234,14 +2234,13 @@ function checkMathAnswer2(selectedIdx) {
   const isCorrect = currentQ.options[selectedIdx] === currentQ.answer;
   const fb = document.getElementById('mathFeedback');
   
-  // 🔥 정답/오답 표시
   if (isCorrect) {
     buttons[selectedIdx].classList.add('correct');
     fb.textContent = '🎉 정답이에요! 대단해요!';
     fb.className = 'feedback ok';
     q.results.push(true);
     
-    // 🔥 보상: 경험치 10% + 카드 15%
+    // 보상: 경험치 10% + 카드 15%
     if (state.pet) {
       const threshold = petExpThreshold();
       const expBonus = Math.max(1, Math.round(threshold * 0.1));
@@ -2260,8 +2259,7 @@ function checkMathAnswer2(selectedIdx) {
     // 카드 획득 (15%)
     const gotCard = Math.random() * 100 < 15;
     if (gotCard) {
-      const reward = grantCardReward();
-      }
+      grantCardReward();
     }
     
   } else {
@@ -2269,7 +2267,7 @@ function checkMathAnswer2(selectedIdx) {
     buttons.forEach((b, i) => {
       if (currentQ.options[i] === currentQ.answer) b.classList.add('correct');
     });
-    fb.textContent = `❌ 정답은 ${currentQ.answer}였어요!`;
+    fb.textContent = '❌ 정답은 ' + currentQ.answer + '였어요!';
     fb.className = 'feedback no';
     q.results.push(false);
   }
@@ -2280,10 +2278,8 @@ function checkMathAnswer2(selectedIdx) {
   saveState();
   updateStatline();
   
-  // 🔥 다음 문제로 이동 (1.5초 후)
-  setTimeout(() => {
+  setTimeout(function() {
     q.currentIndex++;
-    // 모든 문제 완료 체크
     if (q.currentIndex >= q.questions.length) {
       q.completed = true;
       saveState();
