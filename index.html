@@ -1,0 +1,3915 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>포켓몬 카드 마스터 v7.5</title>
+
+<!-- ===== Firebase SDK ===== -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+
+<style>
+  /* ===== 모든 스타일 (기존과 동일) ===== */
+  :root {
+    --ink: #232042;
+    --ink-2: #312B57;
+    --paper: #FFF8EC;
+    --paper-2: #FCEBC9;
+    --sun: #FFC93C;
+    --sun-2: #FFE08A;
+    --fire: #F0653B;
+    --water: #3E9FDC;
+    --grass: #5FB05A;
+    --electric: #F2C230;
+    --normal: #A6A0BE;
+    --text-dark: #2A2440;
+    --good: #4CAF7D;
+    --bad: #E4614B;
+    --font-display: 'Baloo 2', sans-serif;
+    --font-body: 'Inter', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+    
+    --common: #A6A0BE;
+    --rare: #4CAF7D;
+    --super-rare: #3E9FDC;
+    --ultra-rare: #9B59B6;
+    --special: #FF6B35;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: radial-gradient(circle at 15% 0%, #3A3468 0%, var(--ink) 60%), var(--ink);
+    color: var(--paper);
+    font-family: var(--font-body);
+    min-height: 100vh;
+    -webkit-tap-highlight-color: transparent;
+    font-size: 16px;
+  }
+  .app { max-width: 720px; margin: 0 auto; padding: 0 0 86px; min-height: 100vh; }
+  
+  header.top { padding: 22px 20px 14px; text-align: center; position: relative; }
+  .eyebrow { 
+    font-family: var(--font-mono); 
+    font-size: 14px; 
+    letter-spacing: .22em; 
+    color: var(--sun); 
+    text-transform: uppercase; 
+    margin-bottom: 4px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .eyebrow:hover { opacity: 0.7; }
+  h1 { font-family: var(--font-display); font-weight: 800; font-size: 28px; margin: 0; color: var(--paper); }
+  .sub { font-size: 14px; color: #B7AFDE; margin-top: 4px; }
+  
+  .statline {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    padding: 6px 8px 2px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    flex-wrap: wrap;
+  }
+  .statline .pill {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    color: var(--sun-2);
+    background: rgba(255,255,255,.05);
+    padding: 3px 8px;
+    border-radius: 8px;
+  }
+  .statline .pill b { color: var(--paper); font-weight: 700; }
+  
+  main { padding: 10px 10px 4px; }
+  section { display: none; animation: fadein .25s ease; }
+  section.active { display: block; }
+  @keyframes fadein { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  
+  h2.section-title { font-family: var(--font-display); font-size: 18px; font-weight: 700; margin: 2px 0 10px; color: var(--paper); }
+  
+  .panel {
+    background: linear-gradient(160deg, var(--ink-2), #2A2650);
+    border: 1px solid rgba(255,201,60,.2);
+    border-radius: 14px;
+    padding: 14px 12px;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .btn {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 15px;
+    padding: 10px 16px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    background: var(--sun);
+    color: #2A2440;
+    box-shadow: 0 3px 0 #C99414;
+    transition: transform .1s, box-shadow .1s;
+  }
+  .btn:active { transform: translateY(2px); box-shadow: 0 1px 0 #C99414; }
+  .btn:disabled { opacity: .35; cursor: not-allowed; box-shadow: none; }
+  .btn.ghost { background: transparent; border: 2px solid rgba(255,201,60,.4); color: var(--sun-2); box-shadow: none; }
+  .btn.small { font-size: 12px; padding: 6px 10px; border-radius: 8px; box-shadow: 0 2px 0 #C99414; }
+  .btn.block { width: 100%; }
+  .btn.good { background: var(--good); box-shadow: 0 3px 0 #2E7A54; color: #fff; }
+  
+  /* ===== 나이 입력 ===== */
+  .age-input-wrap {
+    text-align: center;
+    padding: 30px 20px;
+  }
+  .age-input-wrap .big-emoji { font-size: 60px; }
+  .age-input-wrap .title { font-family: var(--font-display); font-size: 22px; margin: 12px 0; }
+  .age-input-wrap .sub { font-size: 14px; color: #B7AFDE; }
+  .age-input-wrap input {
+    width: 100px;
+    padding: 12px;
+    font-size: 28px;
+    text-align: center;
+    border-radius: 12px;
+    border: 2px solid rgba(255,201,60,.3);
+    background: rgba(255,255,255,.05);
+    color: var(--paper);
+    font-family: var(--font-display);
+    margin: 16px auto;
+    display: block;
+  }
+  .age-input-wrap .age-buttons {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 12px;
+  }
+  .age-input-wrap .age-buttons .btn {
+    font-size: 14px;
+    padding: 10px 18px;
+  }
+  
+  /* ===== 수학 퀴즈 ===== */
+  .math-quiz {
+    text-align: center;
+    padding: 10px 0;
+  }
+  .math-quiz .question {
+    font-family: var(--font-display);
+    font-size: 24px;
+    color: var(--paper);
+    margin: 12px 0;
+  }
+  .math-quiz .pokemon-hint {
+    font-size: 14px;
+    color: #B7AFDE;
+    margin: 6px 0;
+  }
+  .math-quiz .options {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 8px;
+    margin: 12px 0;
+  }
+  .math-quiz .options .opt-btn {
+    font-family: var(--font-display);
+    font-size: 20px;
+    padding: 14px 8px;
+    border-radius: 10px;
+    border: 2px solid rgba(255,201,60,.2);
+    background: rgba(255,255,255,.05);
+    color: var(--paper);
+    cursor: pointer;
+    transition: all .2s;
+  }
+  .math-quiz .options .opt-btn:active { transform: scale(.95); }
+  .math-quiz .options .opt-btn.correct { background: var(--good); border-color: var(--good); }
+  .math-quiz .options .opt-btn.wrong { background: var(--bad); border-color: var(--bad); }
+  .math-quiz .options .opt-btn:disabled { opacity: .5; cursor: not-allowed; }
+  .math-quiz .feedback { font-family: var(--font-mono); font-size: 14px; margin-top: 10px; min-height: 24px; }
+  .math-quiz .feedback.ok { color: var(--sun-2); }
+  .math-quiz .feedback.no { color: #F0A79A; }
+  
+  .mission-intro { text-align: center; }
+  .mission-intro .big-emoji { font-size: 42px; margin-bottom: 4px; }
+  
+  .quiz-box { text-align: center; }
+  .quiz-q { font-family: var(--font-display); font-size: 16px; margin-bottom: 10px; color: var(--paper); }
+  .quiz-art-wrap {
+    width: 100px; height: 100px; margin: 0 auto 10px; border-radius: 16px;
+    background: radial-gradient(circle at 40% 30%, rgba(255,255,255,.08), transparent 70%);
+    display: flex; align-items: center; justify-content: center;
+    border: 2px dashed rgba(255,201,60,.3);
+  }
+  .quiz-art-wrap img { width: 68%; height: 68%; object-fit: contain; transition: filter .3s ease; }
+  .quiz-art-wrap.silhouette img { filter: brightness(0) saturate(0); opacity: .92; }
+  .choice-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+  .choice-btn {
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 13px;
+    padding: 10px 8px;
+    border-radius: 8px;
+    border: 2px solid rgba(255,255,255,.12);
+    background: rgba(255,255,255,.04);
+    color: var(--paper);
+    cursor: pointer;
+  }
+  .choice-btn:active { transform: scale(.97); }
+  .choice-btn.correct { background: var(--good); border-color: var(--good); color: #fff; }
+  .choice-btn.wrong { background: var(--bad); border-color: var(--bad); color: #fff; }
+  .choice-btn.dim { opacity: .4; }
+  .quiz-feedback { margin-top: 10px; font-family: var(--font-mono); font-size: 12px; min-height: 18px; }
+  .quiz-feedback.ok { color: var(--sun-2); }
+  .quiz-feedback.no { color: #F0A79A; }
+  
+  .card {
+    border-radius: 12px;
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(160deg, var(--paper) 0%, var(--paper-2) 100%);
+    color: var(--text-dark);
+    border: 2px solid var(--sun);
+    padding: 6px;
+    box-shadow: 0 4px 10px rgba(0,0,0,.3);
+    cursor: pointer;
+    transition: transform .2s;
+  }
+  .card:active { transform: scale(.96); }
+  .card .art { width: 100%; aspect-ratio: 1/0.85; border-radius: 8px; display: flex; align-items: center; justify-content: center;
+    background: radial-gradient(circle at 50% 35%, rgba(255,255,255,.5), transparent 70%); }
+  .card .art img { width: 60%; height: 60%; object-fit: contain; }
+  .card .name { font-family: var(--font-display); font-weight: 700; font-size: 11px; text-align: center; margin-top: 2px; line-height: 1.2; }
+  .card .type-tag {
+    display: block; margin: 2px auto 3px; width: fit-content; font-family: var(--font-mono); font-size: 7px;
+    padding: 1px 6px; border-radius: 14px; color: #fff; letter-spacing: .04em;
+  }
+  .card .statrow { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 6px; padding: 0 2px; color: #5A5170; }
+  .card .statrow span b { display: block; font-size: 8px; color: var(--text-dark); }
+  .card.locked { filter: grayscale(1) brightness(.5); }
+  .card.locked .name { font-size: 10px; color: #888; }
+  .card.pop-in { animation: popin .4s cubic-bezier(.34,1.56,.64,1); }
+  @keyframes popin { from { opacity: 0; transform: scale(.5) rotate(-4deg); } to { opacity: 1; transform: none; } }
+  
+  .card.rarity-common { border-color: var(--common); }
+  .card.rarity-rare { border-color: var(--rare); box-shadow: 0 0 10px rgba(76,175,125,.2); }
+  .card.rarity-super-rare { border-color: var(--super-rare); box-shadow: 0 0 14px rgba(62,159,220,.3); }
+  .card.rarity-ultra-rare { border-color: var(--ultra-rare); box-shadow: 0 0 18px rgba(155,89,182,.4); }
+  .card.rarity-special { border-color: var(--special); box-shadow: 0 0 20px rgba(255,107,53,.5); animation: glow-special 1.5s infinite alternate; }
+  @keyframes glow-special {
+    from { box-shadow: 0 0 12px rgba(255,107,53,.3); }
+    to { box-shadow: 0 0 25px rgba(255,107,53,.5), 0 0 40px rgba(255,107,53,.2); }
+  }
+  
+  .card .rarity-badge {
+    position: absolute;
+    top: 3px;
+    right: 3px;
+    font-family: var(--font-mono);
+    font-size: 8px;
+    font-weight: 700;
+    padding: 1px 5px;
+    border-radius: 6px;
+    color: #fff;
+    letter-spacing: .04em;
+    text-shadow: 0 1px 2px rgba(0,0,0,.3);
+    background: rgba(0,0,0,.3);
+    backdrop-filter: blur(2px);
+    line-height: 1.2;
+  }
+  
+  .grid { 
+    display: grid; 
+    grid-template-columns: repeat(3,1fr);
+    gap: 5px;
+  }
+  .card.mini { 
+    width: 100%;
+    padding: 5px;
+  }
+  .card.mini .art { aspect-ratio: 1/0.8; }
+  .card.mini .art img { width: 50%; height: 50%; }
+  .card.mini .name { font-size: 9px; margin-top: 1px; }
+  .card.mini .statrow { font-size: 6px; padding: 0 1px; }
+  .card.mini .statrow span b { font-size: 7px; }
+  .card.mini .type-tag { font-size: 6px; padding: 1px 5px; margin: 2px auto 2px; }
+  .card.mini .rarity-badge { font-size: 7px; padding: 1px 4px; top: 2px; right: 2px; }
+  
+  .rarity-bonus {
+    font-size: 8px;
+    font-family: var(--font-mono);
+    color: #B7AFDE;
+    text-align: center;
+    padding: 2px 0;
+    border-top: 1px solid rgba(255,255,255,.05);
+    margin-top: 2px;
+  }
+  .rarity-bonus span { color: var(--sun-2); font-weight: 700; }
+  
+  .filter-row { display: flex; gap: 4px; margin-bottom: 8px; flex-wrap: wrap; }
+  .chip {
+    font-family: var(--font-mono);
+    font-size: 8px;
+    padding: 3px 7px;
+    border-radius: 14px;
+    border: 1px solid rgba(255,201,60,.25);
+    color: #B7AFDE;
+    cursor: pointer;
+    background: transparent;
+    transition: all .2s;
+    white-space: nowrap;
+  }
+  .chip.active { background: var(--sun); color: #2A2440; border-color: var(--sun); font-weight: 700; }
+  
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,.8);
+    backdrop-filter: blur(6px);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    animation: fadein .25s;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal-content {
+    max-width: 360px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    background: linear-gradient(160deg, var(--ink-2), #1A1840);
+    border: 2px solid var(--sun);
+    border-radius: 18px;
+    padding: 16px 14px 20px;
+    color: var(--paper);
+    position: relative;
+    animation: popin .35s cubic-bezier(.34,1.56,.64,1);
+  }
+  .modal-close {
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    font-size: 20px;
+    background: none;
+    border: none;
+    color: #B7AFDE;
+    cursor: pointer;
+    font-family: var(--font-body);
+  }
+  .modal-close:hover { color: var(--paper); }
+  .modal-art { text-align: center; padding: 4px 0; }
+  .modal-art img { width: 120px; height: 120px; object-fit: contain; }
+  .modal-name { font-family: var(--font-display); font-size: 20px; text-align: center; margin: 2px 0; }
+  .modal-types { text-align: center; margin: 4px 0 8px; }
+  .modal-types span {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 14px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: #fff;
+    margin: 0 3px;
+  }
+  .modal-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 5px;
+    margin: 8px 0;
+    text-align: center;
+    background: rgba(255,255,255,.05);
+    border-radius: 8px;
+    padding: 8px;
+  }
+  .modal-stats div { font-family: var(--font-mono); font-size: 9px; color: #B7AFDE; }
+  .modal-stats div b { display: block; font-size: 14px; color: var(--paper); margin-top: 2px; }
+  
+  .modal-section {
+    margin: 8px 0 5px;
+    padding: 8px 10px;
+    background: rgba(255,255,255,.04);
+    border-radius: 8px;
+    border-left: 3px solid var(--sun);
+  }
+  .modal-section h4 {
+    font-family: var(--font-display);
+    font-size: 12px;
+    margin: 0 0 3px;
+    color: var(--sun-2);
+  }
+  .modal-section p {
+    font-size: 11px;
+    line-height: 1.5;
+    margin: 2px 0;
+    color: #D8D2EF;
+  }
+  
+  .team-slots { display: flex; gap: 6px; margin-bottom: 10px; }
+  .slot { flex: 1; aspect-ratio: 1/1.05; border-radius: 10px; border: 2px dashed rgba(255,201,60,.3);
+    display: flex; align-items: center; justify-content: center; cursor: pointer; background: rgba(255,255,255,.02); position: relative; }
+  .slot.filled { border-style: solid; border-color: var(--sun); }
+  .slot .mini-art { width: 60%; } .slot .mini-art img { width: 100%; object-fit: contain; }
+  .slot .x { position: absolute; top: 2px; right: 4px; font-size: 9px; color: #B7AFDE; }
+  
+  .picker { display: none; margin-bottom: 10px; }
+  .picker.open { display: block; }
+  .pick-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 5px; max-height: 200px; overflow-y: auto; padding: 4px; }
+  .pick-item { border-radius: 8px; border: 1.5px solid rgba(255,201,60,.2); padding: 4px; text-align: center; cursor: pointer; background: rgba(255,255,255,.03); }
+  .pick-item img { width: 36px; height: 36px; object-fit: contain; }
+  .pick-item .n { font-size: 8px; font-family: var(--font-mono); margin-top: 2px; color: #B7AFDE; }
+  .pick-item.disabled { opacity: .3; pointer-events: none; }
+  
+  .arena { background: linear-gradient(180deg, rgba(255,255,255,.03), transparent); border: 1px solid rgba(255,201,60,.15); border-radius: 12px; padding: 12px; margin-top: 4px; }
+  .vs-row { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+  .fighter { flex: 1; text-align: center; }
+  .fighter .art-wrap { width: 56px; height: 56px; margin: 0 auto 4px; border-radius: 50%; background: radial-gradient(circle at 40% 30%, rgba(255,255,255,.1), transparent 70%); display: flex; align-items: center; justify-content: center; }
+  .fighter .art-wrap img { width: 58%; object-fit: contain; }
+  .fighter .fname { font-family: var(--font-display); font-weight: 700; font-size: 11px; }
+  .fighter .hpbar { height: 5px; border-radius: 4px; background: rgba(255,255,255,.1); margin-top: 3px; overflow: hidden; }
+  .fighter .hpbar > div { height: 100%; background: #7CC08A; transition: width .35s ease; }
+  .fighter .hpbar.low > div { background: #D9704F; }
+  .fighter .hptext { font-family: var(--font-mono); font-size: 8px; color: #B7AFDE; margin-top: 2px; }
+  .vs-seal { font-family: var(--font-display); font-weight: 800; font-size: 14px; color: var(--sun); width: 32px; height: 32px; border: 2px solid var(--sun); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .turn-banner { text-align: center; font-family: var(--font-mono); font-size: 10px; color: var(--sun-2); margin-top: 6px; }
+  .log { margin-top: 6px; background: rgba(0,0,0,.25); border-radius: 8px; padding: 6px 8px; height: 70px; overflow-y: auto; font-family: var(--font-mono); font-size: 9px; color: #D8D2EF; display: flex; flex-direction: column-reverse; }
+  .log p { margin: 2px 0; line-height: 1.4; }
+  .log p.eff { color: #7CC08A; } .log p.bad { color: #E4917F; } .log p.sys { color: var(--sun-2); }
+  .battle-actions { display: flex; gap: 6px; margin-top: 8px; }
+  .battle-actions .btn { flex: 1; font-size: 13px; padding: 8px 10px; }
+  .empty-note { text-align: center; color: #8d84b0; font-family: var(--font-mono); font-size: 10px; padding: 20px 8px; border: 1px dashed rgba(255,201,60,.2); border-radius: 10px; }
+  
+  nav.tabbar {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: rgba(35,32,66,.95);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid rgba(255,201,60,.15);
+    display: flex;
+    max-width: 720px;
+    margin: 0 auto;
+  }
+  nav.tabbar button {
+    flex: 1; background: none; border: none; color: #8d84b0; padding: 6px 2px 8px;
+    font-family: var(--font-body); font-size: 9px; cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; gap: 2px;
+  }
+  nav.tabbar button .ic { font-size: 16px; }
+  nav.tabbar button.active { color: var(--sun); }
+  
+  .life-row { display: flex; align-items: center; gap: 8px; padding: 8px 6px; border-radius: 8px; background: rgba(255,255,255,.03); margin-bottom: 5px; }
+  .life-row .em { font-size: 16px; }
+  .life-row .lbl { flex: 1; font-family: var(--font-body); font-weight: 600; font-size: 12px; }
+  .life-row .done-tag { font-family: var(--font-mono); font-size: 9px; color: var(--good); }
+  .life-row .btn.small { font-size: 9px; padding: 3px 8px; }
+  
+  .starter-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 6px; }
+  .starter-card { background: rgba(255,255,255,.03); border: 2px solid rgba(255,201,60,.2); border-radius: 10px; padding: 8px 4px; text-align: center; cursor: pointer; }
+  .starter-card:active { transform: scale(.97); }
+  .starter-card img { width: 44px; height: 44px; object-fit: contain; }
+  .starter-card .n { font-family: var(--font-display); font-weight: 700; font-size: 11px; margin-top: 2px; }
+  
+  .pet-hero { text-align: center; padding: 4px 0; }
+  .pet-hero .art-big { width: 100px; height: 100px; margin: 0 auto 4px; border-radius: 50%; background: radial-gradient(circle at 40% 30%, rgba(255,255,255,.1), transparent 70%); display: flex; align-items: center; justify-content: center; }
+  .pet-hero .art-big img { width: 64%; object-fit: contain; }
+  .pet-hero .pname { font-family: var(--font-display); font-weight: 800; font-size: 16px; }
+  .pet-hero .plevel { font-family: var(--font-mono); font-size: 10px; color: var(--sun-2); margin-top: 2px; }
+  .pet-mood { font-family: var(--font-mono); font-size: 10px; color: #B7AFDE; text-align: center; margin: 4px 0 10px; }
+  
+  .stat-row { margin-bottom: 8px; }
+  .stat-row .stat-label { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 9px; color: #B7AFDE; margin-bottom: 2px; }
+  .stat-row .progress-bar { height: 5px; }
+  .stat-row.hunger .progress-bar > div { background: linear-gradient(90deg,#F0653B,#F0A87A); }
+  .stat-row.happy .progress-bar > div { background: linear-gradient(90deg,#5FB05A,#93D48F); }
+  .stat-row.energy .progress-bar > div { background: linear-gradient(90deg,#3E9FDC,#8CCBF0); }
+  .stat-row.exp .progress-bar > div { background: linear-gradient(90deg,var(--sun),var(--sun-2)); }
+  
+  .pet-actions { display: flex; gap: 5px; margin-top: 10px; flex-wrap: wrap; }
+  .pet-actions .btn { flex: 1; font-size: 11px; padding: 8px 4px; min-width: 60px; }
+  .pet-actions .btn:disabled { opacity: .4; cursor: not-allowed; }
+  .cooldown-text { font-family: var(--font-mono); font-size: 8px; color: #B7AFDE; text-align: center; margin-top: 2px; }
+  
+  .evolve-banner { text-align: center; background: rgba(255,201,60,.12); border: 1px solid rgba(255,201,60,.3); border-radius: 8px; padding: 6px; font-family: var(--font-mono); font-size: 10px; color: var(--sun-2); margin-bottom: 8px; }
+  
+  .loading-spinner { text-align: center; padding: 30px 20px; }
+  .loading-spinner .spinner { width: 36px; height: 36px; border: 4px solid rgba(255,201,60,.2); border-top-color: var(--sun); border-radius: 50%; animation: spin .8s linear infinite; margin: 0 auto 10px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  
+  .progress-bar { height: 6px; border-radius: 4px; background: rgba(255,255,255,.08); overflow: hidden; }
+  .progress-bar > div { height: 100%; background: linear-gradient(90deg,var(--sun),var(--sun-2)); }
+  .progress-txt { font-family: var(--font-mono); font-size: 9px; color: #B7AFDE; margin-top: 3px; text-align: center; }
+  
+  .mode-toggle { display: flex; gap: 5px; margin-bottom: 10px; flex-wrap: wrap; }
+  .mode-toggle button { flex: 1; font-family: var(--font-display); font-weight: 700; font-size: 11px; padding: 6px 4px; border-radius: 8px; border: 2px solid rgba(255,201,60,.2); background: transparent; color: #B7AFDE; cursor: pointer; min-width: 60px; }
+  .mode-toggle button.active { background: var(--sun); color: #2A2440; border-color: var(--sun); }
+  
+  .room-box { text-align: center; padding: 4px 2px; }
+  .room-code { font-family: var(--font-mono); font-size: 28px; font-weight: 700; letter-spacing: .12em; color: var(--sun); margin: 8px 0; }
+  .room-input { font-family: var(--font-mono); font-size: 18px; text-align: center; letter-spacing: .2em; width: 120px; padding: 6px; border-radius: 8px; border: 2px solid rgba(255,201,60,.3); background: rgba(255,255,255,.05); color: var(--paper); margin: 8px auto; display: block; }
+  .room-input::placeholder { color: #6b6395; }
+  .waiting-dots::after { content: ''; animation: dots 1.4s infinite steps(4); }
+  @keyframes dots { 0% { content: ''; } 25% { content: '.'; } 50% { content: '..'; } 75% { content: '...'; } }
+  
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-thumb { background: rgba(255,201,60,.25); border-radius: 3px; }
+  
+  .custom-mission-input { display: flex; gap: 5px; margin: 6px 0; flex-wrap: wrap; }
+  .custom-mission-input input { flex: 1; padding: 6px 8px; border-radius: 8px; border: 2px solid rgba(255,201,60,.2); background: rgba(255,255,255,.05); color: var(--paper); font-family: var(--font-body); font-size: 12px; min-width: 80px; }
+  .custom-mission-input input::placeholder { color: #6b6395; }
+  .custom-mission-input .btn { padding: 6px 10px; font-size: 11px; }
+  
+  .life-mission-list { max-height: 220px; overflow-y: auto; }
+  .battle-status { font-family: var(--font-mono); font-size: 10px; color: var(--sun-2); text-align: center; padding: 5px; background: rgba(255,201,60,.08); border-radius: 6px; margin: 5px 0; }
+  
+  .ownership-filter { display: flex; gap: 4px; margin: 4px 0 8px; flex-wrap: wrap; }
+  .ownership-filter .chip { font-size: 9px; padding: 3px 10px; }
+  
+  .trade-modal .modal-content { max-width: 380px; }
+  .trade-modal select {
+    width: 100%;
+    padding: 6px 8px;
+    border-radius: 8px;
+    border: 2px solid rgba(255,201,60,.2);
+    background: rgba(255,255,255,.05);
+    color: var(--paper);
+    font-size: 12px;
+    margin: 4px 0;
+  }
+  .trade-modal .trade-info { 
+    font-family: var(--font-mono); 
+    font-size: 9px; 
+    color: #B7AFDE; 
+    text-align: center; 
+    padding: 5px; 
+    background: rgba(255,255,255,.05); 
+    border-radius: 6px; 
+    margin: 5px 0; 
+  }
+  .trade-modal .trade-status {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--sun-2);
+    text-align: center;
+    padding: 6px;
+    background: rgba(255,201,60,.1);
+    border-radius: 6px;
+    margin: 6px 0;
+  }
+  
+  .reset-hidden {
+    position: absolute;
+    left: 6px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: transparent;
+    font-size: 12px;
+    cursor: pointer;
+    padding: 4px 8px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    transition: background 0.3s;
+  }
+  .reset-hidden:hover {
+    background: rgba(255,255,255,.05);
+    color: rgba(255,255,255,.2);
+  }
+  .reset-hidden:active {
+    background: rgba(255,107,53,.2);
+    color: var(--special);
+  }
+  
+  .raid-boss {
+    text-align: center;
+    padding: 12px;
+    background: radial-gradient(circle at 50% 30%, rgba(255,107,53,.12), transparent 70%);
+    border-radius: 14px;
+    border: 2px solid var(--special);
+    animation: raidGlow 2s infinite alternate;
+  }
+  @keyframes raidGlow {
+    from { box-shadow: 0 0 15px rgba(255,107,53,.15); }
+    to { box-shadow: 0 0 30px rgba(255,107,53,.35); }
+  }
+  .raid-boss .boss-art { font-size: 60px; }
+  .raid-boss .boss-name { font-family: var(--font-display); font-size: 20px; color: var(--special); }
+  .raid-boss .boss-hp { 
+    height: 10px; 
+    border-radius: 6px; 
+    background: rgba(255,255,255,.1); 
+    overflow: hidden;
+    margin: 6px 0;
+  }
+  .raid-boss .boss-hp > div { 
+    height: 100%; 
+    background: linear-gradient(90deg, var(--bad), var(--special));
+    transition: width .5s ease;
+  }
+  .raid-boss .boss-info { font-family: var(--font-mono); font-size: 10px; color: #B7AFDE; }
+  
+  .raid-card-select { transition: all .2s; border-radius: 8px; padding: 4px; text-align: center; cursor: pointer; background: rgba(255,255,255,.05); }
+  .raid-card-select:hover { transform: scale(1.03); }
+  .raid-card-select.selected { border-color: var(--sun) !important; background: rgba(255,201,60,.15) !important; }
+  .raid-card-select .rds-art { font-size: 28px; }
+  .raid-card-select .rds-name { font-size: 10px; font-family: var(--font-display); margin-top: 2px; }
+  .raid-card-select .rds-rarity { font-size: 8px; font-family: var(--font-mono); }
+  
+  .raid-boss-info {
+    background: rgba(255,255,255,.06);
+    border-radius: 10px;
+    padding: 12px;
+    margin: 6px 0 10px;
+    text-align: left;
+    font-size: 13px;
+    color: #D8D2EF;
+  }
+  .raid-boss-info .rb-row { display: flex; align-items: center; gap: 10px; }
+  .raid-boss-info .rb-row .rb-art { font-size: 48px; }
+  .raid-boss-info .rb-row .rb-detail { flex: 1; }
+  .raid-boss-info .rb-row .rb-detail .rb-name { font-family: var(--font-display); font-size: 18px; color: var(--paper); }
+  .raid-boss-info .rb-row .rb-detail .rb-stat { font-size: 12px; color: #B7AFDE; margin: 2px 0; }
+  .raid-boss-info .rb-owner { font-size: 11px; margin-top: 4px; padding: 3px 8px; border-radius: 6px; background: rgba(255,255,255,.05); display: inline-block; }
+  
+  .reward-popup {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,.85);
+    backdrop-filter: blur(8px);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    animation: fadein .3s;
+  }
+  .reward-popup-content {
+    max-width: 320px;
+    width: 100%;
+    text-align: center;
+    animation: popin .4s cubic-bezier(.34,1.56,.64,1);
+  }
+  .reward-popup-content .card {
+    margin: 0 auto;
+    width: 180px;
+    cursor: default;
+  }
+  .reward-popup-content .card:active { transform: none; }
+  .reward-popup-content .popup-title {
+    font-family: var(--font-display);
+    font-size: 18px;
+    margin: 10px 0 6px;
+    color: var(--sun-2);
+  }
+  .reward-popup-content .popup-sub {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: #B7AFDE;
+    margin-bottom: 10px;
+  }
+  
+  @keyframes flash {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; background: rgba(255,107,53,.3); }
+  }
+  @keyframes cardGet {
+    0% { transform: scale(0) rotate(-10deg); opacity: 0; }
+    60% { transform: scale(1.15) rotate(3deg); opacity: 1; }
+    100% { transform: scale(1) rotate(0deg); }
+  }
+  .card-get { animation: cardGet 0.4s cubic-bezier(.34,1.56,.64,1); }
+  
+  @media (max-width: 380px) {
+    .grid { gap: 4px; }
+    .card.mini { padding: 4px; }
+    .card.mini .art img { width: 45%; height: 45%; }
+    .card.mini .name { font-size: 8px; }
+    .reward-popup-content .card { width: 150px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="eyebrow" id="resetHiddenBtn" title="게임 초기화 (숨김)">🔧</div>
+    <h1>⚡ 포켓몬 카드 마스터 v7.5</h1>
+    <div class="sub">진화하고, 교환하고, 레이드하자!</div>
+  </header>
+
+  <div class="statline">
+    <div class="pill">📖 <b id="collectedCount">0</b>/<span id="totalCount">0</span></div>
+    <div class="pill">⭐ <b id="specialCount">0</b> 스페셜</div>
+    <div class="pill">✅ 미션 <b id="missionCount">0</b></div>
+    <div class="pill">🏆 <b id="winCount">0</b>승</div>
+    <div class="pill">🎯 퀴즈 <b id="quizCount">0</b></div>
+    <div class="pill">🧮 수학 <b id="mathCount">0</b></div>
+    <div class="pill">⚔️ 레이드 <b id="raidCount">0</b></div>
+  </div>
+
+  <main>
+    <div id="loadingScreen" class="loading-spinner">
+      <div class="spinner"></div>
+      <div style="font-family:var(--font-display);font-size:15px;">포켓몬 데이터를 불러오는 중...</div>
+      <div style="font-family:var(--font-mono);font-size:10px;color:#B7AFDE;margin-top:5px;" id="loadingStatus">PokeAPI에서 포켓몬을 가져오고 있어요</div>
+    </div>
+
+    <!-- ===== 나이 입력 화면 ===== -->
+    <div id="ageScreen" style="display:none;">
+      <div class="panel age-input-wrap">
+        <div class="big-emoji">👋</div>
+        <div class="title">안녕! 몇 살이야?</div>
+        <div class="sub">나이에 맞는 재미있는 수학 퀴즈를 준비할게!</div>
+        <div class="age-buttons">
+          <button class="btn" onclick="setAge(5)">5살</button>
+          <button class="btn" onclick="setAge(6)">6살</button>
+          <button class="btn" onclick="setAge(7)">7살</button>
+          <button class="btn" onclick="setAge(8)">8살</button>
+          <button class="btn" onclick="setAge(9)">9살</button>
+          <button class="btn" onclick="setAge(10)">10살</button>
+          <button class="btn" onclick="setAge(11)">11살</button>
+          <button class="btn" onclick="setAge(12)">12살</button>
+          <button class="btn" onclick="setAge(13)">13살</button>
+        </div>
+        <div style="margin-top:12px;">
+          <input type="number" id="customAgeInput" placeholder="직접 입력" min="4" max="99" style="width:100px;padding:8px;font-size:18px;text-align:center;border-radius:8px;border:2px solid rgba(255,201,60,.3);background:rgba(255,255,255,.05);color:var(--paper);">
+          <button class="btn small" onclick="setAge(document.getElementById('customAgeInput').value)">확인</button>
+        </div>
+      </div>
+    </div>
+
+    <section id="tab-mission">
+      <h2 class="section-title">🎯 오늘의 미션</h2>
+      <div class="mode-toggle">
+        <button data-mmode="quiz" class="active">🧠 퀴즈미션</button>
+        <button data-mmode="math">🧮 수학퀴즈</button>
+        <button data-mmode="life">🌟 생활미션</button>
+        <button data-mmode="raid">⚔️ 레이드</button>
+      </div>
+      <div class="panel" id="missionPanel"></div>
+    </section>
+
+    <section id="tab-dex">
+      <h2 class="section-title">📖 도감</h2>
+      <div class="progress-bar"><div id="dexProgress" style="width:0%"></div></div>
+      <div class="progress-txt" id="dexProgressText">0 / 0</div>
+      
+      <div class="ownership-filter" id="ownershipFilter">
+        <button class="chip active" data-ownership="all">📋 전체</button>
+        <button class="chip" data-ownership="owned">✅ 보유</button>
+        <button class="chip" data-ownership="missing">❌ 미보유</button>
+      </div>
+      
+      <div style="display:flex;gap:4px;flex-wrap:wrap;margin:4px 0 2px;">
+        <span style="font-family:var(--font-mono);font-size:7px;color:#B7AFDE;">등급:</span>
+        <button class="chip active" data-rarity="all">전체</button>
+        <button class="chip" data-rarity="common">일반</button>
+        <button class="chip" data-rarity="rare">레어</button>
+        <button class="chip" data-rarity="super-rare">슈퍼</button>
+        <button class="chip" data-rarity="ultra-rare">울트라</button>
+        <button class="chip" data-rarity="special">스페셜</button>
+      </div>
+      <div class="filter-row" id="filterRow"></div>
+      <div class="grid" id="dexGrid"></div>
+    </section>
+
+    <section id="tab-pet">
+      <h2 class="section-title">🐣 키우기</h2>
+      <div class="panel" id="petPanel"></div>
+    </section>
+
+    <section id="tab-battle">
+      <h2 class="section-title">⚔️ 배틀</h2>
+      <div class="mode-toggle">
+        <button data-mode="pvp" class="active">🌐 실시간 배틀</button>
+        <button data-mode="ai">🤖 연습 배틀</button>
+      </div>
+      <div style="margin-bottom:8px;font-family:var(--font-mono);font-size:9px;color:#B7AFDE;">배틀에 쓸 카드 3장을 골라주세요</div>
+      <div class="team-slots" id="teamSlots"></div>
+      <div class="picker" id="picker"><div class="pick-grid" id="pickGrid"></div></div>
+      <div id="battleBody"></div>
+    </section>
+
+    <section id="tab-trade">
+      <h2 class="section-title">🔄 카드 교환</h2>
+      <div class="panel" id="tradePanel">
+        <div id="tradeContent"></div>
+      </div>
+    </section>
+  </main>
+
+  <nav class="tabbar">
+    <button data-tab="tab-mission" class="active"><span class="ic">🎯</span>미션</button>
+    <button data-tab="tab-dex"><span class="ic">📖</span>도감</button>
+    <button data-tab="tab-pet"><span class="ic">🐣</span>키우기</button>
+    <button data-tab="tab-battle"><span class="ic">⚔️</span>배틀</button>
+    <button data-tab="tab-trade"><span class="ic">🔄</span>교환</button>
+  </nav>
+</div>
+
+<!-- ===== 카드 상세 모달 ===== -->
+<div class="modal-overlay" id="cardModal">
+  <div class="modal-content">
+    <button class="modal-close" id="modalClose">✕</button>
+    <div id="modalBody"></div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// 🚀 포켓몬 카드 마스터 v7.5 - 전체 코드
+// ============================================================
+
+// ===== Firebase 설정 =====
+const firebaseConfig = {
+  apiKey: "AIzaSyAnNMf2GxcLs7abmetxwWmoxBkIrFy1jQQ",
+  authDomain: "pokebattle-45a99.firebaseapp.com",
+  databaseURL: "https://pokebattle-45a99-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "pokebattle-45a99",
+  storageBucket: "pokebattle-45a99.firebasestorage.app",
+  messagingSenderId: "26507760702",
+  appId: "1:26507760702:web:3b2b9c75a0c4f98efcad6f",
+  measurementId: "G-E3EP9HGWEE"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+// ===== 타입 상성 =====
+const TYPE_CHART = {
+  normal: { strong: [], weak: ['rock','ghost'], immune: ['ghost'] },
+  fire: { strong: ['grass','ice','bug','steel'], weak: ['fire','water','rock','dragon'] },
+  water: { strong: ['fire','ground','rock'], weak: ['water','grass','dragon'] },
+  electric: { strong: ['water','flying'], weak: ['electric','grass','dragon'], immune: ['ground'] },
+  grass: { strong: ['water','ground','rock'], weak: ['fire','grass','poison','flying','bug','dragon','steel'] },
+  ice: { strong: ['grass','ground','flying','dragon'], weak: ['fire','water','ice','steel'] },
+  fighting: { strong: ['normal','ice','rock','dark','steel'], weak: ['poison','flying','psychic','bug','fairy'], immune: ['ghost'] },
+  poison: { strong: ['grass','fairy'], weak: ['poison','ground','rock','ghost'], immune: ['steel'] },
+  ground: { strong: ['fire','electric','poison','rock','steel'], weak: ['grass','bug'], immune: ['flying'] },
+  flying: { strong: ['grass','fighting','bug'], weak: ['electric','rock','steel'] },
+  psychic: { strong: ['fighting','poison'], weak: ['psychic','steel'], immune: ['dark'] },
+  bug: { strong: ['grass','psychic','dark'], weak: ['fire','fighting','poison','flying','ghost','steel','fairy'] },
+  rock: { strong: ['fire','ice','flying','bug'], weak: ['fighting','ground','steel'] },
+  ghost: { strong: ['psychic','ghost'], weak: ['dark'], immune: ['normal','fighting'] },
+  dragon: { strong: ['dragon'], weak: ['steel'], immune: ['fairy'] },
+  dark: { strong: ['psychic','ghost'], weak: ['fighting','dark','fairy'] },
+  steel: { strong: ['ice','rock','fairy'], weak: ['fire','water','electric','steel'] },
+  fairy: { strong: ['fighting','dragon','dark'], weak: ['fire','poison','steel'] }
+};
+
+function getEffMult(attackType, defendType) {
+  const chart = TYPE_CHART[attackType];
+  if (!chart) return 1;
+  if (chart.immune && chart.immune.includes(defendType)) return 0;
+  if (chart.strong && chart.strong.includes(defendType)) return 2;
+  if (chart.weak && chart.weak.includes(defendType)) return 0.5;
+  return 1;
+}
+
+// ===== 등급 시스템 =====
+const RARITIES = [
+  { id: 'common', label: '일반', weight: 60, color: '#A6A0BE', emoji: '⬜', bonus: { hp: 0, atk: 0, def: 0, spd: 0 } },
+  { id: 'rare', label: '레어', weight: 25, color: '#4CAF7D', emoji: '🟩', bonus: { hp: 3, atk: 2, def: 2, spd: 1 } },
+  { id: 'super-rare', label: '슈퍼레어', weight: 10, color: '#3E9FDC', emoji: '🟦', bonus: { hp: 5, atk: 4, def: 4, spd: 3 } },
+  { id: 'ultra-rare', label: '울트라레어', weight: 4, color: '#9B59B6', emoji: '🟪', bonus: { hp: 8, atk: 6, def: 6, spd: 5 } },
+  { id: 'special', label: '스페셜', weight: 1, color: '#FF6B35', emoji: '🌟', bonus: { hp: 12, atk: 10, def: 10, spd: 8 } }
+];
+
+function rollRarity() {
+  const total = RARITIES.reduce((sum, r) => sum + r.weight, 0);
+  let rand = Math.random() * total;
+  for (const r of RARITIES) {
+    rand -= r.weight;
+    if (rand <= 0) return r.id;
+  }
+  return 'common';
+}
+
+function getRarityInfo(id) {
+  return RARITIES.find(r => r.id === id) || RARITIES[0];
+}
+
+function getRarityBonus(id) {
+  const info = getRarityInfo(id);
+  return info.bonus || { hp: 0, atk: 0, def: 0, spd: 0 };
+}
+
+function getRarityDamageBonus(rarity) {
+  const bonuses = {
+    'common': 0,
+    'rare': 2,
+    'super-rare': 5,
+    'ultra-rare': 8,
+    'special': 12
+  };
+  return bonuses[rarity] || 0;
+}
+
+function getRarityMessage(rarity) {
+  const messages = {
+    'common': '📦 일반 카드를 획득했어요!',
+    'rare': '✨ 레어 카드를 획득했어요!',
+    'super-rare': '🌟 슈퍼레어 카드를 획득했어요!',
+    'ultra-rare': '💎 울트라레어 카드를 획득했어요!',
+    'special': '🎉🎊✨💎 스페셜 카드를 획득했어요!!!'
+  };
+  return messages[rarity] || messages.common;
+}
+
+// ===== 특성/기술 한글 맵 =====
+function getAbilityKorean(engName) {
+  const abilityMap = {
+    'overgrow': '초목', 'blaze': '맹화', 'torrent': '급류',
+    'static': '정전기', 'levitate': '부유', 'intimidate': '위협',
+    'shed skin': '탈피', 'compound eyes': '복안', 'swarm': '벌레의알림',
+    'limber': '유연', 'imposter': '변신', 'run away': '도주',
+    'guts': '근성', 'inner focus': '정신력', 'keen eye': '날카로운눈',
+    'oblivious': '둔감', 'own tempo': '마이페이스', 'pickup': '픽업',
+    'sand veil': '모래숨기', 'serene grace': '하늘의은총', 'shell armor': '조가비갑옷',
+    'soundproof': '방음', 'sturdy': '튼튼', 'thick fat': '두꺼운지방',
+    'water absorb': '저수', 'damp': '축축', 'effect spore': '포자',
+    'flame body': '불꽃몸', 'magma armor': '마그마갑옷', 'poison point': '독가시',
+    'rock head': '돌머리', 'rough skin': '까칠한피부', 'speed boost': '가속',
+    'clear body': '클리어바디', 'white smoke': '화이트스모크', 'synchronize': '싱크로',
+    'trace': '트레이스', 'download': '다운로드', 'pressure': '프레셔',
+    'shadow tag': '그림자태그', 'arena trap': '모래지옥', 'early bird': '일찍기상',
+    'adaptability': '적응력', 'anticipation': '위험예지', 'battle armor': '배틀아머',
+    'chlorophyll': '엽록소', 'cloud nine': '날씨부정', 'color change': '변색',
+    'cute charm': '귀여움', 'dry skin': '건조피부', 'filter': '필터',
+    'flower gift': '플라워기프트', 'forecast': '기상예보', 'gluttony': '먹보',
+    'heatproof': '내열', 'honey gather': '꿀모으기', 'hydration': '수분흡수',
+    'hyper cutter': '하이퍼커터', 'ice body': '아이스바디', 'insomnia': '불면',
+    'iron fist': '아이언피스트', 'lightning rod': '피뢰침', 'magic bounce': '매직미러',
+    'magic guard': '매직가드', 'magnet pull': '자력', 'marvel scale': '이상한비늘',
+    'minus': '마이너스', 'mold breaker': '틀깨기', 'motor drive': '모터드라이브',
+    'moxie': '자존심', 'multiscale': '멀티스케일', 'natural cure': '자연회복',
+    'no guard': '노가드', 'normalize': '노멀라이즈', 'plus': '플러스',
+    'poison heal': '독회복', 'quick feet': '속보', 'rain dish': '비맞이',
+    'receiver': '리시버', 'reckless': '무모', 'regenerator': '재생력',
+    'rivalry': '질투', 'sand force': '모래힘', 'sand rush': '모래질주',
+    'scrappy': '불굴의마음', 'sheer force': '우격다짐', 'skill link': '스킬링크',
+    'snow cloak': '눈숨기', 'solar power': '솔라파워', 'solid rock': '하드록',
+    'stall': '늦보', 'stamina': '지구력', 'steadfast': '불굴',
+    'storm drain': '폭풍의눈', 'strong jaw': '강한턱', 'super luck': '행운',
+    'sweet veil': '스위트베일', 'tangled feet': '엉킨발', 'technician': '테크니션',
+    'telepathy': '텔레파시', 'teravolt': '테라볼티지', 'tough claws': '단단한발톱',
+    'turboblaze': '터보블레이즈', 'unaware': '천진', 'unburden': '부담없음',
+    'unnerve': '긴장감', 'victory star': '승리의별', 'vital spirit': '활기',
+    'volt absorb': '볼트흡수', 'water veil': '수중베일', 'weak armor': '약한갑옷',
+    'wonder guard': '이상한방패', 'wonder skin': '이상한피부', 'zen mode': '달마모드',
+    'ball fetch': '볼가져오기', 'rattled': '불안', 'berserk': '분노의경기장',
+    'battle bond': '연결된배틀', 'beast boost': '비스트부스트', 'berry sweet': '베리스위트',
+    'bulletproof': '방탄', 'cheek pouch': '볼주머니', 'comatose': '코마',
+    'competitive': '대결심', 'corrosion': '부식', 'dancer': '댄서',
+    'dazzling': '눈부시게', 'disguise': '변장', 'electric surge': '일렉트릭서지',
+    'emergency exit': '비상탈출', 'fluffy': '푹신푹신', 'galvanize': '갤버나이즈',
+    'good as gold': '금강불괴', 'grass surge': '그래스서지', 'grim neigh': '음흉한울음',
+    'guard dog': '파수견', 'gulp missile': '삼키기미사일', 'hunger switch': '헝거스위치',
+    'ice scales': '아이스스케일', 'innards out': '배짱', 'intrepid sword': '불굴의칼',
+    'libero': '리베로', 'lingering aroma': '잔향', 'mirror armor': '미러아머',
+    'misty surge': '미스트서지', 'mummy': '미라', 'neutralizing gas': '중화가스',
+    'pastel veil': '파스텔베일', 'perish body': '절명바디', 'power of alchemy': '연금술',
+    'power spot': '파워스팟', 'prankster': '짓궂은마음', 'propeller tail': '프로펠러꼬리',
+    'psychic surge': '사이코서지', 'queenly majesty': '여왕의위엄', 'quick draw': '퀵드로우',
+    'refrigerate': '리프리지레이트', 'ripen': '성숙', 'sand spit': '모래뿜기',
+    'sap sipper': '초식', 'schooling': '군집', 'screen cleaner': '스크린클리너',
+    'seed sower': '씨뿌리기', 'shadow shield': '섀도실드', 'shields down': '실드다운',
+    'simple': '단순', 'soul heart': '소울하트', 'stakeout': '잠복',
+    'stalwart': '강인함', 'steam engine': '증기기관', 'steely spirit': '스틸리정신',
+    'surge surfer': '서지서퍼', 'swift swim': '쾌속', 'sword of ruin': '파멸의검',
+    'tangled hair': '엉킨머리', 'thermal exchange': '열교환', 'toxic debris': '독폐기물',
+    'triage': '트라이에이지', 'unseen fist': '보이지않는주먹', 'wandering spirit': '떠도는영혼',
+    'water bubble': '워터버블', 'water compaction': '수중압축', 'wimp out': '도망치기',
+    'wind rider': '윈드라이더'
+  };
+  return abilityMap[engName] || engName;
+}
+
+function getMoveKorean(engName) {
+  const moveMap = {
+    'tackle': '몸통박치기', 'scratch': '할퀴기', 'ember': '불꽃세례',
+    'water gun': '물대포', 'vine whip': '덩굴채찍', 'thunder shock': '전기쇼크',
+    'quick attack': '전광석화', 'bite': '물기', 'growl': '울음소리',
+    'tail whip': '꼬리흔들기', 'leer': '노려보기', 'absorb': '흡수',
+    'razor leaf': '날카로운잎', 'flame wheel': '화염바퀴', 'bubble': '거품',
+    'thunder wave': '전기파동', 'confusion': '혼란', 'poison sting': '독침',
+    'string shot': '실뿜기', 'bug bite': '벌레먹기', 'fly': '공중날기',
+    'sand attack': '모래뿌리기', 'double edge': '이중엣지', 'roar': '울부짖기',
+    'pound': '손바닥치기', 'karate chop': '태권도칼', 'double slap': '더블손바닥',
+    'comet punch': '코메트펀치', 'mega punch': '메가펀치', 'pay day': '페이데이',
+    'fire punch': '불꽃펀치', 'ice punch': '얼음펀치', 'thunder punch': '번개펀치',
+    'vice grip': '집게', 'guillotine': '길로틴', 'razor wind': '날카로운바람',
+    'swords dance': '칼춤', 'cut': '베기', 'gust': '돌풍',
+    'wing attack': '날개치기', 'whirlwind': '회오리바람', 'bind': '묶기',
+    'slam': '내리치기', 'stomp': '밟기', 'double kick': '두번차기',
+    'mega kick': '메가킥', 'jump kick': '점프킥', 'rolling kick': '구르기차기',
+    'headbutt': '박치기', 'horn attack': '뿔공격', 'fury attack': '분노의공격',
+    'horn drill': '뿔드릴', 'body slam': '몸통박치기', 'wrap': '감기',
+    'take down': '돌진', 'thrash': '난동부리기', 'twineedle': '두바늘',
+    'pin missile': '바늘미사일', 'sing': '노래하기', 'supersonic': '초음파',
+    'sonic boom': '소닉붐', 'disable': '사용불가', 'confuse ray': '이상한빛',
+    'psybeam': '사이코웨이브', 'barrier': '배리어', 'reflect': '리플렉터',
+    'focus energy': '기충전', 'bide': '참기', 'metronome': '손가락흔들기',
+    'mirror move': '거울이동', 'self destruct': '자폭', 'egg bomb': '알폭탄',
+    'lick': '핥기', 'smog': '스모그', 'sludge': '오물',
+    'bone club': '뼈클럽', 'fire blast': '불대문자', 'waterfall': '폭포오르기',
+    'clamp': '조개껍질', 'swift': '스위프트', 'rock slide': '암석슬라이드',
+    'tri attack': '트라이어택', 'hyper beam': '하이퍼빔', 'strength': '괴력',
+    'earthquake': '지진', 'fissure': '땅가르기', 'dig': '구멍파기',
+    'toxic': '독', 'psychic': '사이코키네시스', 'hypnosis': '최면술',
+    'dream eater': '드림이터', 'leech seed': '흡혈씨앗', 'growth': '성장',
+    'solar beam': '솔라빔', 'poison powder': '독가루', 'stun spore': '마비가루',
+    'sleep powder': '수면가루', 'petal dance': '꽃잎댄스', 'spore': '버섯포자',
+    'flash': '플래시', 'water pulse': '물의파동', 'calm mind': '명상',
+    'bulk up': '벌크업', 'dragon dance': '용의춤', 'nasty plot': '나쁜음모',
+    'quiver dance': '춤추기', 'shell smash': '껍질깨기', 'rock polish': '암석연마',
+    'agility': '민첩성', 'double team': '그림자분신', 'harden': '단단해지기',
+    'iron defense': '아이언디펜스', 'acid armor': '산성갑옷', 'light screen': '빛의장막',
+    'protect': '방어', 'detect': '감지', 'endure': '견디기',
+    'recover': '리커버', 'moonlight': '달빛', 'morning sun': '아침햇살',
+    'synthesis': '광합성', 'rest': '잠자기', 'sleep talk': '잠꼬대',
+    'snore': '코골이', 'wish': '희망사항', 'yawn': '하품',
+    'encore': '앵콜', 'fake out': '속이기', 'feint': '페인트',
+    'follow me': '날따라해', 'helping hand': '도움손길', 'refresh': '리프레시',
+    'aromatherapy': '아로마테라피', 'heal bell': '치료종', 'heal pulse': '힐펄스',
+    'life dew': '생명의물방울'
+  };
+  return moveMap[engName] || engName;
+}
+
+// ===== 전역 상태 =====
+let POKEMON_LIST = [];
+let EVOLVABLE_POKEMON_LIST = [];
+let state = {
+  owned: {},
+  wins: 0,
+  losses: 0,
+  missionsWon: 0,
+  team: [],
+  dailyMissions: {},
+  customMissions: [],
+  pet: null,
+  quizStats: { total: 0, correct: 0 },
+  quizDoneToday: null,
+  playerAge: null,
+  mathQuiz: { today: null, answered: false, correct: false },
+  mathStats: { total: 0, correct: 0 },
+  raid: { boss: null, hp: 0, maxHp: 0, completed: false, today: null, rewardCollected: false, attackChance: 0 }
+};
+
+let ownershipFilter = 'all';
+let activeFilter = 'all';
+let activeRarity = 'all';
+let missionMode = 'quiz';
+let currentQuiz = { questions: [], currentIndex: 0, correctCount: 0, isFinished: false };
+
+let myBattleRoom = null;
+let battleListener = null;
+let myTradeRoom = null;
+let tradeListener = null;
+let selectedRaidCard = null;
+
+const DEFAULT_LIFE_MISSIONS = [
+  { id:'go-out', label:'등원하기', emoji:'🎒' },
+  { id:'come-home', label:'하원하기', emoji:'🏠' },
+  { id:'dinner', label:'저녁 잘 먹기', emoji:'🍚' },
+  { id:'tidy', label:'정리하기', emoji:'🧹' },
+  { id:'sleep-time', label:'제시간에 자기', emoji:'🌙' }
+];
+
+const COOLDOWN = {
+  FEED: 2 * 60 * 60 * 1000,
+  PLAY: 2 * 60 * 60 * 1000,
+  SLEEP: 2 * 60 * 60 * 1000
+};
+
+// ===== 캐싱 =====
+const CACHE_KEY = 'pokedex-all-v7';
+const CACHE_TIME_KEY = 'pokedex-time-v7';
+const CACHE_DURATION = 7 * 24 * 60 * 60 * 1000;
+
+async function loadAllPokemon() {
+  try {
+    const cached = localStorage.getItem(CACHE_KEY);
+    const cachedTime = localStorage.getItem(CACHE_TIME_KEY);
+    
+    if (cached && cachedTime && (Date.now() - parseInt(cachedTime)) < CACHE_DURATION) {
+      POKEMON_LIST = JSON.parse(cached);
+      console.log('✅ 캐시에서 로드!', POKEMON_LIST.length + '마리');
+      document.getElementById('loadingStatus').textContent = '캐시에서 ' + POKEMON_LIST.length + '마리 로드! ⚡';
+      return POKEMON_LIST;
+    }
+  } catch(e) {
+    console.log('캐시 확인 실패:', e);
+  }
+  
+  try {
+    const listRes = await fetch('https://pokeapi.co/api/v2/pokemon?limit=10000');
+    const listData = await listRes.json();
+    const allUrls = listData.results.map(p => p.url);
+    const batchSize = 50;
+    let allPokemon = [];
+    
+    for (let i = 0; i < allUrls.length; i += batchSize) {
+      const batch = allUrls.slice(i, i + batchSize);
+      const promises = batch.map(async (url) => {
+        try {
+          const detailRes = await fetch(url);
+          const detail = await detailRes.json();
+          let koreanName = detail.name;
+          try {
+            const speciesRes = await fetch(detail.species.url);
+            const speciesData = await speciesRes.json();
+            const name = speciesData.names.find(n => n.language.name === 'ko');
+            if (name) koreanName = name.name;
+          } catch (e) {}
+          return {
+            id: detail.id,
+            name: koreanName,
+            engName: detail.name,
+            type: detail.types[0].type.name,
+            types: detail.types.map(t => t.type.name),
+            hp: detail.stats[0].base_stat,
+            atk: detail.stats[1].base_stat,
+            def: detail.stats[2].base_stat,
+            spd: detail.stats[5].base_stat,
+            image: detail.sprites.other['official-artwork']?.front_default || detail.sprites.front_default,
+            speciesUrl: detail.species.url,
+            cryUrl: detail.cries?.latest || detail.cries?.legacy || null
+          };
+        } catch (e) {
+          return null;
+        }
+      });
+      const results = await Promise.all(promises);
+      allPokemon = allPokemon.concat(results.filter(p => p !== null));
+      const total = allUrls.length;
+      const done = allPokemon.length;
+      document.getElementById('loadingStatus').textContent = 'PokeAPI 로딩 중... ' + done + '/' + total;
+    }
+    allPokemon.sort((a, b) => a.id - b.id);
+    POKEMON_LIST = allPokemon;
+    console.log('✅ API에서 로드!', POKEMON_LIST.length + '마리');
+    try {
+      localStorage.setItem(CACHE_KEY, JSON.stringify(POKEMON_LIST));
+      localStorage.setItem(CACHE_TIME_KEY, String(Date.now()));
+      console.log('💾 캐시 저장 완료!');
+    } catch(e) {}
+    return POKEMON_LIST;
+  } catch (error) {
+    console.error('❌ API 로드 실패:', error);
+    POKEMON_LIST = getFallbackData();
+    return POKEMON_LIST;
+  }
+}
+
+function getFallbackData() {
+  return [
+    { id:1, name:'이상해씨', engName:'bulbasaur', type:'grass', hp:45, atk:49, def:49, spd:45, image:'', types:['grass'] },
+    { id:4, name:'파이리', engName:'charmander', type:'fire', hp:39, atk:52, def:43, spd:65, image:'', types:['fire'] },
+    { id:7, name:'꼬부기', engName:'squirtle', type:'water', hp:44, atk:48, def:65, spd:43, image:'', types:['water'] },
+    { id:25, name:'피카츄', engName:'pikachu', type:'electric', hp:35, atk:55, def:40, spd:90, image:'', types:['electric'] }
+  ];
+}
+
+async function getAllEvolvablePokemon() {
+  try {
+    const listRes = await fetch('https://pokeapi.co/api/v2/evolution-chain?limit=1000');
+    const listData = await listRes.json();
+    const allEvolvable = [];
+    for (const chainRef of listData.results) {
+      const chainRes = await fetch(chainRef.url);
+      const chainData = await chainRes.json();
+      function extractAllNames(chainLink) {
+        const names = [];
+        names.push(chainLink.species.name);
+        if (chainLink.evolves_to && chainLink.evolves_to.length > 0) {
+          for (const nextLink of chainLink.evolves_to) {
+            names.push(...extractAllNames(nextLink));
+          }
+        }
+        return names;
+      }
+      allEvolvable.push(...extractAllNames(chainData.chain));
+    }
+    const unique = [...new Set(allEvolvable)].sort();
+    console.log('✅ 진화 가능 포켓몬', unique.length + '종');
+    return unique;
+  } catch (error) {
+    console.error('❌ 진화 가능 포켓몬 로드 실패:', error);
+    return ['bulbasaur', 'charmander', 'squirtle', 'pikachu', 'eevee', 'magikarp'];
+  }
+}
+
+// ===== 유틸리티 =====
+function getPokemonById(id) { return POKEMON_LIST.find(p => p.id === id || p.engName === id); }
+function getPokemonByName(name) { return POKEMON_LIST.find(p => p.engName === name || p.name === name); }
+function clamp(n, lo, hi) { return Math.max(lo, Math.min(hi, n)); }
+function todayKey() { return new Date().toISOString().slice(0,10); }
+
+function getTypeColor(type) {
+  const colors = {
+    normal: '#A6A0BE', fire: '#F0653B', water: '#3E9FDC',
+    electric: '#F2C230', grass: '#5FB05A', ice: '#7BC8D9',
+    fighting: '#C22E28', poison: '#A33EA1', ground: '#E2C069',
+    flying: '#A890F0', psychic: '#F85888', bug: '#A8B820',
+    rock: '#B8A038', ghost: '#705898', dragon: '#7038F8',
+    dark: '#705848', steel: '#B8B8D0', fairy: '#EE99AC'
+  };
+  return colors[type] || '#A6A0BE';
+}
+
+function getTypeLabel(type) {
+  const labels = {
+    'normal': '노말', 'fire': '불꽃', 'water': '물', 'electric': '전기',
+    'grass': '풀', 'ice': '얼음', 'fighting': '격투', 'poison': '독',
+    'ground': '땅', 'flying': '비행', 'psychic': '에스퍼', 'bug': '벌레',
+    'rock': '바위', 'ghost': '고스트', 'dragon': '드래곤', 'dark': '악',
+    'steel': '강철', 'fairy': '페어리'
+  };
+  return labels[type] || type;
+}
+
+function pokemonImage(pokemon, size = '100%') {
+  if (!pokemon || !pokemon.image) {
+    return `<div style="width:${size};height:${size};background:rgba(255,255,255,.1);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;">❓</div>`;
+  }
+  return `<img src="${pokemon.image}" alt="${pokemon.name}" style="width:${size};height:${size};object-fit:contain;display:block;">`;
+}
+
+function formatTime(ms) {
+  if (ms <= 0) return '⏳ 준비 완료!';
+  const hours = Math.floor(ms / 3600000);
+  const minutes = Math.floor((ms % 3600000) / 60000);
+  const seconds = Math.floor((ms % 60000) / 1000);
+  if (hours > 0) return hours + '시간 ' + minutes + '분';
+  if (minutes > 0) return minutes + '분 ' + seconds + '초';
+  return seconds + '초';
+}
+
+// ===== TTS =====
+function speakText(text, lang = 'ko-KR') {
+  if (!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = lang;
+  utterance.rate = 0.85;
+  utterance.pitch = 1.0;
+  utterance.volume = 1.0;
+  const voices = window.speechSynthesis.getVoices();
+  const koreanVoice = voices.find(v => v.lang.startsWith('ko'));
+  if (koreanVoice) utterance.voice = koreanVoice;
+  window.speechSynthesis.speak(utterance);
+}
+
+function speakPokemonInfo(pokemon) {
+  if (!pokemon) return;
+  const typeLabel = getTypeLabel(pokemon.type);
+  let text = `${pokemon.name} ${typeLabel}타입 포켓몬! `;
+  if (pokemon._moves && pokemon._moves.length > 0) {
+    text += `배우는 기술은 ${pokemon._moves.slice(0, 3).join(', ')}! `;
+  }
+  if (pokemon._description) text += `${pokemon._description} `;
+  if (pokemon._evoChain && pokemon._evoChain.length > 0) {
+    text += `진화 과정은 ${pokemon._evoChain.map(e => e.name).join(' → ')}!`;
+  }
+  speakText(text);
+}
+
+// ===== 저장/로드 =====
+function loadState() {
+  try {
+    const saved = localStorage.getItem('pkmn-state-v7');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      state = Object.assign(state, parsed);
+      console.log('✅ 저장된 상태 로드 완료!', Object.keys(state.owned).length + '마리 보유');
+      return true;
+    }
+  } catch(e) {
+    console.log('저장된 데이터 없음:', e);
+  }
+  return false;
+}
+
+function saveState() {
+  try {
+    localStorage.setItem('pkmn-state-v7', JSON.stringify(state));
+    console.log('💾 상태 저장 완료!');
+  } catch(e) {
+    console.error('저장 실패:', e);
+  }
+}
+
+function updateStatline() {
+  const total = POKEMON_LIST.length;
+  const owned = Object.keys(state.owned).length;
+  document.getElementById('collectedCount').textContent = owned;
+  document.getElementById('totalCount').textContent = total;
+  document.getElementById('missionCount').textContent = state.missionsWon;
+  document.getElementById('winCount').textContent = state.wins;
+  document.getElementById('quizCount').textContent = state.quizStats.total || 0;
+  document.getElementById('mathCount').textContent = state.mathStats.total || 0;
+  document.getElementById('raidCount').textContent = state.raid?.completed ? 1 : 0;
+  
+  let specialCount = 0;
+  for (const key in state.owned) {
+    if (state.owned[key].rarity === 'special') specialCount += state.owned[key].count || 1;
+  }
+  document.getElementById('specialCount').textContent = specialCount;
+}
+
+// ===== 나이 설정 =====
+function setAge(age) {
+  age = parseInt(age);
+  if (isNaN(age) || age < 4 || age > 99) {
+    alert('4살부터 99살까지 입력할 수 있어요!');
+    return;
+  }
+  state.playerAge = age;
+  saveState();
+  document.getElementById('ageScreen').style.display = 'none';
+  document.querySelectorAll('section').forEach(s => s.style.display = '');
+  document.getElementById('tab-mission').classList.add('active');
+  renderAll();
+}
+
+// ===== 카드 획득 =====
+function grantCardReward() {
+  const locked = POKEMON_LIST.filter(c => !state.owned[c.engName]);
+  const pool = locked.length > 0 ? locked : POKEMON_LIST;
+  const target = pool[Math.floor(Math.random() * pool.length)];
+  const rarity = rollRarity();
+  const isNew = !state.owned[target.engName];
+  
+  if (!state.owned[target.engName]) {
+    state.owned[target.engName] = { count: 1, rarity: rarity };
+  } else {
+    state.owned[target.engName].count += 1;
+  }
+  
+  state.missionsWon = (state.missionsWon || 0) + 1;
+  
+  const title = isNew ? '🎉 새 포켓몬 획득!' : '🔄 중복 획득!';
+  const subtitle = isNew ? '도감에 등록되었어요!' : `${getRarityInfo(rarity).label} 등급!`;
+  showRewardPopup(target, title, subtitle);
+  
+  updateStatline();
+  saveState();
+  renderDex();
+  return { target, rarity, isNew };
+}
+
+// ===== 게임 초기화 =====
+function resetGame() {
+  if (!confirm('⚠️ 정말로 게임을 초기화할까요?\n모든 진행 데이터가 삭제됩니다!')) {
+    return;
+  }
+  if (!confirm('⚠️ 마지막 확인입니다! 다시 한 번 생각해보세요!')) {
+    return;
+  }
+  
+  state.owned = {};
+  state.wins = 0;
+  state.losses = 0;
+  state.missionsWon = 0;
+  state.team = [];
+  state.dailyMissions = {};
+  state.customMissions = [];
+  state.pet = null;
+  state.quizStats = { total: 0, correct: 0 };
+  state.quizDoneToday = null;
+  state.playerAge = null;
+  state.mathQuiz = { today: null, answered: false, correct: false };
+  state.mathStats = { total: 0, correct: 0 };
+  state.raid = { boss: null, hp: 0, maxHp: 0, completed: false, today: null, rewardCollected: false, attackChance: 0 };
+  
+  saveState();
+  location.reload();
+}
+
+document.getElementById('resetHiddenBtn').addEventListener('click', resetGame);
+
+// ===== 탭 전환 =====
+document.querySelectorAll('nav.tabbar button').forEach(btn => {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('nav.tabbar button').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('main section').forEach(s => s.classList.remove('active'));
+    this.classList.add('active');
+    document.getElementById(this.dataset.tab).classList.add('active');
+    if (this.dataset.tab === 'tab-battle') renderBattleSetup();
+    if (this.dataset.tab === 'tab-pet') renderPetTab();
+    if (this.dataset.tab === 'tab-trade') renderTradeTab();
+  });
+});
+
+// ===== 미션 모드에서 수학 퀴즈 호출 =====
+document.querySelectorAll('#tab-mission .mode-toggle button').forEach(btn => {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('#tab-mission .mode-toggle button').forEach(b => b.classList.remove('active'));
+    this.classList.add('active');
+    missionMode = this.dataset.mmode;
+    if (missionMode === 'quiz') renderQuizMission();
+    else if (missionMode === 'math') renderMathQuiz();  // 🔥 여기!
+    else if (missionMode === 'life') renderLifeMissions();
+    else if (missionMode === 'raid') renderRaidMission();
+  });
+});
+
+// ===== 퀴즈 미션 =====
+function renderQuizMission() {
+  const panel = document.getElementById('missionPanel');
+  const key = todayKey();
+  const doneToday = state.dailyMissions[key] || {};
+  
+  const allMissions = [...DEFAULT_LIFE_MISSIONS, ...(state.customMissions || [])];
+  const allDone = allMissions.every(m => doneToday[m.id]);
+  const quizDoneToday = state.quizDoneToday === key;
+  
+  if (!allDone) {
+    panel.innerHTML = `
+      <div class="mission-intro">
+        <div class="big-emoji">🔒</div>
+        <div style="font-family:var(--font-display);font-size:17px;">퀴즈가 잠겨있어요!</div>
+        <div style="color:#B7AFDE;font-size:12px;margin-top:4px;">오늘의 생활미션을 모두 완료해야 퀴즈를 풀 수 있어요.</div>
+        <div style="margin-top:8px;font-size:11px;color:#8d84b0;">완료: ${Object.keys(doneToday).length} / ${allMissions.length}</div>
+      </div>
+    `;
+    return;
+  }
+  
+  if (quizDoneToday) {
+    panel.innerHTML = `
+      <div class="mission-intro">
+        <div class="big-emoji">✅</div>
+        <div style="font-family:var(--font-display);font-size:17px;">오늘의 퀴즈를 이미 풀었어요!</div>
+        <div style="color:#B7AFDE;font-size:12px;margin-top:4px;">내일 다시 도전해주세요 😊</div>
+      </div>
+    `;
+    return;
+  }
+  
+  if (currentQuiz.isFinished) {
+    const rewardChance = currentQuiz.correctCount > 0 ? 10 : 0;
+    const gotCard = Math.random() * 100 < rewardChance;
+    state.quizDoneToday = key;
+    saveState();
+    
+    panel.innerHTML = `
+      <div class="mission-intro">
+        <div class="big-emoji">📊</div>
+        <div style="font-family:var(--font-display);font-size:18px;">퀴즈 완료!</div>
+        <div style="font-size:13px;color:#B7AFDE;margin:6px 0;">
+          ${currentQuiz.totalQuestions}문제 중 ${currentQuiz.correctCount}문제 정답!
+        </div>
+        ${gotCard ? `
+          <div style="background:rgba(255,201,60,.15);border-radius:10px;padding:10px;margin:10px 0;border:1px solid var(--sun);">
+            🎉 축하합니다! 10% 확률로 카드 획득!
+          </div>
+        ` : `
+          <div style="color:#8d84b0;font-size:11px;margin:8px 0;">💡 정답 시 10% 확률로 카드 획득</div>
+        `}
+        <button class="btn small" id="resetQuizBtn">새 퀴즈 (내일)</button>
+      </div>
+    `;
+    
+    if (gotCard) {
+      const result = grantCardReward();
+      if (result) {
+        const rInfo = getRarityInfo(result.rarity);
+        setTimeout(() => {
+          const rewardDiv = panel.querySelector('.mission-intro');
+          if (rewardDiv) {
+            rewardDiv.innerHTML += `
+              <div class="reveal-wrap" style="margin-top:10px;">
+                <div class="card pop-in rarity-${result.rarity}" style="width:140px;">
+                  <div class="art">${pokemonImage(result.target)}</div>
+                  <div class="name">${result.target.name}</div>
+                  <span class="type-tag" style="background:${getTypeColor(result.target.type)}">${getTypeLabel(result.target.type)}</span>
+                  <span class="rarity-badge" style="background:${rInfo.color}">${rInfo.emoji} ${rInfo.label}</span>
+                </div>
+              </div>
+            `;
+          }
+        }, 300);
+      }
+    }
+    
+    document.getElementById('resetQuizBtn').addEventListener('click', function() {
+      currentQuiz = { questions: [], currentIndex: 0, correctCount: 0, isFinished: false };
+      renderQuizMission();
+    });
+    return;
+  }
+  
+  if (currentQuiz.questions.length === 0) {
+    generateQuizQuestions();
+  }
+  
+  const q = currentQuiz.questions[currentQuiz.currentIndex];
+  if (!q) {
+    currentQuiz.isFinished = true;
+    renderQuizMission();
+    return;
+  }
+  
+  const progress = (currentQuiz.currentIndex + 1) + ' / ' + currentQuiz.questions.length;
+  panel.innerHTML = `
+    <div class="quiz-box">
+      <div style="font-family:var(--font-mono);font-size:10px;color:#B7AFDE;margin-bottom:6px;">${progress} · 정답 ${currentQuiz.correctCount}개</div>
+      <div class="quiz-q">${q.question}</div>
+      <div class="quiz-art-wrap ${q.type === 'silhouette' ? 'silhouette' : ''}" id="quizArt">${pokemonImage(q.pokemon)}</div>
+      <div class="choice-grid">
+        ${q.options.map(opt => `<button class="choice-btn" data-answer="${opt}">${opt}</button>`).join('')}
+      </div>
+      <div class="quiz-feedback" id="quizFeedback"></div>
+    </div>
+  `;
+  
+  document.querySelectorAll('.choice-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const isCorrect = this.dataset.answer === q.correctAnswer;
+      handleQuizAnswer(isCorrect);
+    });
+  });
+}
+
+function generateQuizQuestions() {
+  const total = 20;
+  const questions = [];
+  const shuffled = [...POKEMON_LIST].sort(() => Math.random() - 0.5);
+  
+  for (let i = 0; i < Math.min(total, shuffled.length); i++) {
+    const pokemon = shuffled[i];
+    const type = Math.random() < 0.5 ? 'silhouette' : 'type';
+    let question, options, correctAnswer;
+    
+    if (type === 'silhouette') {
+      question = '🕵️ 이 포켓몬은 누구일까요?';
+      const distractors = getDistractors(pokemon, 3);
+      const allOptions = [pokemon.name, ...distractors.map(d => d.name)].sort(() => Math.random() - 0.5);
+      options = allOptions;
+      correctAnswer = pokemon.name;
+    } else {
+      question = pokemon.name + '의 타입은?';
+      const allTypes = Object.keys(TYPE_CHART);
+      const wrongTypes = allTypes.filter(t => t !== pokemon.type).sort(() => Math.random() - 0.5).slice(0, 3);
+      const allOptions = [getTypeLabel(pokemon.type), ...wrongTypes.map(t => getTypeLabel(t))].sort(() => Math.random() - 0.5);
+      options = allOptions;
+      correctAnswer = getTypeLabel(pokemon.type);
+    }
+    
+    questions.push({
+      pokemon,
+      type,
+      question,
+      options,
+      correctAnswer
+    });
+  }
+  
+  currentQuiz.questions = questions;
+  currentQuiz.currentIndex = 0;
+  currentQuiz.correctCount = 0;
+  currentQuiz.totalQuestions = questions.length;
+  currentQuiz.isFinished = false;
+}
+
+function getDistractors(exclude, n) {
+  const pool = POKEMON_LIST.filter(c => c.engName !== exclude.engName);
+  const picked = [];
+  while (picked.length < n && pool.length) {
+    const idx = Math.floor(Math.random() * pool.length);
+    picked.push(pool.splice(idx, 1)[0]);
+  }
+  return picked;
+}
+
+function handleQuizAnswer(isCorrect) {
+  document.querySelectorAll('.choice-btn').forEach(b => {
+    b.classList.add('dim');
+    b.disabled = true;
+    if (b.dataset.answer === currentQuiz.questions[currentQuiz.currentIndex].correctAnswer) {
+      b.classList.add('correct');
+    } else if (!isCorrect && b.classList.contains('dim') && !b.classList.contains('correct')) {
+      b.classList.add('wrong');
+    }
+  });
+  
+  const fb = document.getElementById('quizFeedback');
+  state.quizStats.total = (state.quizStats.total || 0) + 1;
+  
+  if (isCorrect) {
+    state.quizStats.correct = (state.quizStats.correct || 0) + 1;
+    currentQuiz.correctCount++;
+    fb.textContent = '✅ 정답!';
+    fb.className = 'quiz-feedback ok';
+    
+    const rewardChance = 10;
+    const gotCard = Math.random() * 100 < rewardChance;
+    if (gotCard) {
+      const reward = grantCardReward();
+      if (reward) {
+        setTimeout(() => {
+          alert(`🎉 축하합니다! ${reward.target.name} 카드를 획득했어요! (${getRarityInfo(reward.rarity).label})`);
+        }, 300);
+      }
+    }
+    
+    if (state.pet) {
+      const threshold = petExpThreshold();
+      const expBonus = Math.max(1, Math.round(threshold * 0.1));
+      state.pet.exp += expBonus;
+      console.log('✨ 퀴즈 정답! 포켓몬 경험치 +' + expBonus);
+      
+      const result = checkPetLevelUp();
+      if (result.evolved) {
+        state.pet.justEvolved = true;
+        saveState();
+        renderPetTab();
+      }
+      saveState();
+      renderPetTab();
+    }
+    
+  } else {
+    fb.textContent = '❌ 정답은 "' + currentQuiz.questions[currentQuiz.currentIndex].correctAnswer + '"';
+    fb.className = 'quiz-feedback no';
+  }
+  
+  document.getElementById('quizArt')?.classList.remove('silhouette');
+  updateStatline();
+  
+  setTimeout(() => {
+    currentQuiz.currentIndex++;
+    renderQuizMission();
+  }, 1500);
+}
+
+// ===== 🔥 수학 퀴즈 =====
+// ===== 수정된 renderMathQuiz =====
+function renderMathQuiz() {
+  const panel = document.getElementById('missionPanel');
+  const key = todayKey();
+  
+  if (!state.playerAge) {
+    panel.innerHTML = `
+      <div class="mission-intro">
+        <div class="big-emoji">👋</div>
+        <div style="font-family:var(--font-display);font-size:18px;">먼저 나이를 알려주세요!</div>
+        <div style="color:#B7AFDE;font-size:13px;margin-top:4px;">설정에서 나이를 입력하면 수학 퀴즈를 풀 수 있어요.</div>
+        <button class="btn small" onclick="showAgeInput()" style="margin-top:10px;">나이 입력하기</button>
+      </div>
+    `;
+    return;
+  }
+  
+  // 🔥 오늘 퀴즈 상태 확인
+  if (!state.mathQuiz || state.mathQuiz.today !== key) {
+    // 오늘 첫 방문 → 10개 문제 생성
+    generateMathQuestions();
+  }
+  
+  const q = state.mathQuiz;
+  
+  // 🔥 모든 문제를 다 풀었는지 확인
+  if (q && q.completed) {
+    const correctCount = q.results ? q.results.filter(r => r).length : 0;
+    const total = q.questions ? q.questions.length : 10;
+    
+    panel.innerHTML = `
+      <div class="mission-intro">
+        <div class="big-emoji">🎉</div>
+        <div style="font-family:var(--font-display);font-size:22px;">수학 퀴즈 완료!</div>
+        <div style="font-size:16px;color:#B7AFDE;margin:8px 0;">
+          ${total}문제 중 ${correctCount}문제 정답!
+          (${Math.round(correctCount/total*100)}%)
+        </div>
+        <div style="font-size:13px;color:#6b6395;margin-top:4px;">
+          ${correctCount >= 8 ? '🌟 대단해요! 수학 천재!' : 
+            correctCount >= 5 ? '💪 잘했어요! 더 도전해봐요!' : 
+            '📚 내일 다시 도전해봐요!'}
+        </div>
+        <div style="margin-top:12px;font-size:12px;color:#8d84b0;">
+          ⏰ 내일 다시 새로운 문제가 나와요!
+        </div>
+      </div>
+    `;
+    return;
+  }
+  
+  // 🔥 현재 문제 표시
+  const currentQ = q.questions[q.currentIndex];
+  if (!currentQ) {
+    // 모든 문제 완료 처리
+    q.completed = true;
+    saveState();
+    renderMathQuiz();
+    return;
+  }
+  
+  panel.innerHTML = `
+    <div class="math-quiz">
+      <div style="display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:12px;color:#B7AFDE;margin-bottom:8px;">
+        <span>📝 ${q.currentIndex + 1} / ${q.questions.length}</span>
+        <span>✅ 정답: ${q.results ? q.results.filter(r => r).length : 0}개</span>
+      </div>
+      <div class="pokemon-hint">⭐ ${currentQ.pokemonName} ${getTypeLabel(currentQ.pokemonType)}타입 포켓몬과 함께!</div>
+      <div class="question">${currentQ.question}</div>
+      <div class="options" id="mathOptions">
+        ${currentQ.options.map((opt, idx) => `
+          <button class="opt-btn" data-idx="${idx}" onclick="checkMathAnswer2(${idx})" ${currentQ.answered ? 'disabled' : ''}>${opt}</button>
+        `).join('')}
+      </div>
+      <div class="feedback" id="mathFeedback"></div>
+      <div style="font-size:11px;color:#6b6395;margin-top:8px;">
+        🎯 정답 시 키우는 포켓몬 경험치 +10% + 카드 획득 15%!
+      </div>
+    </div>
+  `;
+}
+// ===== 🔥 10개 수학 문제 생성 =====
+function generateMathQuestions() {
+  const age = state.playerAge || 8;
+  const key = todayKey();
+  const questions = [];
+  
+  for (let i = 0; i < 10; i++) {
+    const q = generateSingleMathQuestion(age);
+    questions.push(q);
+  }
+  
+  state.mathQuiz = {
+    today: key,
+    questions: questions,
+    currentIndex: 0,
+    results: [],
+    completed: false
+  };
+  saveState();
+}
+
+// ===== 🔥 개별 문제 생성 =====
+function generateSingleMathQuestion(age) {
+  let num1, num2, operation, answer, question, options;
+  
+  if (age <= 7) {
+    num1 = Math.floor(Math.random() * 9) + 1;
+    num2 = Math.floor(Math.random() * 9) + 1;
+    operation = Math.random() < 0.6 ? '+' : '-';
+    if (operation === '-' && num1 < num2) [num1, num2] = [num2, num1];
+    answer = operation === '+' ? num1 + num2 : num1 - num2;
+    question = `${num1} ${operation} ${num2} = ?`;
+  } else if (age <= 10) {
+    const opType = Math.random();
+    if (opType < 0.4) {
+      num1 = Math.floor(Math.random() * 19) + 1;
+      num2 = Math.floor(Math.random() * 19) + 1;
+      operation = '+';
+      answer = num1 + num2;
+    } else if (opType < 0.7) {
+      num1 = Math.floor(Math.random() * 19) + 1;
+      num2 = Math.floor(Math.random() * 19) + 1;
+      if (num1 < num2) [num1, num2] = [num2, num1];
+      operation = '-';
+      answer = num1 - num2;
+    } else {
+      num1 = Math.floor(Math.random() * 9) + 1;
+      num2 = Math.floor(Math.random() * 9) + 1;
+      operation = '×';
+      answer = num1 * num2;
+    }
+    question = `${num1} ${operation} ${num2} = ?`;
+  } else if (age <= 13) {
+    const opType = Math.random();
+    if (opType < 0.3) {
+      num1 = Math.floor(Math.random() * 29) + 1;
+      num2 = Math.floor(Math.random() * 29) + 1;
+      operation = '+';
+      answer = num1 + num2;
+    } else if (opType < 0.55) {
+      num1 = Math.floor(Math.random() * 29) + 1;
+      num2 = Math.floor(Math.random() * 29) + 1;
+      if (num1 < num2) [num1, num2] = [num2, num1];
+      operation = '-';
+      answer = num1 - num2;
+    } else if (opType < 0.8) {
+      num1 = Math.floor(Math.random() * 12) + 1;
+      num2 = Math.floor(Math.random() * 12) + 1;
+      operation = '×';
+      answer = num1 * num2;
+    } else {
+      num2 = Math.floor(Math.random() * 9) + 1;
+      answer = Math.floor(Math.random() * 9) + 1;
+      num1 = num2 * answer;
+      operation = '÷';
+      question = `${num1} ÷ ${num2} = ?`;
+      answer = num1 / num2;
+    }
+    question = `${num1} ${operation} ${num2} = ?`;
+  } else {
+    const opType = Math.random();
+    if (opType < 0.25) {
+      num1 = Math.floor(Math.random() * 50) + 10;
+      num2 = Math.floor(Math.random() * 50) + 10;
+      operation = '+';
+      answer = num1 + num2;
+    } else if (opType < 0.45) {
+      num1 = Math.floor(Math.random() * 50) + 10;
+      num2 = Math.floor(Math.random() * 50) + 10;
+      if (num1 < num2) [num1, num2] = [num2, num1];
+      operation = '-';
+      answer = num1 - num2;
+    } else if (opType < 0.7) {
+      num1 = Math.floor(Math.random() * 15) + 2;
+      num2 = Math.floor(Math.random() * 15) + 2;
+      operation = '×';
+      answer = num1 * num2;
+    } else {
+      num2 = Math.floor(Math.random() * 12) + 2;
+      answer = Math.floor(Math.random() * 12) + 2;
+      num1 = num2 * answer;
+      operation = '÷';
+      question = `${num1} ÷ ${num2} = ?`;
+      answer = num1 / num2;
+    }
+    question = `${num1} ${operation} ${num2} = ?`;
+  }
+  
+  // 선택지 생성
+  options = [answer];
+  while (options.length < 4) {
+    let offset = Math.floor(Math.random() * 10) + 1;
+    if (Math.random() < 0.5) offset = -offset;
+    const wrong = answer + offset;
+    if (wrong >= 0 && !options.includes(wrong) && wrong !== answer) {
+      options.push(wrong);
+    }
+  }
+  options.sort(() => Math.random() - 0.5);
+  
+  const randomPokemon = POKEMON_LIST[Math.floor(Math.random() * POKEMON_LIST.length)];
+  
+  return {
+    question: question,
+    options: options,
+    answer: answer,
+    pokemonName: randomPokemon.name,
+    pokemonType: randomPokemon.type,
+    answered: false
+  };
+}
+
+// ===== 🔥 수학 퀴즈 정답 처리 =====
+function checkMathAnswer2(selectedIdx) {
+  const q = state.mathQuiz;
+  if (!q || q.completed) return;
+  
+  const currentQ = q.questions[q.currentIndex];
+  if (currentQ.answered) return;
+  
+  const buttons = document.querySelectorAll('.opt-btn');
+  buttons.forEach(b => b.disabled = true);
+  
+  const isCorrect = currentQ.options[selectedIdx] === currentQ.answer;
+  const fb = document.getElementById('mathFeedback');
+  
+  // 🔥 정답/오답 표시
+  if (isCorrect) {
+    buttons[selectedIdx].classList.add('correct');
+    fb.textContent = '🎉 정답이에요! 대단해요!';
+    fb.className = 'feedback ok';
+    q.results.push(true);
+    
+    // 🔥 보상: 경험치 10% + 카드 15%
+    if (state.pet) {
+      const threshold = petExpThreshold();
+      const expBonus = Math.max(1, Math.round(threshold * 0.1));
+      state.pet.exp += expBonus;
+      console.log('🧮 수학퀴즈 정답! 포켓몬 경험치 +' + expBonus);
+      const result = checkPetLevelUp();
+      if (result.evolved) {
+        state.pet.justEvolved = true;
+        saveState();
+        renderPetTab();
+      }
+      saveState();
+      renderPetTab();
+    }
+    
+    // 카드 획득 (15%)
+    const gotCard = Math.random() * 100 < 15;
+    if (gotCard) {
+      const reward = grantCardReward();
+      if (reward) {
+        setTimeout(() => {
+          alert(`🎉 수학퀴즈 보너스! ${reward.target.name} 카드를 획득했어요! (${getRarityInfo(reward.rarity).label})`);
+        }, 500);
+      }
+    }
+    
+  } else {
+    buttons[selectedIdx].classList.add('wrong');
+    buttons.forEach((b, i) => {
+      if (currentQ.options[i] === currentQ.answer) b.classList.add('correct');
+    });
+    fb.textContent = `❌ 정답은 ${currentQ.answer}였어요!`;
+    fb.className = 'feedback no';
+    q.results.push(false);
+  }
+  
+  currentQ.answered = true;
+  state.mathStats.total = (state.mathStats.total || 0) + 1;
+  if (isCorrect) state.mathStats.correct = (state.mathStats.correct || 0) + 1;
+  saveState();
+  updateStatline();
+  
+  // 🔥 다음 문제로 이동 (1.5초 후)
+  setTimeout(() => {
+    q.currentIndex++;
+    // 모든 문제 완료 체크
+    if (q.currentIndex >= q.questions.length) {
+      q.completed = true;
+      saveState();
+    }
+    renderMathQuiz();
+  }, 1500);
+}
+function showAgeInput() {
+  document.getElementById('ageScreen').style.display = 'block';
+  document.querySelectorAll('section').forEach(s => s.style.display = 'none');
+  document.querySelectorAll('nav.tabbar button').forEach(b => b.classList.remove('active'));
+}
+
+// ===== 생활미션 =====
+function renderLifeMissions() {
+  const key = todayKey();
+  const doneToday = state.dailyMissions[key] || {};
+  const allMissions = [...DEFAULT_LIFE_MISSIONS, ...(state.customMissions || [])];
+  
+  const panel = document.getElementById('missionPanel');
+  panel.innerHTML = `
+    <div style="font-family:var(--font-mono);font-size:10px;color:#B7AFDE;margin-bottom:8px;">
+      오늘 할 일 완료 시 <span style="color:var(--sun-2);font-weight:700;">🎁 카드 무조건 획득</span>
+      <br><span style="font-size:9px;color:#6b6395;">모든 미션 완료 시 퀴즈도 풀 수 있어요!</span>
+      <br><span style="font-size:9px;color:#6b6395;">미션 완료 시 키우는 포켓몬 경험치 +10%!</span>
+      <br><span style="font-size:9px;color:#6b6395;">미션 완료 시 레이드 공격 기회 +1!</span>
+    </div>
+    <div class="life-mission-list">
+      ${allMissions.map(m => `
+        <div class="life-row">
+          <span class="em">${m.emoji || '📌'}</span>
+          <span class="lbl">${m.label}</span>
+          ${doneToday[m.id]
+            ? '<span class="done-tag">✓ 완료</span>'
+            : `<button class="btn small" data-life="${m.id}">완료!</button>`}
+        </div>
+      `).join('')}
+    </div>
+    <div class="custom-mission-input">
+      <input type="text" id="customMissionInput" placeholder="새 미션" maxlength="20">
+      <input type="text" id="customMissionEmoji" placeholder="이모지" maxlength="2" style="width:45px;min-width:45px;text-align:center;">
+      <button class="btn small" id="addCustomMission">➕</button>
+    </div>
+    ${(state.customMissions || []).length > 0 ? `
+      <div style="text-align:right;margin-top:5px;">
+        <button class="btn small ghost" id="resetCustomMissions">초기화</button>
+      </div>
+    ` : ''}
+    <div class="reveal-wrap" id="lifeReveal"></div>
+  `;
+  
+  document.querySelectorAll('[data-life]').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const key = todayKey();
+      if (!state.dailyMissions[key]) state.dailyMissions[key] = {};
+      if (state.dailyMissions[key][this.dataset.life]) return;
+      
+      state.dailyMissions[key][this.dataset.life] = true;
+      saveState();
+      
+      const reward = grantCardReward();
+      
+      if (state.pet) {
+        const expBonus = Math.round(petExpThreshold() * 0.1);
+        state.pet.exp += expBonus;
+        console.log('🎉 생활미션 완료! 포켓몬 경험치 +' + expBonus);
+        const result = checkPetLevelUp();
+        if (result.evolved) {
+          state.pet.justEvolved = true;
+          saveState();
+          renderPetTab();
+        }
+        saveState();
+        renderPetTab();
+      }
+      
+      if (state.raid && state.raid.boss && !state.raid.completed) {
+        state.raid.attackChance = (state.raid.attackChance || 0) + 1;
+        saveState();
+        renderRaidMission();
+      }
+      
+      renderLifeMissions();
+      
+      const reveal = document.getElementById('lifeReveal');
+      if (reward) {
+        const rInfo = getRarityInfo(reward.rarity);
+        reveal.innerHTML = `
+          <div style="text-align:center;width:100%;">
+            <div style="font-family:var(--font-display);font-size:14px;color:var(--sun-2);margin-bottom:6px;">🎁 미션 완료! 카드 획득!</div>
+            <div class="reveal-wrap"><div class="card pop-in rarity-${reward.rarity}" style="width:140px;">
+              <div class="art">${pokemonImage(reward.target)}</div>
+              <div class="name">${reward.target.name}</div>
+              <span class="type-tag" style="background:${getTypeColor(reward.target.type)}">${getTypeLabel(reward.target.type)}</span>
+              <span class="rarity-badge" style="background:${rInfo.color}">${rInfo.emoji} ${rInfo.label}</span>
+            </div></div>
+            <div style="font-family:var(--font-mono);font-size:10px;color:#B7AFDE;margin-top:4px;">${reward.isNew ? '✦ 새 포켓몬!' : '✦ 중복 획득!'}</div>
+            ${state.pet ? `<div style="font-family:var(--font-mono);font-size:10px;color:var(--sun-2);margin-top:4px;">✨ 키우는 포켓몬 경험치 +10%!</div>` : ''}
+            ${state.raid?.boss ? `<div style="font-family:var(--font-mono);font-size:10px;color:var(--good);margin-top:4px;">⚔️ 레이드 공격 기회 +1!</div>` : ''}
+          </div>`;
+      }
+    });
+  });
+  
+  document.getElementById('addCustomMission').addEventListener('click', function() {
+    const input = document.getElementById('customMissionInput');
+    const emojiInput = document.getElementById('customMissionEmoji');
+    const label = input.value.trim();
+    const emoji = emojiInput.value.trim() || '📌';
+    
+    if (!label) { alert('미션 이름을 입력해주세요'); return; }
+    if ((state.customMissions || []).length >= 10) { alert('최대 10개까지 추가할 수 있어요'); return; }
+    
+    if (!state.customMissions) state.customMissions = [];
+    state.customMissions.push({
+      id: 'custom-' + Date.now(),
+      label: label,
+      emoji: emoji
+    });
+    input.value = '';
+    emojiInput.value = '';
+    saveState();
+    renderLifeMissions();
+  });
+  
+  document.getElementById('resetCustomMissions')?.addEventListener('click', function() {
+    if (confirm('커스텀 미션을 모두 삭제할까요?')) {
+      state.customMissions = [];
+      saveState();
+      renderLifeMissions();
+    }
+  });
+}
+
+// ===== 레이드 미션 =====
+function renderRaidCardSelector() {
+  const ownedCards = Object.keys(state.owned).filter(key => state.owned[key].count > 0);
+  
+  if (ownedCards.length === 0) {
+    return '<div style="color:#8d84b0;font-size:12px;text-align:center;padding:8px;">보유한 카드가 없어요</div>';
+  }
+  
+  const sortedCards = ownedCards.sort((a, b) => {
+    const rarityOrder = { 'special': 5, 'ultra-rare': 4, 'super-rare': 3, 'rare': 2, 'common': 1 };
+    return (rarityOrder[state.owned[b].rarity] || 0) - (rarityOrder[state.owned[a].rarity] || 0);
+  });
+  
+  let html = '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px;max-height:180px;overflow-y:auto;padding:3px;">';
+  
+  sortedCards.forEach(key => {
+    const c = getPokemonByName(key);
+    const info = state.owned[key];
+    const rInfo = getRarityInfo(info.rarity);
+    if (c) {
+      html += `
+        <div class="raid-card-select" data-key="${key}" style="
+          border:2px solid ${rInfo.color};
+          border-radius:8px;
+          padding:4px;
+          text-align:center;
+          cursor:pointer;
+          background:rgba(255,255,255,.05);
+        ">
+          <div class="rds-art">${pokemonImage(c, '32px')}</div>
+          <div class="rds-name">${c.name}</div>
+          <div class="rds-rarity" style="color:${rInfo.color};">${rInfo.label}</div>
+        </div>
+      `;
+    }
+  });
+  
+  html += '</div>';
+  html += `
+    <div style="margin-top:4px;font-size:10px;color:#6b6395;text-align:center;">
+      💡 등급 높은 순 · 클릭으로 선택
+    </div>
+    <div id="selectedRaidCardDisplay" style="margin-top:4px;font-size:12px;color:var(--sun-2);text-align:center;font-weight:700;">
+      선택된 카드: 없음
+    </div>
+  `;
+  
+  return html;
+}
+
+function renderRaidBossInfo(boss) {
+  const ownedData = state.owned[boss.engName];
+  const hasCard = !!ownedData;
+  
+  return `
+    <div class="raid-boss-info">
+      <div class="rb-row">
+        <div class="rb-art">${pokemonImage(boss, '48px')}</div>
+        <div class="rb-detail">
+          <div class="rb-name">${boss.name}</div>
+          <div class="rb-stat">⭐ 타입: ${getTypeLabel(boss.type)}</div>
+          <div class="rb-stat">❤️ HP: ${boss.hp} · ⚔️ 공격: ${boss.atk}</div>
+          <div class="rb-owner">${hasCard ? '✅ 보유한 카드입니다' : '❌ 아직 미보유 카드입니다'}</div>
+        </div>
+      </div>
+      <div style="margin-top:6px;font-size:11px;color:#6b6395;text-align:center;">
+        ⚔️ 레이드 보스는 체력이 15배 증가합니다
+      </div>
+    </div>
+  `;
+}
+
+function renderRaidMission() {
+  const panel = document.getElementById('missionPanel');
+  const key = todayKey();
+  
+  if (!state.raid || state.raid.today !== key) {
+    const finalForms = POKEMON_LIST.filter(p => {
+      const evoChain = getEvoChain(p.engName);
+      return evoChain && evoChain.length >= 2 && evoChain[evoChain.length-1] === p.engName;
+    });
+    
+    let boss;
+    if (finalForms.length === 0) {
+      boss = POKEMON_LIST[Math.floor(Math.random() * POKEMON_LIST.length)];
+    } else {
+      boss = finalForms[Math.floor(Math.random() * finalForms.length)];
+    }
+    
+    state.raid = {
+      boss: boss,
+      hp: boss.hp * 15,
+      maxHp: boss.hp * 15,
+      completed: false,
+      today: key,
+      attackChance: 0,
+      rewardCollected: false
+    };
+    saveState();
+  }
+  
+  const raid = state.raid;
+  const boss = raid.boss;
+  
+  if (!boss) {
+    panel.innerHTML = `<div class="mission-intro"><div class="big-emoji">😅</div><div style="font-size:16px;">레이드 보스를 불러올 수 없어요</div></div>`;
+    return;
+  }
+  
+  if (raid.completed) {
+    const alreadyCollected = raid.rewardCollected || false;
+    panel.innerHTML = `
+      <div class="mission-intro">
+        <div class="big-emoji">🎉</div>
+        <div style="font-size:18px;color:var(--special);font-family:var(--font-display);">레이드 클리어!</div>
+        <div style="color:#B7AFDE;font-size:13px;margin-top:4px;">${boss.name}을(를) 물리쳤어요!</div>
+        <div style="margin-top:10px;font-size:13px;color:${alreadyCollected ? '#8d84b0' : 'var(--good)'};">
+          ${alreadyCollected ? '✅ 이미 보상을 받았어요!' : '🎁 보상: ' + boss.name + ' (스페셜) 카드 획득!'}
+        </div>
+        ${!alreadyCollected ? `
+          <button class="btn" onclick="collectRaidReward()" style="margin-top:10px;">🎁 보상 받기</button>
+        ` : ''}
+      </div>
+    `;
+    return;
+  }
+  
+  const hpPercent = Math.max(0, (raid.hp / raid.maxHp) * 100);
+  const atkChance = raid.attackChance || 0;
+  const cardSelectorHTML = renderRaidCardSelector();
+  
+  panel.innerHTML = `
+    <div class="raid-boss">
+      ${renderRaidBossInfo(boss)}
+      
+      <div class="boss-hp"><div style="width:${hpPercent}%"></div></div>
+      <div class="boss-info">❤️ HP ${Math.max(0, Math.round(raid.hp))} / ${raid.maxHp}</div>
+      
+      <div style="margin-top:10px;text-align:left;font-size:12px;color:#B7AFDE;">
+        <div>⚔️ 공격 기회: <b style="color:var(--sun-2);font-size:16px;">${atkChance}회</b></div>
+        <div style="margin-top:4px;font-size:12px;">📤 공격할 카드 선택:</div>
+        ${cardSelectorHTML}
+      </div>
+      
+      <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;justify-content:center;">
+        <button class="btn" id="raidAttackBtn" ${atkChance > 0 ? '' : 'disabled'}>
+          ⚔️ 공격 (${atkChance}회)
+        </button>
+        <button class="btn small ghost" onclick="renderRaidMission()">🔄 새로고침</button>
+      </div>
+      <div style="font-size:11px;color:#6b6395;margin-top:4px;">
+        💡 생활미션 완료 시 공격 기회 +1
+      </div>
+    </div>
+  `;
+  
+  document.querySelectorAll('.raid-card-select').forEach(el => {
+    el.addEventListener('click', function() {
+      document.querySelectorAll('.raid-card-select').forEach(e => {
+        e.style.border = '2px solid ' + getRarityInfo(state.owned[e.dataset.key]?.rarity || 'common').color;
+        e.style.background = 'rgba(255,255,255,.05)';
+        e.classList.remove('selected');
+      });
+      this.style.border = '3px solid var(--sun)';
+      this.style.background = 'rgba(255,201,60,.15)';
+      this.classList.add('selected');
+      selectedRaidCard = this.dataset.key;
+      document.getElementById('selectedRaidCardDisplay').textContent = '✅ ' + (getPokemonByName(selectedRaidCard)?.name || '없음');
+    });
+  });
+  
+  document.getElementById('raidAttackBtn')?.addEventListener('click', function() {
+    doRaidAttack();
+  });
+}
+
+function doRaidAttack() {
+  const raid = state.raid;
+  if (!raid || raid.completed || !raid.boss) return;
+  if ((raid.attackChance || 0) <= 0) {
+    alert('공격 기회가 없어요! 생활미션을 완료해주세요.');
+    return;
+  }
+  
+  if (!selectedRaidCard) {
+    alert('공격할 카드를 선택해주세요!');
+    return;
+  }
+  
+  const selectedCard = getPokemonByName(selectedRaidCard);
+  if (!selectedCard) {
+    alert('선택한 카드를 찾을 수 없어요!');
+    return;
+  }
+  
+  const rarityBonus = getRarityDamageBonus(state.owned[selectedRaidCard]?.rarity);
+  const baseAtk = selectedCard.atk || 20;
+  const randomBonus = Math.floor(Math.random() * 15) + 5;
+  const damage = Math.max(10, Math.floor(baseAtk * 0.7 + rarityBonus + randomBonus));
+  
+  const mult = getEffMult(selectedCard.type, raid.boss.type);
+  const finalDamage = Math.floor(damage * mult);
+  
+  raid.hp = Math.max(0, raid.hp - finalDamage);
+  raid.attackChance = (raid.attackChance || 0) - 1;
+  
+  saveState();
+  
+  if (raid.hp <= 0) {
+    raid.completed = true;
+    raid.rewardCollected = false;
+    saveState();
+    alert(`🎉 ${raid.boss.name}을(를) 물리쳤어요! 레이드 탭에서 보상을 받아주세요!`);
+    renderRaidMission();
+  } else {
+    const effMsg = mult > 1 ? ' (효과 굉장!)' : mult < 1 ? ' (효과 별로...)' : '';
+    alert(`⚔️ ${selectedCard.name}의 공격! ${finalDamage}의 데미지!${effMsg}\n남은 HP: ${Math.round(raid.hp)}`);
+    renderRaidMission();
+  }
+}
+
+function collectRaidReward() {
+  const raid = state.raid;
+  if (!raid || !raid.completed || !raid.boss) {
+    alert('레이드를 먼저 클리어해주세요!');
+    return;
+  }
+  
+  if (raid.rewardCollected) {
+    alert('이미 보상을 받았어요!');
+    return;
+  }
+  
+  const boss = raid.boss;
+  const rarity = 'special';
+  
+  if (!state.owned[boss.engName]) {
+    state.owned[boss.engName] = { count: 1, rarity: rarity };
+  } else {
+    state.owned[boss.engName].count += 1;
+  }
+  
+  raid.rewardCollected = true;
+  saveState();
+  
+  showRewardPopup(boss, '🎉 레이드 보상 획득!', '스페셜 등급!');
+  
+  updateStatline();
+  saveState();
+  renderDex();
+  renderRaidMission();
+}
+
+function getEvoChain(engName) {
+  const evoMap = {
+    'bulbasaur': ['bulbasaur', 'ivysaur', 'venusaur'],
+    'charmander': ['charmander', 'charmeleon', 'charizard'],
+    'squirtle': ['squirtle', 'wartortle', 'blastoise'],
+    'caterpie': ['caterpie', 'metapod', 'butterfree'],
+    'weedle': ['weedle', 'kakuna', 'beedrill'],
+    'pidgey': ['pidgey', 'pidgeotto', 'pidgeot'],
+    'eevee': ['eevee', 'vaporeon', 'jolteon', 'flareon', 'espeon', 'umbreon', 'leafeon', 'glaceon', 'sylveon']
+  };
+  return evoMap[engName] || null;
+}
+
+// ===== 도감 =====
+function renderFilters() {
+  const row = document.getElementById('filterRow');
+  const typeSet = new Set(POKEMON_LIST.map(p => p.type));
+  const items = [{k:'all', label:'전체'}, ...Array.from(typeSet).map(k => ({k, label: getTypeLabel(k)}))];
+  row.innerHTML = items.map(it => `<button class="chip ${activeFilter === it.k ? 'active' : ''}" data-f="${it.k}">${it.label}</button>`).join('');
+  row.querySelectorAll('.chip').forEach(chip => {
+    chip.addEventListener('click', function() {
+      activeFilter = this.dataset.f;
+      renderFilters();
+      renderDex();
+    });
+  });
+}
+
+function renderDex() {
+  const grid = document.getElementById('dexGrid');
+  const total = POKEMON_LIST.length;
+  const owned = Object.keys(state.owned).length;
+  document.getElementById('dexProgress').style.width = (owned / total * 100) + '%';
+  document.getElementById('dexProgressText').textContent = owned + ' / ' + total + ' 마리';
+  
+  let list = POKEMON_LIST.filter(c => activeFilter === 'all' || c.type === activeFilter);
+  
+  if (ownershipFilter === 'owned') {
+    list = list.filter(c => state.owned[c.engName]);
+  } else if (ownershipFilter === 'missing') {
+    list = list.filter(c => !state.owned[c.engName]);
+  }
+  
+  if (activeRarity !== 'all') {
+    list = list.filter(c => {
+      const ownedData = state.owned[c.engName];
+      return ownedData && ownedData.rarity === activeRarity;
+    });
+  }
+  
+  grid.innerHTML = list.map(c => {
+    const ownedData = state.owned[c.engName];
+    const has = !!ownedData;
+    const rarity = has ? ownedData.rarity : 'common';
+    const count = has ? ownedData.count : 0;
+    const rInfo = getRarityInfo(rarity);
+    const bonus = getRarityBonus(rarity);
+    
+    const bonusText = has && (bonus.hp || bonus.atk || bonus.def || bonus.spd) ? 
+      `✨ +${bonus.hp}HP +${bonus.atk}ATK +${bonus.def}DEF +${bonus.spd}SPD` : '';
+    
+    return `
+      <div class="card mini ${has ? 'rarity-' + rarity : 'locked'}" data-eng="${c.engName}">
+        <div class="art">${pokemonImage(c)}</div>
+        <div class="name">${has ? c.name : '???'}</div>
+        <span class="type-tag" style="background:${getTypeColor(c.type)}">${has ? getTypeLabel(c.type) : '???'}</span>
+        <div class="statrow">
+          <span>HP<b>${has ? c.hp : '-'}</b></span>
+          <span>ATK<b>${has ? c.atk : '-'}</b></span>
+          <span>DEF<b>${has ? c.def : '-'}</b></span>
+          <span>SPD<b>${has ? c.spd : '-'}</b></span>
+        </div>
+        ${has ? `<span class="rarity-badge" style="background:${rInfo.color};">${rInfo.emoji} ${rInfo.label} ×${count}</span>` : ''}
+        ${has && bonusText ? `<div class="rarity-bonus">${bonusText}</div>` : ''}
+      </div>`;
+  }).join('');
+  
+  grid.querySelectorAll('.card:not(.locked)').forEach(el => {
+    el.addEventListener('click', function() {
+      const engName = this.dataset.eng;
+      const pokemon = getPokemonByName(engName);
+      if (pokemon) {
+        if (pokemon.cryUrl) {
+          const audio = new Audio(pokemon.cryUrl);
+          audio.play().catch(() => console.log('울음소리 재생 실패'));
+        }
+        openCardDetail(pokemon);
+      }
+    });
+  });
+}
+
+// ===== 카드 상세 모달 =====
+let modalCryAudio = null;
+
+async function openCardDetail(pokemon) {
+  const modal = document.getElementById('cardModal');
+  const body = document.getElementById('modalBody');
+  
+  const ownedData = state.owned[pokemon.engName];
+  const rarity = ownedData ? ownedData.rarity : 'common';
+  const rInfo = getRarityInfo(rarity);
+  const count = ownedData ? ownedData.count : 0;
+  const bonus = getRarityBonus(rarity);
+  
+  let abilities = [];
+  let description = '';
+  let moves = [];
+  let evoChain = [];
+  
+  try {
+    if (pokemon.speciesUrl) {
+      const speciesRes = await fetch(pokemon.speciesUrl);
+      const speciesData = await speciesRes.json();
+      
+      const flavor = speciesData.flavor_text_entries?.find(f => f.language.name === 'ko');
+      if (flavor) description = flavor.flavor_text;
+      
+      const detailRes = await fetch('https://pokeapi.co/api/v2/pokemon/' + pokemon.engName);
+      const detail = await detailRes.json();
+      
+      abilities = detail.abilities.map(a => getAbilityKorean(a.ability.name));
+      
+      moves = detail.moves.slice(0, 6).map(m => {
+        const name = m.move.name.replace('-', ' ');
+        return getMoveKorean(name);
+      });
+      
+      if (speciesData.evolution_chain) {
+        const chainRes = await fetch(speciesData.evolution_chain.url);
+        const chainData = await chainRes.json();
+        evoChain = extractEvoChain(chainData.chain);
+      }
+    }
+  } catch (e) {
+    console.error('상세 정보 로드 실패:', e);
+  }
+  
+  // TTS 데이터 저장
+  pokemon._moves = moves;
+  pokemon._description = description;
+  pokemon._evoChain = evoChain;
+  
+  let evoHTML = '';
+  if (evoChain.length > 0) {
+    evoHTML = `
+      <div class="modal-section">
+        <h4>🔄 진화 과정</h4>
+        <div class="evo-chain">
+          ${evoChain.map((evo, idx) => {
+            const isCurrent = evo.name === pokemon.name;
+            return `
+              ${idx > 0 ? '<span class="evo-arrow">→</span>' : ''}
+              <div class="evo-item" style="${isCurrent ? 'border:2px solid var(--sun);background:rgba(255,201,60,.1);' : ''}">
+                ${evo.image ? `<img src="${evo.image}" alt="${evo.name}">` : `<div style="width:48px;height:48px;background:rgba(255,255,255,.1);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;">❓</div>`}
+                <div class="evo-name">${evo.name} ${isCurrent ? '⭐' : ''}</div>
+                ${evo.level ? `<div class="evo-level">Lv.${evo.level}</div>` : ''}
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    `;
+  }
+  
+  body.innerHTML = `
+    <div class="modal-art">${pokemonImage(pokemon, '140px')}</div>
+    <div class="modal-name">${pokemon.name}</div>
+    <div class="modal-types">
+      ${pokemon.types.map(t => `<span style="background:${getTypeColor(t)}">${getTypeLabel(t)}</span>`).join('')}
+      <span style="background:${rInfo.color};display:inline-block;padding:3px 12px;border-radius:14px;font-family:var(--font-mono);font-size:12px;font-weight:700;color:#fff;margin-left:4px;">${rInfo.emoji} ${rInfo.label} ×${count}</span>
+    </div>
+    
+    <div class="modal-stats">
+      <div>HP <b>${pokemon.hp}</b> <span style="color:var(--good);font-size:10px;">(+${bonus.hp})</span></div>
+      <div>공격 <b>${pokemon.atk}</b> <span style="color:var(--good);font-size:10px;">(+${bonus.atk})</span></div>
+      <div>방어 <b>${pokemon.def}</b> <span style="color:var(--good);font-size:10px;">(+${bonus.def})</span></div>
+      <div style="grid-column:span 3;">속도 <b>${pokemon.spd}</b> <span style="color:var(--good);font-size:10px;">(+${bonus.spd})</span></div>
+    </div>
+    
+    ${abilities.length > 0 ? `<div class="modal-section"><h4>⚡ 특성</h4><p>${abilities.join(' / ')}</p></div>` : ''}
+    ${description ? `<div class="modal-section"><h4>📝 설명</h4><p>${description}</p></div>` : ''}
+    ${moves.length > 0 ? `<div class="modal-section"><h4>⚔️ 기술</h4><p>${moves.map(m => '✦ ' + m).join(' ')}</p></div>` : ''}
+    
+    ${evoHTML}
+    
+    <div class="modal-section" style="border-left-color:${rInfo.color};">
+      <h4>✨ ${rInfo.label} 등급 보너스</h4>
+      <p style="font-size:12px;color:#B7AFDE;">
+        HP +${bonus.hp} / 공격 +${bonus.atk} / 방어 +${bonus.def} / 속도 +${bonus.spd}
+      </p>
+    </div>
+    
+    ${pokemon.cryUrl ? `
+    <div style="text-align:center;margin-top:6px;">
+      <button class="cry-btn" id="playCryBtn">🔊 울음소리 듣기</button>
+    </div>` : ''}
+    
+    <div style="text-align:center;margin-top:10px;">
+      <button class="btn small" id="closeModalBtn">닫기</button>
+    </div>
+  `;
+  
+  modal.classList.add('open');
+  
+  // 🔥 자동 읽어주기
+  setTimeout(() => {
+    speakPokemonInfo(pokemon);
+  }, 600);
+  
+  document.getElementById('playCryBtn')?.addEventListener('click', function() {
+    if (modalCryAudio) {
+      modalCryAudio.pause();
+      modalCryAudio = null;
+    }
+    if (pokemon.cryUrl) {
+      modalCryAudio = new Audio(pokemon.cryUrl);
+      modalCryAudio.play().catch(() => {});
+    }
+  });
+  
+  document.getElementById('closeModalBtn').addEventListener('click', closeModal);
+  document.getElementById('modalClose').addEventListener('click', closeModal);
+}
+
+function closeModal() {
+  document.getElementById('cardModal').classList.remove('open');
+  if (modalCryAudio) {
+    modalCryAudio.pause();
+    modalCryAudio = null;
+  }
+}
+
+function extractEvoChain(chain) {
+  const result = [];
+  let current = chain;
+  
+  while (current) {
+    const speciesName = current.species.name;
+    const pokemon = getPokemonByName(speciesName);
+    const evoDetail = current.evolution_details?.[0] || {};
+    const level = evoDetail.min_level || evoDetail.min_happiness || null;
+    
+    result.push({
+      name: pokemon ? pokemon.name : speciesName,
+      image: pokemon ? pokemon.image : null,
+      level: level
+    });
+    
+    if (current.evolves_to && current.evolves_to.length > 0) {
+      current = current.evolves_to[0];
+    } else {
+      break;
+    }
+  }
+  
+  return result;
+}
+
+function showRewardPopup(pokemon, title, subtitle) {
+  const existing = document.querySelector('.reward-popup');
+  if (existing) existing.remove();
+  
+  const popup = document.createElement('div');
+  popup.className = 'reward-popup';
+  const rarity = state.owned[pokemon.engName]?.rarity || 'common';
+  const rInfo = getRarityInfo(rarity);
+  
+  popup.innerHTML = `
+    <div class="reward-popup-content">
+      <div class="popup-title">${title}</div>
+      <div class="card pop-in rarity-${rarity}">
+        <div class="art">${pokemonImage(pokemon)}</div>
+        <div class="name">${pokemon.name}</div>
+        <span class="type-tag" style="background:${getTypeColor(pokemon.type)}">${getTypeLabel(pokemon.type)}</span>
+        <div class="statrow">
+          <span>HP<b>${pokemon.hp}</b></span>
+          <span>ATK<b>${pokemon.atk}</b></span>
+          <span>DEF<b>${pokemon.def}</b></span>
+          <span>SPD<b>${pokemon.spd}</b></span>
+        </div>
+        <span class="rarity-badge" style="background:${rInfo.color}">${rInfo.emoji} ${rInfo.label}</span>
+      </div>
+      <div class="popup-sub">${subtitle}</div>
+      <button class="btn small" onclick="this.closest('.reward-popup').remove()">확인</button>
+    </div>
+  `;
+  document.body.appendChild(popup);
+}
+
+// ===== 키우기 =====
+function petCreature() {
+  if (!state.pet) return null;
+  const id = state.pet.evolved3 ? state.pet.evolvedId : 
+             state.pet.evolved2 ? state.pet.evolvedId :
+             state.pet.evolved ? state.pet.evolvedId : state.pet.baseId;
+  return getPokemonByName(id);
+}
+
+function tickPet() {
+  if (!state.pet) return;
+  const now = Date.now();
+  const hours = (now - state.pet.lastUpdate) / 3600000;
+  if (hours > 0.02) {
+    const decay = hours * 4;
+    state.pet.hunger = clamp(state.pet.hunger - decay, 0, 100);
+    state.pet.happy = clamp(state.pet.happy - decay * 0.8, 0, 100);
+    state.pet.energy = clamp(state.pet.energy - decay * 0.6, 0, 100);
+    state.pet.lastUpdate = now;
+    saveState();
+  }
+}
+
+function petExpThreshold() { return state.pet.level * 25; }
+
+function checkPetLevelUp() {
+  let leveled = false, evolved = false;
+  let evoMessage = '';
+  let evoPokemon = null;
+  
+  while (state.pet.exp >= petExpThreshold()) {
+    state.pet.exp -= petExpThreshold();
+    state.pet.level++;
+    leveled = true;
+    
+    if (state.pet.level >= 5 && !state.pet.evolved) {
+      const evoMap = {
+        'bulbasaur': 'ivysaur',
+        'charmander': 'charmeleon',
+        'squirtle': 'wartortle',
+        'caterpie': 'metapod',
+        'weedle': 'kakuna',
+        'pidgey': 'pidgeotto'
+      };
+      const evoId = evoMap[state.pet.baseId];
+      if (evoId) {
+        state.pet.evolved = true;
+        state.pet.evolvedId = evoId;
+        evolved = true;
+        evoMessage = '🎉 1차 진화!';
+        evoPokemon = getPokemonByName(evoId);
+        const evoPokemonData = getPokemonByName(evoId);
+        if (evoPokemonData && !state.owned[evoPokemonData.engName]) {
+          const rarity = rollRarity();
+          state.owned[evoPokemonData.engName] = { count: 1, rarity: rarity };
+        }
+      }
+    }
+    
+    if (state.pet.level >= 15 && state.pet.evolved && !state.pet.evolved2) {
+      const evoMap2 = {
+        'ivysaur': 'venusaur',
+        'charmeleon': 'charizard',
+        'wartortle': 'blastoise',
+        'metapod': 'butterfree',
+        'kakuna': 'beedrill',
+        'pidgeotto': 'pidgeot'
+      };
+      const evoId2 = evoMap2[state.pet.evolvedId];
+      if (evoId2) {
+        state.pet.evolved2 = true;
+        state.pet.evolvedId = evoId2;
+        evolved = true;
+        evoMessage = '🎉 2차 진화!';
+        evoPokemon = getPokemonByName(evoId2);
+        const evoPokemonData = getPokemonByName(evoId2);
+        if (evoPokemonData && !state.owned[evoPokemonData.engName]) {
+          const rarity = rollRarity();
+          state.owned[evoPokemonData.engName] = { count: 1, rarity: rarity };
+        }
+      }
+    }
+    
+    if (state.pet.level >= 20 && state.pet.evolved2 && !state.pet.evolved3) {
+      const evoMap3 = {};
+      const evoId3 = evoMap3[state.pet.evolvedId];
+      if (evoId3) {
+        state.pet.evolved3 = true;
+        state.pet.evolvedId = evoId3;
+        evolved = true;
+        evoMessage = '🎉 최종 진화!';
+        evoPokemon = getPokemonByName(evoId3);
+        const evoPokemonData = getPokemonByName(evoId3);
+        if (evoPokemonData) {
+          const rarity = rollRarity();
+          if (!state.owned[evoPokemonData.engName]) {
+            state.owned[evoPokemonData.engName] = { count: 1, rarity: rarity };
+          } else {
+            state.owned[evoPokemonData.engName].count += 1;
+          }
+        }
+      } else {
+        if (!state.pet.finalBonus) {
+          state.pet.finalBonus = true;
+          const currentPokemon = getPokemonByName(state.pet.evolvedId);
+          if (currentPokemon && !state.owned[currentPokemon.engName]) {
+            const rarity = 'special';
+            state.owned[currentPokemon.engName] = { count: 1, rarity: rarity };
+            evoMessage = '🎉 Lv.20 달성!';
+            evoPokemon = currentPokemon;
+          }
+        }
+      }
+    }
+  }
+  
+  if (evolved && evoPokemon) {
+    showRewardPopup(evoPokemon, evoMessage, '새로운 모습으로 진화했어요!');
+    saveState();
+    renderPetTab();
+  }
+  
+  return { leveled, evolved };
+}
+
+function isOnCooldown(lastAction, cooldownMs) {
+  if (!lastAction) return false;
+  return Date.now() - lastAction < cooldownMs;
+}
+
+function getCooldownRemaining(lastAction, cooldownMs) {
+  if (!lastAction) return 0;
+  const elapsed = Date.now() - lastAction;
+  return Math.max(0, cooldownMs - elapsed);
+}
+
+function renderPetTab() {
+  tickPet();
+  if (!state.pet) renderStarterSelect();
+  else renderPetCare();
+}
+
+function renderStarterSelect() {
+  const shuffled = [...EVOLVABLE_POKEMON_LIST].sort(() => Math.random() - 0.5);
+  const starters = shuffled.slice(0, 6);
+  
+  document.getElementById('petPanel').innerHTML = `
+    <div style="text-align:center;font-family:var(--font-display);font-size:16px;margin-bottom:4px;">함께할 첫 포켓몬을 골라주세요</div>
+    <div style="text-align:center;font-family:var(--font-mono);font-size:10px;color:#B7AFDE;margin-bottom:10px;">
+      진화 가능 ${EVOLVABLE_POKEMON_LIST.length}종 중 6종 추천!
+      <br><span style="font-size:9px;color:#6b6395;">1차:Lv.5 / 2차:Lv.15 / 3차:Lv.20</span>
+    </div>
+    <div class="starter-grid" id="starterGrid">
+      ${starters.map(id => {
+        const c = getPokemonByName(id);
+        return c ? `
+          <div class="starter-card" data-starter="${id}">
+            ${pokemonImage(c)}
+            <div class="n">${c.name}</div>
+          </div>` : '';
+      }).join('')}
+    </div>
+    <div style="text-align:center;margin-top:8px;">
+      <button class="btn small ghost" id="reshuffleStarters">🔄 다른 포켓몬</button>
+    </div>
+  `;
+  
+  document.querySelectorAll('[data-starter]').forEach(el => {
+    el.addEventListener('click', function() {
+      const id = this.dataset.starter;
+      state.pet = {
+        baseId: id,
+        level: 1,
+        exp: 0,
+        hunger: 80,
+        happy: 80,
+        energy: 80,
+        lastUpdate: Date.now(),
+        evolved: false,
+        evolved2: false,
+        evolved3: false,
+        evolvedId: id,
+        lastFeed: 0,
+        lastPlay: 0,
+        lastSleep: 0,
+        finalBonus: false
+      };
+      const c = getPokemonByName(id);
+      if (c && !state.owned[c.engName]) {
+        const rarity = rollRarity();
+        state.owned[c.engName] = { count: 1, rarity: rarity };
+        showRewardPopup(c, '🎉 첫 포켓몬!', '함께 모험을 떠나요!');
+      }
+      saveState();
+      renderDex();
+      renderPetTab();
+    });
+  });
+  
+  document.getElementById('reshuffleStarters')?.addEventListener('click', function() {
+    renderStarterSelect();
+  });
+}
+
+function petStatusMessage() {
+  const p = state.pet;
+  if (p.hunger < 30) return '배고파요 🍖';
+  if (p.energy < 30) return '졸려요 💤';
+  if (p.happy < 30) return '심심해요 🙂';
+  return '행복해요! 🌟';
+}
+
+function renderPetCare() {
+  const c = petCreature();
+  const p = state.pet;
+  
+  let evolveNote = '';
+  if (p.justEvolved) {
+    evolveNote = '<div class="evolve-banner">✨ 진화 완료! 현재: ' + (c ? c.name : '') + '</div>';
+    p.justEvolved = false;
+  }
+  
+  const feedCooldown = getCooldownRemaining(p.lastFeed, COOLDOWN.FEED);
+  const playCooldown = getCooldownRemaining(p.lastPlay, COOLDOWN.PLAY);
+  const sleepCooldown = getCooldownRemaining(p.lastSleep, COOLDOWN.SLEEP);
+  
+  const feedReady = feedCooldown <= 0;
+  const playReady = playCooldown <= 0;
+  const sleepReady = sleepCooldown <= 0;
+  
+  let evoStatus = '';
+  if (p.evolved3) evoStatus = '🌟 최종 진화 완료!';
+  else if (p.evolved2) evoStatus = '⭐ 2차 진화 완료 (Lv.20에 최종!)';
+  else if (p.evolved) evoStatus = '🌱 1차 진화 완료 (Lv.15에 2차!)';
+  else evoStatus = '🌿 1차 진화까지 Lv.5 필요';
+  
+  document.getElementById('petPanel').innerHTML = `
+    ${evolveNote}
+    <div class="pet-hero">
+      <div class="art-big">${c ? pokemonImage(c) : '❓'}</div>
+      <div class="pname">${c ? c.name : '???'}</div>
+      <div class="plevel">Lv.${p.level} ${p.evolved3 ? '🌟' : p.evolved2 ? '⭐' : p.evolved ? '🌱' : ''}</div>
+    </div>
+    <div class="pet-mood">${petStatusMessage()}</div>
+    <div style="font-family:var(--font-mono);font-size:9px;color:#B7AFDE;text-align:center;margin:2px 0 10px;">${evoStatus}</div>
+    <div class="stat-row hunger"><div class="stat-label"><span>배고픔</span><span>${Math.round(p.hunger)}</span></div><div class="progress-bar"><div style="width:${p.hunger}%"></div></div></div>
+    <div class="stat-row happy"><div class="stat-label"><span>기분</span><span>${Math.round(p.happy)}</span></div><div class="progress-bar"><div style="width:${p.happy}%"></div></div></div>
+    <div class="stat-row energy"><div class="stat-label"><span>에너지</span><span>${Math.round(p.energy)}</span></div><div class="progress-bar"><div style="width:${p.energy}%"></div></div></div>
+    <div class="stat-row exp"><div class="stat-label"><span>경험치</span><span>${Math.round(p.exp)}/${petExpThreshold()}</span></div><div class="progress-bar"><div style="width:${Math.min(100, p.exp / petExpThreshold() * 100)}%"></div></div></div>
+    <div class="pet-actions">
+      <button class="btn" id="feedBtn" ${feedReady ? '' : 'disabled'}>🍖 먹이</button>
+      <button class="btn" id="playBtn" ${playReady ? '' : 'disabled'}>🎾 놀이</button>
+      <button class="btn" id="sleepBtn" ${sleepReady ? '' : 'disabled'}>💤 재우기</button>
+    </div>
+    <div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:3px;">
+      ${!feedReady ? '<span class="cooldown-text">⏳ ' + formatTime(feedCooldown) + '</span>' : ''}
+      ${!playReady ? '<span class="cooldown-text">⏳ ' + formatTime(playCooldown) + '</span>' : ''}
+      ${!sleepReady ? '<span class="cooldown-text">⏳ ' + formatTime(sleepCooldown) + '</span>' : ''}
+    </div>
+  `;
+  
+  document.getElementById('feedBtn').addEventListener('click', function() {
+    if (isOnCooldown(p.lastFeed, COOLDOWN.FEED)) return;
+    petAction('hunger', 25, 'exp', 5);
+    state.pet.lastFeed = Date.now();
+    saveState();
+    renderPetTab();
+  });
+  
+  document.getElementById('playBtn').addEventListener('click', function() {
+    if (isOnCooldown(p.lastPlay, COOLDOWN.PLAY)) return;
+    petAction('happy', 25, 'exp', 8);
+    state.pet.energy = clamp(state.pet.energy - 10, 0, 100);
+    state.pet.lastPlay = Date.now();
+    saveState();
+    renderPetTab();
+  });
+  
+  document.getElementById('sleepBtn').addEventListener('click', function() {
+    if (isOnCooldown(p.lastSleep, COOLDOWN.SLEEP)) return;
+    petAction('energy', 30, 'exp', 3);
+    state.pet.lastSleep = Date.now();
+    saveState();
+    renderPetTab();
+  });
+}
+
+function petAction(statKey, statAmt, expKey, expAmt) {
+  state.pet[statKey] = clamp(state.pet[statKey] + statAmt, 0, 100);
+  state.pet[expKey] = state.pet[expKey] + expAmt;
+  const result = checkPetLevelUp();
+  if (result.evolved) state.pet.justEvolved = true;
+  saveState();
+  renderPetTab();
+}
+
+// ===== 배틀 (간소화) =====
+let battleMode = 'pvp';
+document.querySelectorAll('.mode-toggle button').forEach(btn => {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.mode-toggle button').forEach(b => b.classList.remove('active'));
+    this.classList.add('active');
+    battleMode = this.dataset.mode;
+    renderBattleSetup();
+  });
+});
+
+function ownedList() {
+  return POKEMON_LIST.filter(c => state.owned[c.engName]);
+}
+
+function renderBattleSetup() {
+  const slots = document.getElementById('teamSlots');
+  slots.innerHTML = '';
+  for (let i = 0; i < 3; i++) {
+    const engName = state.team[i];
+    const c = engName ? getPokemonByName(engName) : null;
+    const div = document.createElement('div');
+    div.className = 'slot' + (c ? ' filled' : '');
+    div.innerHTML = c
+      ? `<span class="x" data-remove="${i}">✕</span><div class="mini-art">${pokemonImage(c)}</div>`
+      : `<span style="font-family:var(--font-mono);font-size:10px;color:#8d84b0;">+ 선택</span>`;
+    div.addEventListener('click', function(e) {
+      if (e.target.dataset.remove !== undefined && e.target.dataset.remove !== '') {
+        state.team[i] = null;
+        state.team = state.team.filter(x => x);
+        saveState();
+        renderBattleSetup();
+        return;
+      }
+      openPicker(i);
+    });
+    slots.appendChild(div);
+  }
+  document.getElementById('battleBody').innerHTML = '';
+  if (state.team.filter(x => x).length === 3) {
+    if (battleMode === 'pvp') renderPvpIntro();
+    else renderAiIntro();
+  } else {
+    document.getElementById('battleBody').innerHTML = `<div class="empty-note">카드 3장을 골라주세요</div>`;
+  }
+}
+
+function openPicker(slotIndex) {
+  const picker = document.getElementById('picker');
+  const owned = ownedList();
+  if (owned.length === 0) {
+    document.getElementById('battleBody').innerHTML = `<div class="empty-note">보유한 카드가 없어요</div>`;
+    return;
+  }
+  picker.classList.add('open');
+  document.getElementById('pickGrid').innerHTML = owned.map(c => {
+    const already = state.team.includes(c.engName);
+    return `<div class="pick-item ${already ? 'disabled' : ''}" data-id="${c.engName}">${pokemonImage(c)}<div class="n">${c.name}</div></div>`;
+  }).join('');
+  document.querySelectorAll('.pick-item').forEach(el => {
+    el.addEventListener('click', function() {
+      state.team[slotIndex] = this.dataset.id;
+      picker.classList.remove('open');
+      saveState();
+      renderBattleSetup();
+    });
+  });
+}
+
+// ===== AI 배틀 (간소화) =====
+let aiBattle = null;
+function makeEnemyTeam() {
+  const pool = POKEMON_LIST.filter(c => state.owned[c.engName]);
+  const team = [];
+  const shuffled = [...pool].sort(() => Math.random() - 0.5);
+  for (let i = 0; i < 3 && i < shuffled.length; i++) {
+    team.push({ ...shuffled[i], curHp: shuffled[i].hp });
+  }
+  while (team.length < 3) {
+    const c = POKEMON_LIST[Math.floor(Math.random() * POKEMON_LIST.length)];
+    if (!team.find(t => t.engName === c.engName)) {
+      team.push({ ...c, curHp: c.hp });
+    }
+  }
+  return team;
+}
+
+function renderAiIntro() {
+  document.getElementById('battleBody').innerHTML = `<div style="text-align:center;margin-top:3px;"><button class="btn" id="startAiBtn">연습 배틀 시작</button></div>`;
+  document.getElementById('startAiBtn').addEventListener('click', function() {
+    const playerTeam = state.team.map(engName => {
+      const c = getPokemonByName(engName);
+      return c ? { ...c, curHp: c.hp } : null;
+    }).filter(Boolean);
+    aiBattle = { player: playerTeam, enemy: makeEnemyTeam(), pActive: 0, eActive: 0, log: [], over: false };
+    addAiLog('상대 트레이너가 나타났다!', 'sys');
+    renderAiArena();
+  });
+}
+
+function addAiLog(t, c) {
+  if (!c) c = '';
+  aiBattle.log.unshift(`<p class="${c}">${t}</p>`);
+  if (aiBattle.log.length > 40) aiBattle.log.pop();
+}
+
+function renderAiArena() {
+  const p = aiBattle.player[aiBattle.pActive];
+  const e = aiBattle.enemy[aiBattle.eActive];
+  document.getElementById('battleBody').innerHTML = `
+    <div class="arena">
+      <div class="vs-row">
+        <div class="fighter"><div class="art-wrap">${pokemonImage(p)}</div><div class="fname">${p.name}</div>
+          <div class="hpbar ${p.curHp / p.hp < 0.3 ? 'low' : ''}"><div style="width:${Math.max(0, p.curHp / p.hp * 100)}%"></div></div>
+          <div class="hptext">${Math.max(0, p.curHp)} / ${p.hp}</div></div>
+        <div class="vs-seal">VS</div>
+        <div class="fighter"><div class="art-wrap">${pokemonImage(e)}</div><div class="fname">${e.name}</div>
+          <div class="hpbar ${e.curHp / e.hp < 0.3 ? 'low' : ''}"><div style="width:${Math.max(0, e.curHp / e.hp * 100)}%"></div></div>
+          <div class="hptext">${Math.max(0, e.curHp)} / ${e.hp}</div></div>
+      </div>
+      <div class="log">${aiBattle.log.join('')}</div>
+      <div class="battle-actions">${aiBattle.over ? `<button class="btn" id="endAiBtn">팀 다시 구성</button>` : `<button class="btn" id="attackAiBtn">공격</button>`}</div>
+    </div>`;
+  if (aiBattle.over) {
+    document.getElementById('endAiBtn').addEventListener('click', function() { aiBattle = null; renderBattleSetup(); });
+  } else {
+    document.getElementById('attackAiBtn').addEventListener('click', doAiTurn);
+  }
+}
+
+function doAiTurn() {
+  const p = aiBattle.player[aiBattle.pActive];
+  const e = aiBattle.enemy[aiBattle.eActive];
+  const order = p.spd >= e.spd ? ['p', 'e'] : ['e', 'p'];
+  for (const side of order) {
+    if (aiBattle.over) break;
+    if (side === 'p') {
+      if (p.curHp <= 0) continue;
+      const mult = getEffMult(p.type, e.type);
+      const rarityBonus = getRarityDamageBonus(state.owned[p.engName]?.rarity);
+      const dmg = Math.max(3, Math.round(p.atk * mult - e.def * 0.35) + rarityBonus);
+      e.curHp -= dmg;
+      addAiLog(p.name + '의 공격! ' + e.name + '에게 ' + dmg + ' 피해' + (mult > 1 ? ' (효과 굉장!)' : mult < 1 ? ' (효과 별로...)' : ''), mult > 1 ? 'eff' : mult < 1 ? 'bad' : '');
+      if (e.curHp <= 0) {
+        addAiLog(e.name + ' 쓰러짐!', 'sys');
+        const next = aiBattle.enemy.findIndex((c, i) => i > aiBattle.eActive && c.curHp > 0);
+        if (next === -1) { endAiBattle(true); break; }
+        aiBattle.eActive = next;
+        addAiLog('상대가 ' + aiBattle.enemy[next].name + '을(를) 내보냈다!', 'sys');
+      }
+    } else {
+      const ee = aiBattle.enemy[aiBattle.eActive];
+      if (ee.curHp <= 0) continue;
+      const mult = getEffMult(ee.type, p.type);
+      const dmg = Math.max(3, Math.round(ee.atk * mult - p.def * 0.35));
+      p.curHp -= dmg;
+      addAiLog(ee.name + '의 공격! ' + p.name + '에게 ' + dmg + ' 피해' + (mult > 1 ? ' (효과 굉장!)' : mult < 1 ? ' (효과 별로...)' : ''), mult > 1 ? 'bad' : mult < 1 ? 'eff' : '');
+      if (p.curHp <= 0) {
+        addAiLog(p.name + ' 쓰러짐!', 'sys');
+        const next = aiBattle.player.findIndex((c, i) => i > aiBattle.pActive && c.curHp > 0);
+        if (next === -1) { endAiBattle(false); break; }
+        aiBattle.pActive = next;
+        addAiLog(aiBattle.player[next].name + '을(를) 내보냈다!', 'sys');
+      }
+    }
+  }
+  renderAiArena();
+}
+
+function endAiBattle(playerWon) {
+  aiBattle.over = true;
+  if (playerWon) { state.wins++; addAiLog('승리! 🎉', 'eff'); }
+  else { state.losses++; addAiLog('패배...', 'bad'); }
+  updateStatline(); saveState();
+}
+
+// ===== Firebase PVP 배틀 =====
+function renderPvpIntro() {
+  document.getElementById('battleBody').innerHTML = `
+    <div class="room-box">
+      <div style="font-family:var(--font-mono);font-size:10px;color:#B7AFDE;">Firebase로 친구와 실시간 배틀!</div>
+      <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;justify-content:center;">
+        <button class="btn block" id="createRoomBtn" style="flex:1;min-width:80px;font-size:13px;padding:8px;">🚀 방 만들기</button>
+      </div>
+      <div style="margin:10px 0 3px;font-family:var(--font-mono);font-size:9px;color:#8d84b0;">— 또는 —</div>
+      <input class="room-input" id="joinCodeInput" maxlength="4" inputmode="numeric" placeholder="0000">
+      <button class="btn ghost block" id="joinRoomBtn">코드로 참가</button>
+      <div class="quiz-feedback" id="pvpFeedback" style="margin-top:6px;"></div>
+    </div>`;
+  document.getElementById('createRoomBtn').addEventListener('click', createBattleRoom);
+  document.getElementById('joinRoomBtn').addEventListener('click', function() {
+    const code = document.getElementById('joinCodeInput').value.trim();
+    if (code.length !== 4) { setPvpFeedback('4자리 코드를 입력해주세요', true); return; }
+    joinBattleRoom(code);
+  });
+}
+
+function setPvpFeedback(msg, bad) {
+  const el = document.getElementById('pvpFeedback');
+  if (el) { el.textContent = msg; el.className = 'quiz-feedback ' + (bad ? 'no' : 'ok'); }
+}
+
+async function createBattleRoom() {
+  if (state.team.filter(x => x).length < 3) {
+    setPvpFeedback('배틀 팀을 먼저 구성해주세요! (3장 필요)', true);
+    return;
+  }
+  
+  const code = String(Math.floor(1000 + Math.random() * 9000));
+  const team = state.team.map(engName => {
+    const c = getPokemonByName(engName);
+    return c ? { ...c, curHp: c.hp } : null;
+  }).filter(Boolean);
+  
+  const roomData = {
+    host: team,
+    guest: null,
+    turn: 'host',
+    status: 'waiting',
+    log: ['🔵 방이 생성됐어요! 친구를 기다리는 중...'],
+    createdAt: Date.now(),
+    winner: null
+  };
+  
+  try {
+    await db.ref('battles/' + code).set(roomData);
+    myBattleRoom = { code, side: 'host' };
+    setPvpFeedback('✅ 방 생성! 코드: ' + code, false);
+    setupBattleListener(code);
+    showWaitingRoom(code);
+  } catch (e) {
+    setPvpFeedback('방 생성 실패: ' + e.message, true);
+  }
+}
+
+async function joinBattleRoom(code) {
+  if (state.team.filter(x => x).length < 3) {
+    setPvpFeedback('배틀 팀을 먼저 구성해주세요! (3장 필요)', true);
+    return;
+  }
+  
+  try {
+    const snapshot = await db.ref('battles/' + code).once('value');
+    const room = snapshot.val();
+    
+    if (!room) {
+      setPvpFeedback('코드를 찾을 수 없어요', true);
+      return;
+    }
+    
+    if (room.status !== 'waiting' || room.guest) {
+      setPvpFeedback('이미 배틀이 진행 중인 방이에요', true);
+      return;
+    }
+    
+    const team = state.team.map(engName => {
+      const c = getPokemonByName(engName);
+      return c ? { ...c, curHp: c.hp } : null;
+    }).filter(Boolean);
+    
+    await db.ref('battles/' + code).update({
+      guest: team,
+      status: 'active',
+      turn: 'host',
+      log: ['🟢 친구가 참가했어요! 배틀 시작!']
+    });
+    
+    myBattleRoom = { code, side: 'guest' };
+    setPvpFeedback('✅ 배틀에 참가했어요!', false);
+    setupBattleListener(code);
+    showWaitingRoom(code);
+  } catch (e) {
+    setPvpFeedback('참가 실패: ' + e.message, true);
+  }
+}
+
+function setupBattleListener(code) {
+  if (battleListener) {
+    battleListener.off();
+  }
+  
+  battleListener = db.ref('battles/' + code);
+  battleListener.on('value', function(snapshot) {
+    const room = snapshot.val();
+    if (!room) {
+      document.getElementById('battleBody').innerHTML = '<div class="empty-note">방이 사라졌어요</div>';
+      return;
+    }
+    
+    if (room.status === 'waiting') {
+      showWaitingRoom(code);
+    } else {
+      renderBattleArena(room);
+    }
+  });
+}
+
+function showWaitingRoom(code) {
+  document.getElementById('battleBody').innerHTML = `
+    <div class="room-box">
+      <div style="font-family:var(--font-mono);font-size:9px;color:#B7AFDE;">친구에게 이 코드를 알려주세요</div>
+      <div class="room-code">${code}</div>
+      <div style="font-family:var(--font-mono);font-size:10px;color:var(--sun-2);" class="waiting-dots">친구를 기다리는 중</div>
+      <button class="btn ghost small" id="cancelRoomBtn" style="margin-top:10px;">방 나가기</button>
+    </div>`;
+  document.getElementById('cancelRoomBtn').addEventListener('click', leaveBattleRoom);
+}
+
+function renderBattleArena(room) {
+  if (!myBattleRoom) return;
+  
+  const mySide = myBattleRoom.side;
+  const oppSide = mySide === 'host' ? 'guest' : 'host';
+  const me = room[mySide];
+  const opp = room[oppSide];
+  
+  if (!me || !opp) {
+    document.getElementById('battleBody').innerHTML = '<div class="empty-note">상대방이 아직 팀을 선택하지 않았어요...</div>';
+    return;
+  }
+  
+  const myPokemon = me[0];
+  const oppPokemon = opp[0];
+  const myTurn = room.turn === mySide;
+  const isFinished = room.status === 'finished';
+  
+  document.getElementById('battleBody').innerHTML = `
+    <div class="arena">
+      <div class="vs-row">
+        <div class="fighter">
+          <div class="art-wrap">${pokemonImage(myPokemon)}</div>
+          <div class="fname">${myPokemon.name}</div>
+          <div class="hpbar ${myPokemon.curHp / myPokemon.hp < 0.3 ? 'low' : ''}">
+            <div style="width:${Math.max(0, myPokemon.curHp / myPokemon.hp * 100)}%"></div>
+          </div>
+          <div class="hptext">${Math.max(0, myPokemon.curHp)} / ${myPokemon.hp}</div>
+        </div>
+        <div class="vs-seal">VS</div>
+        <div class="fighter">
+          <div class="art-wrap">${pokemonImage(oppPokemon)}</div>
+          <div class="fname">${oppPokemon.name}</div>
+          <div class="hpbar ${oppPokemon.curHp / oppPokemon.hp < 0.3 ? 'low' : ''}">
+            <div style="width:${Math.max(0, oppPokemon.curHp / oppPokemon.hp * 100)}%"></div>
+          </div>
+          <div class="hptext">${Math.max(0, oppPokemon.curHp)} / ${oppPokemon.hp}</div>
+        </div>
+      </div>
+      
+      ${isFinished ? `
+        <div class="turn-banner" style="font-size:13px;">
+          ${room.winner === mySide ? '🎉 승리!' : room.winner === oppSide ? '아쉬워요...' : '무승부!'}
+        </div>
+      ` : `
+        <div class="turn-banner">${myTurn ? '🔥 내 차례! 공격!' : '⏳ 상대 차례...'}</div>
+      `}
+      
+      <div class="log">
+        ${room.log && room.log.length > 0 ? room.log.map(t => '<p>' + t + '</p>').join('') : '<p>배틀 시작!</p>'}
+      </div>
+      
+      <div class="battle-actions">
+        ${isFinished ? `
+          <button class="btn" id="exitBattleBtn">방 나가기</button>
+        ` : `
+          <button class="btn" id="attackBtn" ${myTurn && !isFinished ? '' : 'disabled'}>⚔️ 공격</button>
+          <button class="btn ghost small" id="exitBattleBtn2">나가기</button>
+        `}
+      </div>
+    </div>
+  `;
+  
+  if (isFinished) {
+    document.getElementById('exitBattleBtn').addEventListener('click', leaveBattleRoom);
+    if (room.winner === mySide && !room._counted) {
+      state.wins++;
+      updateStatline();
+      saveState();
+      db.ref('battles/' + myBattleRoom.code).update({ _counted: true });
+    }
+  } else {
+    document.getElementById('attackBtn')?.addEventListener('click', doBattleAttack);
+    document.getElementById('exitBattleBtn2')?.addEventListener('click', leaveBattleRoom);
+  }
+}
+
+async function doBattleAttack() {
+  if (!myBattleRoom) return;
+  
+  const code = myBattleRoom.code;
+  const mySide = myBattleRoom.side;
+  const oppSide = mySide === 'host' ? 'guest' : 'host';
+  
+  try {
+    const snapshot = await db.ref('battles/' + code).once('value');
+    const room = snapshot.val();
+    
+    if (!room || room.status === 'finished') return;
+    if (room.turn !== mySide) return;
+    
+    const me = room[mySide];
+    const opp = room[oppSide];
+    
+    if (!me || !opp) return;
+    
+    const myPokemon = me[0];
+    const oppPokemon = opp[0];
+    
+    const mult = getEffMult(myPokemon.type, oppPokemon.type);
+    const rarityBonus = getRarityDamageBonus(state.owned[myPokemon.engName]?.rarity);
+    const dmg = Math.max(3, Math.round(myPokemon.atk * mult - oppPokemon.def * 0.35) + rarityBonus);
+    oppPokemon.curHp = Math.max(0, oppPokemon.curHp - dmg);
+    
+    let logMsg = myPokemon.name + '의 공격! ' + oppPokemon.name + '에게 ' + dmg + ' 피해';
+    if (mult > 1) logMsg += ' (효과 굉장!)';
+    else if (mult < 1) logMsg += ' (효과 별로...)';
+    
+    let nextTurn = oppSide;
+    if (oppPokemon.curHp <= 0) {
+      logMsg += ' → ' + oppPokemon.name + ' 쓰러짐!';
+      const nextIdx = opp.findIndex((p, i) => i > 0 && p.curHp > 0);
+      if (nextIdx === -1) {
+        await db.ref('battles/' + code).update({
+          status: 'finished',
+          winner: mySide,
+          log: [logMsg, ...(room.log || [])]
+        });
+        return;
+      } else {
+        const nextPokemon = opp[nextIdx];
+        opp[0] = nextPokemon;
+        opp.splice(nextIdx, 1);
+        logMsg += ' → 상대가 ' + nextPokemon.name + '을(를) 내보냈다!';
+        nextTurn = oppSide;
+      }
+    } else {
+      nextTurn = oppSide;
+    }
+    
+    await db.ref('battles/' + code).update({
+      [mySide]: me,
+      [oppSide]: opp,
+      turn: nextTurn,
+      log: [logMsg, ...(room.log || [])]
+    });
+    
+  } catch (e) {
+    console.error('공격 실패:', e);
+    setPvpFeedback('공격 중 오류가 발생했어요', true);
+  }
+}
+
+function leaveBattleRoom() {
+  if (battleListener) {
+    battleListener.off();
+    battleListener = null;
+  }
+  
+  if (myBattleRoom) {
+    if (myBattleRoom.side === 'host') {
+      db.ref('battles/' + myBattleRoom.code).remove().catch(() => {});
+    }
+    myBattleRoom = null;
+  }
+  
+  document.getElementById('battleBody').innerHTML = '<div class="empty-note">배틀에서 나갔어요</div>';
+  setTimeout(() => renderBattleSetup(), 500);
+}
+
+// ===== 카드 교환 =====
+function renderTradeTab() {
+  const container = document.getElementById('tradeContent');
+  const ownedCards = Object.keys(state.owned).filter(key => state.owned[key].count > 0);
+  
+  if (ownedCards.length < 1) {
+    container.innerHTML = `
+      <div class="trade-info" style="padding:16px;text-align:center;">
+        <div style="font-size:40px;">😅</div>
+        <div style="font-size:15px;margin-top:6px;">카드가 부족해요!</div>
+        <div style="color:#B7AFDE;font-size:11px;margin-top:3px;">미션을 완료해서 카드를 먼저 모아주세요!</div>
+      </div>
+    `;
+    return;
+  }
+  
+  container.innerHTML = `
+    <div class="trade-info">📌 같은 교환 코드를 입력한 친구와 1:1 교환!</div>
+    
+    <div style="display:flex;gap:6px;margin:8px 0;flex-wrap:wrap;">
+      <button class="btn small" id="createTradeBtn" style="flex:1;">🚀 교환방 만들기</button>
+    </div>
+    <div style="text-align:center;font-size:10px;color:#8d84b0;">— 또는 —</div>
+    <div style="display:flex;gap:5px;margin:6px 0;">
+      <input class="room-input" id="tradeCodeInput" maxlength="4" inputmode="numeric" placeholder="0000" style="flex:1;font-size:16px;padding:5px;">
+      <button class="btn small" id="joinTradeBtn">참가</button>
+    </div>
+    
+    <div id="tradeStatus" class="trade-status" style="display:none;"></div>
+    
+    <div style="margin-top:8px;padding:8px;background:rgba(255,255,255,.05);border-radius:8px;">
+      <div style="font-size:10px;color:#B7AFDE;margin-bottom:3px;">📤 내가 보낼 카드</div>
+      <select id="tradeCardSelect">
+        ${ownedCards.map(key => {
+          const c = getPokemonByName(key);
+          const info = state.owned[key];
+          return `<option value="${key}">${c ? c.name : key} (${getRarityInfo(info.rarity).label} ×${info.count})</option>`;
+        }).join('')}
+      </select>
+    </div>
+    
+    <div id="tradeStatusDisplay" class="trade-status">
+      ⏳ 교환방에 참가하면 상태가 표시돼요
+    </div>
+    
+    <div style="display:flex;gap:6px;margin-top:6px;">
+      <button class="btn block" id="sendTradeBtn" style="font-size:13px;padding:8px;flex:1;" disabled>
+        📤 교환 요청
+      </button>
+      <button class="btn good block" id="confirmTradeBtn" style="font-size:13px;padding:8px;flex:1;display:none;">
+        ✅ 최종 교환
+      </button>
+    </div>
+    
+    <div style="margin-top:8px;padding:8px;background:rgba(255,255,255,.03);border-radius:8px;">
+      <div style="font-size:10px;color:#B7AFDE;margin-bottom:3px;">📨 상대방 정보</div>
+      <div id="tradePartnerInfo" style="font-size:11px;color:#8d84b0;text-align:center;padding:3px;">
+        아직 참가자가 없어요
+      </div>
+    </div>
+    
+    <button class="btn small ghost block" style="margin-top:6px;" onclick="leaveTradeRoom(); renderTradeTab();">방 나가기</button>
+  `;
+  
+  document.getElementById('createTradeBtn').addEventListener('click', createTradeRoom);
+  document.getElementById('joinTradeBtn').addEventListener('click', function() {
+    const code = document.getElementById('tradeCodeInput').value.trim();
+    if (code.length !== 4) {
+      alert('4자리 코드를 입력해주세요!');
+      return;
+    }
+    joinTradeRoom(code);
+  });
+  document.getElementById('sendTradeBtn').addEventListener('click', sendTradeRequest);
+  document.getElementById('confirmTradeBtn').addEventListener('click', confirmTrade);
+}
+
+// ===== 교환 함수들 =====
+async function createTradeRoom() {
+  const code = String(Math.floor(1000 + Math.random() * 9000));
+  
+  const roomData = {
+    host: { id: 'host', card: null, ready: false, confirmed: false },
+    guest: null,
+    status: 'waiting',
+    log: ['🔵 교환방이 생성됐어요! 친구를 기다리는 중...'],
+    createdAt: Date.now(),
+    completed: false
+  };
+  
+  try {
+    await db.ref('trades/' + code).set(roomData);
+    myTradeRoom = { code, side: 'host' };
+    
+    const statusEl = document.getElementById('tradeStatus');
+    statusEl.style.display = 'block';
+    statusEl.innerHTML = `
+      <div style="color:var(--sun-2);">✅ 교환방 생성! 코드: <strong>${code}</strong></div>
+      <div style="font-size:9px;color:#B7AFDE;" class="waiting-dots">친구를 기다리는 중...</div>
+    `;
+    document.getElementById('sendTradeBtn').disabled = false;
+    document.getElementById('confirmTradeBtn').style.display = 'none';
+    updateTradeUI2('⏳ 친구를 기다리는 중...', 'waiting');
+    
+    setupTradeListener2(code);
+  } catch (e) {
+    alert('❌ 방 생성 실패: ' + e.message);
+  }
+}
+
+async function joinTradeRoom(code) {
+  try {
+    const snapshot = await db.ref('trades/' + code).once('value');
+    const room = snapshot.val();
+    
+    if (!room) {
+      alert('코드를 찾을 수 없어요!');
+      return;
+    }
+    
+    if (room.status !== 'waiting' || room.guest) {
+      alert('이미 교환이 진행 중인 방이에요');
+      return;
+    }
+    
+    await db.ref('trades/' + code).update({
+      guest: { id: 'guest', card: null, ready: false, confirmed: false },
+      status: 'ready',
+      log: ['🟢 친구가 참가했어요! 카드를 선택해주세요!']
+    });
+    
+    myTradeRoom = { code, side: 'guest' };
+    
+    const statusEl = document.getElementById('tradeStatus');
+    statusEl.style.display = 'block';
+    statusEl.innerHTML = `
+      <div style="color:var(--sun-2);">✅ 교환방에 참가했어요!</div>
+      <div style="font-size:9px;color:#B7AFDE;">코드: ${code}</div>
+    `;
+    document.getElementById('sendTradeBtn').disabled = false;
+    document.getElementById('confirmTradeBtn').style.display = 'none';
+    updateTradeUI2('✅ 참가 완료! 카드를 선택해주세요.', 'ready');
+    
+    setupTradeListener2(code);
+  } catch (e) {
+    alert('❌ 참가 실패: ' + e.message);
+  }
+}
+
+function setupTradeListener2(code) {
+  if (tradeListener) {
+    try {
+      tradeListener.off();
+    } catch(e) {
+      console.log('리스너 제거 실패:', e);
+    }
+    tradeListener = null;
+  }
+  
+  if (!firebase.database()) {
+    console.error('Firebase 연결 불가');
+    return;
+  }
+  
+  try {
+    tradeListener = db.ref('trades/' + code);
+    tradeListener.on('value', function(snapshot) {
+      try {
+        const room = snapshot.val();
+        if (!room) {
+          document.getElementById('tradePartnerInfo').innerHTML = '❌ 방이 사라졌어요';
+          return;
+        }
+        
+        const mySide = myTradeRoom.side;
+        const oppSide = mySide === 'host' ? 'guest' : 'host';
+        const me = room[mySide];
+        const opp = room[oppSide];
+        
+        if (opp) {
+          const oppCard = opp.card ? getPokemonByName(opp.card) : null;
+          document.getElementById('tradePartnerInfo').innerHTML = `
+            <div style="display:flex;justify-content:space-between;align-items:center;font-size:10px;">
+              <span>👤 ${mySide === 'host' ? '게스트' : '호스트'}</span>
+              <span>${oppCard ? '📤 ' + oppCard.name + ' (선택됨)' : '⏳ 카드 선택 중...'}</span>
+              <span>${opp.ready ? '✅ 준비 완료' : '⏳ 대기 중'}</span>
+              ${opp.confirmed ? '<span style="color:var(--good);">✅ 최종 확인 완료</span>' : ''}
+            </div>
+          `;
+        } else {
+          document.getElementById('tradePartnerInfo').innerHTML = '👤 아직 참가자가 없어요';
+        }
+        
+        const status = room.status;
+        
+        if (status === 'ready') {
+          if (me && me.card && opp && opp.card) {
+            document.getElementById('sendTradeBtn').style.display = 'none';
+            document.getElementById('confirmTradeBtn').style.display = 'block';
+            
+            if (me.confirmed) {
+              document.getElementById('confirmTradeBtn').disabled = true;
+              document.getElementById('confirmTradeBtn').textContent = '⏳ 확인 완료 (상대방 대기 중)';
+              updateTradeUI2('⏳ 상대방의 최종 확인을 기다리는 중...', 'confirm');
+            } else {
+              document.getElementById('confirmTradeBtn').disabled = false;
+              document.getElementById('confirmTradeBtn').textContent = '✅ 최종 교환';
+              updateTradeUI2('✅ 양쪽 모두 카드를 선택했어요! "최종 교환"을 눌러주세요.', 'confirm');
+            }
+          } else {
+            document.getElementById('sendTradeBtn').style.display = 'block';
+            document.getElementById('confirmTradeBtn').style.display = 'none';
+            updateTradeUI2('⏳ 상대방이 카드를 선택하는 중...', 'ready');
+          }
+        } else if (status === 'confirm') {
+          document.getElementById('sendTradeBtn').style.display = 'none';
+          document.getElementById('confirmTradeBtn').style.display = 'block';
+          
+          if (me.confirmed) {
+            document.getElementById('confirmTradeBtn').disabled = true;
+            document.getElementById('confirmTradeBtn').textContent = '⏳ 확인 완료 (상대방 대기 중)';
+            updateTradeUI2('⏳ 상대방의 최종 확인을 기다리는 중...', 'confirm');
+          } else {
+            document.getElementById('confirmTradeBtn').disabled = false;
+            document.getElementById('confirmTradeBtn').textContent = '✅ 최종 교환 (상대방 확인 완료!)';
+            updateTradeUI2('🔥 상대방이 확인했어요! "최종 교환"을 눌러주세요.', 'confirm');
+          }
+        } else if (status === 'completed') {
+          document.getElementById('sendTradeBtn').style.display = 'none';
+          document.getElementById('confirmTradeBtn').style.display = 'none';
+          updateTradeUI2('✅ 교환이 완료되었어요! 🎉', 'completed');
+          document.getElementById('tradePartnerInfo').innerHTML = '✅ 교환 완료!';
+          renderDex();
+          updateStatline();
+        }
+        
+      } catch (e) {
+        console.error('교환 리스너 처리 오류:', e);
+      }
+    }, function(error) {
+      console.error('Firebase 읽기 오류:', error);
+    });
+    
+    console.log('✅ 교환 리스너 등록 완료:', code);
+    
+  } catch (e) {
+    console.error('리스너 등록 실패:', e);
+  }
+}
+
+function updateTradeUI2(message, status) {
+  const el = document.getElementById('tradeStatusDisplay');
+  if (!el) return;
+  
+  const statusColors = {
+    'waiting': '#B7AFDE',
+    'ready': '#FFC93C',
+    'confirm': '#FF6B35',
+    'completed': '#4CAF7D'
+  };
+  
+  el.innerHTML = message;
+  el.style.color = statusColors[status] || '#B7AFDE';
+  el.style.border = '1px solid ' + (statusColors[status] || 'transparent');
+}
+
+async function sendTradeRequest() {
+  if (!myTradeRoom) {
+    alert('먼저 교환방에 참가해주세요!');
+    return;
+  }
+  
+  const fromKey = document.getElementById('tradeCardSelect').value;
+  if (!state.owned[fromKey] || state.owned[fromKey].count < 1) {
+    alert('보낼 카드가 없어요!');
+    return;
+  }
+  
+  try {
+    const roomRef = db.ref('trades/' + myTradeRoom.code);
+    const snapshot = await roomRef.once('value');
+    const room = snapshot.val();
+    
+    if (room.completed || room.status === 'completed') {
+      alert('이미 교환이 완료되었어요!');
+      return;
+    }
+    
+    const updateData = {};
+    updateData[myTradeRoom.side + '/card'] = fromKey;
+    updateData[myTradeRoom.side + '/ready'] = true;
+    updateData.log = ['📤 ' + getPokemonByName(fromKey)?.name + ' 카드를 선택했어요!'].concat(room.log || []);
+    
+    const oppSide = myTradeRoom.side === 'host' ? 'guest' : 'host';
+    const opp = room[oppSide];
+    
+    if (opp && opp.card && opp.ready) {
+      updateData.status = 'ready';
+      updateData.log = ['✅ 양쪽 모두 카드를 선택했어요! 최종 교환을 눌러주세요!'].concat(updateData.log || []);
+    }
+    
+    await roomRef.update(updateData);
+    
+    if (opp && opp.card && opp.ready) {
+      alert('✅ 상대방도 카드를 선택했어요! "최종 교환" 버튼을 눌러주세요.');
+    } else {
+      alert('✅ 카드를 선택했어요! 상대방의 선택을 기다리는 중...');
+    }
+  } catch (e) {
+    alert('❌ 요청 실패: ' + e.message);
+  }
+}
+
+async function confirmTrade() {
+  if (!myTradeRoom) {
+    alert('교환방에 참가해주세요!');
+    return;
+  }
+  
+  if (!confirm('정말로 교환을 진행할까요? (되돌릴 수 없어요!)')) {
+    return;
+  }
+  
+  try {
+    const roomRef = db.ref('trades/' + myTradeRoom.code);
+    const snapshot = await roomRef.once('value');
+    const room = snapshot.val();
+    
+    if (room.completed || room.status === 'completed') {
+      alert('이미 교환이 완료되었어요!');
+      return;
+    }
+    
+    const mySide = myTradeRoom.side;
+    const oppSide = mySide === 'host' ? 'guest' : 'host';
+    const me = room[mySide];
+    const opp = room[oppSide];
+    
+    if (!me || !opp || !me.card || !opp.card) {
+      alert('양쪽 모두 카드를 선택해야 해요!');
+      return;
+    }
+    
+    const updateData = {};
+    updateData[mySide + '/confirmed'] = true;
+    
+    if (opp.confirmed === true) {
+      await executeSafeTrade2(roomRef, room);
+    } else {
+      updateData.status = 'confirm';
+      updateData.log = ['⏳ ' + (mySide === 'host' ? '호스트' : '게스트') + '가 최종 확인했어요! 상대방도 확인해주세요.'].concat(room.log || []);
+      await roomRef.update(updateData);
+      
+      document.getElementById('confirmTradeBtn').disabled = true;
+      document.getElementById('confirmTradeBtn').textContent = '⏳ 확인 완료 (상대방 대기 중)';
+      
+      alert('✅ 최종 확인을 보냈어요! 상대방도 확인할 때까지 기다려주세요.');
+    }
+  } catch (e) {
+    alert('❌ 교환 실패: ' + e.message);
+  }
+}
+
+async function executeSafeTrade2(roomRef, room) {
+  const mySide = myTradeRoom.side;
+  const oppSide = mySide === 'host' ? 'guest' : 'host';
+  const myCard = room[mySide].card;
+  const oppCard = room[oppSide].card;
+  
+  const oppRarity = state.owned[oppCard]?.rarity || 'common';
+  
+  try {
+    if (room.completed || room.status === 'completed') {
+      alert('이미 교환이 완료되었어요!');
+      return;
+    }
+    
+    state.owned[myCard].count -= 1;
+    if (state.owned[myCard].count <= 0) {
+      delete state.owned[myCard];
+    }
+    
+    if (!state.owned[oppCard]) {
+      state.owned[oppCard] = { count: 1, rarity: oppRarity };
+    } else {
+      state.owned[oppCard].count += 1;
+    }
+    
+    await roomRef.update({
+      status: 'completed',
+      completed: true,
+      log: ['✅ 교환 완료! ' + getPokemonByName(myCard)?.name + ' ↔ ' + getPokemonByName(oppCard)?.name].concat(room.log || [])
+    });
+    
+    saveState();
+    renderDex();
+    updateStatline();
+    alert('✅ 교환이 완료되었어요! 🎉');
+    leaveTradeRoom();
+    renderTradeTab();
+  } catch (e) {
+    alert('❌ 교환 중 오류가 발생했어요. 다시 시도해주세요.');
+    console.error('교환 오류:', e);
+  }
+}
+
+function leaveTradeRoom() {
+  if (typeof tradeListener !== 'undefined' && tradeListener) {
+    try {
+      tradeListener.off();
+    } catch(e) {
+      console.log('리스너 해제 실패:', e);
+    }
+    tradeListener = null;
+  }
+  
+  if (myTradeRoom) {
+    if (myTradeRoom.side === 'host') {
+      db.ref('trades/' + myTradeRoom.code).remove().catch(function(e) {
+        console.log('방 삭제 실패:', e);
+      });
+    }
+    myTradeRoom = null;
+  }
+  
+  const statusEl = document.getElementById('tradeStatus');
+  if (statusEl) {
+    statusEl.style.display = 'none';
+    statusEl.innerHTML = '';
+  }
+  
+  const sendBtn = document.getElementById('sendTradeBtn');
+  if (sendBtn) {
+    sendBtn.disabled = true;
+    sendBtn.style.display = 'block';
+  }
+  
+  const confirmBtn = document.getElementById('confirmTradeBtn');
+  if (confirmBtn) {
+    confirmBtn.style.display = 'none';
+  }
+  
+  const partnerEl = document.getElementById('tradePartnerInfo');
+  if (partnerEl) {
+    partnerEl.innerHTML = '아직 참가자가 없어요';
+  }
+  
+  const displayEl = document.getElementById('tradeStatusDisplay');
+  if (displayEl) {
+    displayEl.innerHTML = '⏳ 교환방에 참가하면 상태가 표시돼요';
+    displayEl.style.color = '#B7AFDE';
+    displayEl.style.border = '1px solid transparent';
+  }
+}
+
+// ===== 소유 필터 =====
+document.querySelectorAll('#ownershipFilter .chip').forEach(chip => {
+  chip.addEventListener('click', function() {
+    document.querySelectorAll('#ownershipFilter .chip').forEach(c => c.classList.remove('active'));
+    this.classList.add('active');
+    ownershipFilter = this.dataset.ownership;
+    renderDex();
+  });
+});
+
+// ===== 등급 필터 =====
+document.querySelectorAll('[data-rarity]').forEach(chip => {
+  chip.addEventListener('click', function() {
+    activeRarity = this.dataset.rarity;
+    document.querySelectorAll('[data-rarity]').forEach(c => c.classList.remove('active'));
+    this.classList.add('active');
+    renderDex();
+  });
+});
+
+// ===== 초기화 =====
+async function initGame() {
+  document.getElementById('loadingScreen').style.display = 'block';
+  document.querySelectorAll('section').forEach(s => s.style.display = 'none');
+  
+  const hasSavedData = loadState();
+  await loadAllPokemon();
+  EVOLVABLE_POKEMON_LIST = await getAllEvolvablePokemon();
+  
+  if (!hasSavedData) {
+    console.log('🆕 첫 실행 - 새 상태 생성');
+    state.owned = {};
+    state.wins = 0;
+    state.missionsWon = 0;
+    state.team = [];
+    state.dailyMissions = {};
+    state.customMissions = [];
+    state.pet = null;
+    state.quizStats = { total: 0, correct: 0 };
+    state.quizDoneToday = null;
+    state.playerAge = null;
+    state.mathQuiz = { today: null, answered: false, correct: false };
+    state.mathStats = { total: 0, correct: 0 };
+    state.raid = { boss: null, hp: 0, maxHp: 0, completed: false, today: null, rewardCollected: false, attackChance: 0 };
+    saveState();
+  }
+  
+  document.getElementById('loadingStatus').textContent = 
+    '✅ ' + POKEMON_LIST.length + '마리 | 진화: ' + EVOLVABLE_POKEMON_LIST.length + '종 | 보유: ' + Object.keys(state.owned).length + '마리';
+  
+  document.getElementById('loadingScreen').style.display = 'none';
+  
+  // 🔥 나이 설정 확인
+  if (!state.playerAge) {
+    document.getElementById('ageScreen').style.display = 'block';
+    document.querySelectorAll('section').forEach(s => s.style.display = 'none');
+  } else {
+    document.querySelectorAll('section').forEach(s => s.style.display = '');
+    document.getElementById('tab-mission').classList.add('active');
+    renderAll();  // 🔥 renderAll() 안에 renderMathQuiz()가 포함됨
+  }
+}
+
+function renderAll() {
+  updateStatline();
+  renderFilters();
+  renderDex();
+  renderQuizMission();
+  renderBattleSetup();
+  renderPetTab();
+  renderTradeTab();
+  renderRaidMission();
+  renderMathQuiz();
+}
+
+// ===== 실행 =====
+initGame();
+</script>
+</body>
+</html>
