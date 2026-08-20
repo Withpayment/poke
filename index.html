@@ -4287,6 +4287,7 @@ document.querySelectorAll('[data-rarity]').forEach(chip => {
 });
 
 // ===== 초기화 =====
+// ===== 🔥 수정된 initGame =====
 async function initGame() {
   document.getElementById('loadingScreen').style.display = 'block';
   document.querySelectorAll('section').forEach(s => s.style.display = 'none');
@@ -4307,25 +4308,35 @@ async function initGame() {
     state.quizStats = { total: 0, correct: 0 };
     state.quizDoneToday = null;
     state.playerAge = null;
-    state.mathQuiz = { today: null, answered: false, correct: false };
+    state.mathQuiz = { today: null, questions: [], currentIndex: 0, results: [], completed: false };
     state.mathStats = { total: 0, correct: 0 };
     state.raid = { boss: null, hp: 0, maxHp: 0, completed: false, today: null, rewardCollected: false, attackChance: 0 };
     saveState();
   }
+  
+  // 🔥🔥🔥 여기에 추가! (날짜 변경 감지 시작)
+  let lastCheckedDate = todayKey();
+  setInterval(function() {
+    const currentDate = todayKey();
+    if (currentDate !== lastCheckedDate) {
+      console.log('📅 새 날짜 감지! (' + lastCheckedDate + ' → ' + currentDate + ')');
+      lastCheckedDate = currentDate;
+      resetDailyContent();
+    }
+  }, 60000); // 1분마다 확인
   
   document.getElementById('loadingStatus').textContent = 
     '✅ ' + POKEMON_LIST.length + '마리 | 진화: ' + EVOLVABLE_POKEMON_LIST.length + '종 | 보유: ' + Object.keys(state.owned).length + '마리';
   
   document.getElementById('loadingScreen').style.display = 'none';
   
-  // 🔥 나이 설정 확인
   if (!state.playerAge) {
     document.getElementById('ageScreen').style.display = 'block';
     document.querySelectorAll('section').forEach(s => s.style.display = 'none');
   } else {
     document.querySelectorAll('section').forEach(s => s.style.display = '');
     document.getElementById('tab-mission').classList.add('active');
-    renderAll();  // 🔥 renderAll() 안에 renderMathQuiz()가 포함됨
+    renderAll();
   }
 }
 
@@ -4339,6 +4350,38 @@ function renderAll() {
   renderTradeTab();
   renderRaidMission();
   renderMathQuiz();
+}
+
+// ===== 🔥 여기에 추가 (initGame 함수 위쪽) =====
+function resetDailyContent() {
+  const key = todayKey();
+  
+  // 퀴즈 초기화
+  state.quizDoneToday = null;
+  currentQuiz = { questions: [], currentIndex: 0, correctCount: 0, isFinished: false };
+  
+  // 생활미션 초기화 (오늘 날짜로 새로 설정)
+  if (!state.dailyMissions[key]) {
+    state.dailyMissions[key] = {};
+  }
+  
+  // 수학퀴즈 초기화
+  state.mathQuiz = { today: null, questions: [], currentIndex: 0, results: [], completed: false };
+  
+  // 레이드 초기화 (날짜가 바뀌면 새 보스 출현)
+  if (state.raid && state.raid.today !== key) {
+    state.raid = { boss: null, hp: 0, maxHp: 0, completed: false, today: null, rewardCollected: false, attackChance: 0 };
+  }
+  
+  saveState();
+  
+  // 화면 새로고침 (현재 열린 탭에 따라)
+  renderQuizMission();
+  renderMathQuiz();
+  renderLifeMissions();
+  renderRaidMission();
+  
+  console.log('✅ 오늘의 콘텐츠가 초기화되었어요!');
 }
 
 // ===== 실행 =====
