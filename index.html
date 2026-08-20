@@ -2220,7 +2220,6 @@ function generateSingleMathQuestion(age) {
   };
 }
 
-// ===== 🔥 수학 퀴즈 정답 처리 =====
 function checkMathAnswer2(selectedIdx) {
   const q = state.mathQuiz;
   if (!q || q.completed) return;
@@ -2240,7 +2239,7 @@ function checkMathAnswer2(selectedIdx) {
     fb.className = 'feedback ok';
     q.results.push(true);
     
-    // 보상: 경험치 10% + 카드 15%
+    // 경험치 10%
     if (state.pet) {
       const threshold = petExpThreshold();
       const expBonus = Math.max(1, Math.round(threshold * 0.1));
@@ -2260,7 +2259,7 @@ function checkMathAnswer2(selectedIdx) {
     const gotCard = Math.random() * 100 < 15;
     if (gotCard) {
       grantCardReward();
-    }
+    }  // ← 🔥 여기 }가 필요했음!
     
   } else {
     buttons[selectedIdx].classList.add('wrong');
@@ -2278,7 +2277,7 @@ function checkMathAnswer2(selectedIdx) {
   saveState();
   updateStatline();
   
-  setTimeout(function() {
+  setTimeout(() => {
     q.currentIndex++;
     if (q.currentIndex >= q.questions.length) {
       q.completed = true;
