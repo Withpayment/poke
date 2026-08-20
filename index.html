@@ -3956,7 +3956,6 @@ function setupTradeListener2(code) {
           if (me && me.card && opp && opp.card) {
             document.getElementById('sendTradeBtn').style.display = 'none';
             document.getElementById('confirmTradeBtn').style.display = 'block';
-            
             if (me.confirmed) {
               document.getElementById('confirmTradeBtn').disabled = true;
               document.getElementById('confirmTradeBtn').textContent = '⏳ 확인 완료 (상대방 대기 중)';
@@ -3974,7 +3973,6 @@ function setupTradeListener2(code) {
         } else if (status === 'confirm') {
           document.getElementById('sendTradeBtn').style.display = 'none';
           document.getElementById('confirmTradeBtn').style.display = 'block';
-          
           if (me.confirmed) {
             document.getElementById('confirmTradeBtn').disabled = true;
             document.getElementById('confirmTradeBtn').textContent = '⏳ 확인 완료 (상대방 대기 중)';
@@ -3985,43 +3983,38 @@ function setupTradeListener2(code) {
             updateTradeUI2('🔥 상대방이 확인했어요! "최종 교환"을 눌러주세요.', 'confirm');
           }
         } else if (status === 'completed') {
-  document.getElementById('sendTradeBtn').style.display = 'none';
-  document.getElementById('confirmTradeBtn').style.display = 'none';
-  updateTradeUI2('✅ 교환이 완료되었어요! 🎉', 'completed');
-  document.getElementById('tradePartnerInfo').innerHTML = '✅ 교환 완료!';
-  
-  // 🔥🔥🔥 교환 결과 적용 (중복 실행 방지!)
-  if (room.exchangeResult && !room.exchangeResult._applied) {
-    const result = room.exchangeResult;
-    const mySide = myTradeRoom.side;
-    const myReceivedCard = mySide === 'host' ? result.oppCard : result.myCard;
-    const myReceivedRarity = mySide === 'host' ? result.oppRarity : result.myRarity;
-    const mySentCard = mySide === 'host' ? result.myCard : result.oppCard;
-    
-    // 🔥 내 카드 차감 (보낸 카드)
-    if (state.owned[mySentCard] && state.owned[mySentCard].count > 0) {
-      state.owned[mySentCard].count -= 1;
-      if (state.owned[mySentCard].count <= 0) {
-        delete state.owned[mySentCard];
-      }
-    }
-    
-    // 🔥 상대방 카드 추가 (받은 카드, 등급 유지!)
-    if (!state.owned[myReceivedCard]) {
-      state.owned[myReceivedCard] = { count: 1, rarity: myReceivedRarity };
-    } else {
-      state.owned[myReceivedCard].count += 1;
-    }
-    
-    result._applied = true;
-    saveState();
-    renderDex();
-    updateStatline();
-    
-    const pokemon = getPokemonByName(myReceivedCard);
-    alert(`✅ 교환 완료! ${pokemon ? pokemon.name : myReceivedCard} 카드를 받았어요! (${getRarityInfo(myReceivedRarity).label} 등급)`);
-  }
-}
+          document.getElementById('sendTradeBtn').style.display = 'none';
+          document.getElementById('confirmTradeBtn').style.display = 'none';
+          updateTradeUI2('✅ 교환이 완료되었어요! 🎉', 'completed');
+          document.getElementById('tradePartnerInfo').innerHTML = '✅ 교환 완료!';
+          
+          if (room.exchangeResult && !room.exchangeResult._applied) {
+            const result = room.exchangeResult;
+            const myReceivedCard = mySide === 'host' ? result.oppCard : result.myCard;
+            const myReceivedRarity = mySide === 'host' ? result.oppRarity : result.myRarity;
+            const mySentCard = mySide === 'host' ? result.myCard : result.oppCard;
+            
+            if (state.owned[mySentCard] && state.owned[mySentCard].count > 0) {
+              state.owned[mySentCard].count -= 1;
+              if (state.owned[mySentCard].count <= 0) {
+                delete state.owned[mySentCard];
+              }
+            }
+            
+            if (!state.owned[myReceivedCard]) {
+              state.owned[myReceivedCard] = { count: 1, rarity: myReceivedRarity };
+            } else {
+              state.owned[myReceivedCard].count += 1;
+            }
+            
+            result._applied = true;
+            saveState();
+            renderDex();
+            updateStatline();
+            
+            const pokemon = getPokemonByName(myReceivedCard);
+            alert(`✅ 교환 완료! ${pokemon ? pokemon.name : myReceivedCard} 카드를 받았어요! (${getRarityInfo(myReceivedRarity).label} 등급)`);
+          }
         }
       } catch (e) {
         console.error('교환 리스너 처리 오류:', e);
@@ -4033,6 +4026,7 @@ function setupTradeListener2(code) {
     console.log('✅ 교환 리스너 등록 완료:', code);
     
   } catch (e) {
+    // 🔥🔥🔥 여기 catch 블록이 필요!
     console.error('리스너 등록 실패:', e);
   }
 }
