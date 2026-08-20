@@ -2261,10 +2261,6 @@ function checkMathAnswer2(selectedIdx) {
     const gotCard = Math.random() * 100 < 15;
     if (gotCard) {
       const reward = grantCardReward();
-      if (reward) {
-        setTimeout(() => {
-          alert(`🎉 수학퀴즈 보너스! ${reward.target.name} 카드를 획득했어요! (${getRarityInfo(reward.rarity).label})`);
-        }, 500);
       }
     }
     
