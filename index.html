@@ -3722,13 +3722,11 @@ function setupTradeListener2(code) {
             updateTradeUI2('🔥 상대방이 확인했어요! "최종 교환"을 눌러주세요.', 'confirm');
           }
         } else if (status === 'completed') {
-          // 🔥 교환 완료 UI 업데이트
           document.getElementById('sendTradeBtn').style.display = 'none';
           document.getElementById('confirmTradeBtn').style.display = 'none';
           updateTradeUI2('✅ 교환이 완료되었어요! 🎉', 'completed');
           document.getElementById('tradePartnerInfo').innerHTML = '✅ 교환 완료!';
           
-          // 🔥🔥🔥 교환 결과 적용 (상대방도 등급 유지!)
           if (room.exchangeResult) {
             const result = room.exchangeResult;
             const myReceivedCard = mySide === 'host' ? result.oppCard : result.myCard;
@@ -3736,7 +3734,6 @@ function setupTradeListener2(code) {
             const mySentCard = mySide === 'host' ? result.myCard : result.oppCard;
             
             if (!result._applied) {
-              // 내 카드 차감
               if (state.owned[mySentCard] && state.owned[mySentCard].count > 0) {
                 state.owned[mySentCard].count -= 1;
                 if (state.owned[mySentCard].count <= 0) {
@@ -3744,7 +3741,6 @@ function setupTradeListener2(code) {
                 }
               }
               
-              // 상대방 카드 추가 (등급 유지!)
               if (!state.owned[myReceivedCard]) {
                 state.owned[myReceivedCard] = { count: 1, rarity: myReceivedRarity };
               } else {
@@ -3775,7 +3771,6 @@ function setupTradeListener2(code) {
     console.error('리스너 등록 실패:', e);
   }
 }
-
 function updateTradeUI2(message, status) {
   const el = document.getElementById('tradeStatusDisplay');
   if (!el) return;
