@@ -1292,16 +1292,73 @@ function speakText(text, lang = 'ko-KR') {
 
 function speakPokemonInfo(pokemon) {
   if (!pokemon) return;
+  
   const typeLabel = getTypeLabel(pokemon.type);
+  
+  // 1️⃣ 이름 + 속성
   let text = `${pokemon.name} ${typeLabel}타입 포켓몬! `;
+  
+  // 2️⃣ 기술
   if (pokemon._moves && pokemon._moves.length > 0) {
-    text += `배우는 기술은 ${pokemon._moves.slice(0, 3).join(', ')}! `;
+    const moveNames = pokemon._moves.slice(0, 3).join(', ');
+    text += `배우는 기술은 ${moveNames}! `;
   }
-  if (pokemon._description) text += `${pokemon._description} `;
+  
+  // 3️⃣ 설명
+  if (pokemon._description) {
+    text += `${pokemon._description} `;
+  }
+  
+  // 4️⃣ 진화 과정 (화살표 제외!)
   if (pokemon._evoChain && pokemon._evoChain.length > 0) {
-    text += `진화 과정은 ${pokemon._evoChain.map(e => e.name).join(' → ')}!`;
+    // 🔥 화살표(→) 제외하고 이름만 나열
+    const evoNames = pokemon._evoChain.map(e => e.name).join(', ');
+    text += `진화 과정은 ${evoNames}!`;
   }
-  speakText(text);
+  
+  // 🔥🔥🔥 남자 목소리로 설정
+  speakText(text, 'ko-KR', 'male');
+}
+
+// ===== 🔥 수정된 speakText (성별 선택 가능) =====
+function speakText(text, lang = 'ko-KR', gender = 'male') {
+  if (!window.speechSynthesis) return;
+  
+  window.speechSynthesis.cancel();
+  
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = lang;
+  utterance.rate = 0.85;
+  utterance.pitch = gender === 'male' ? 0.9 : 1.2;  // 남자: 낮은 음, 여자: 높은 음
+  utterance.volume = 1.0;
+  
+  // 🔥 한국어 남자 목소리 찾기
+  const voices = window.speechSynthesis.getVoices();
+  let selectedVoice = null;
+  
+  if (gender === 'male') {
+    // 남자 목소리 우선 선택
+    selectedVoice = voices.find(v => 
+      v.lang.startsWith('ko') && 
+      (v.name.includes('Male') || v.name.includes('남자') || v.name.includes('Google 한국어'))
+    );
+  } else {
+    selectedVoice = voices.find(v => 
+      v.lang.startsWith('ko') && 
+      (v.name.includes('Female') || v.name.includes('여자'))
+    );
+  }
+  
+  // 남자 목소리가 없으면 기본 한국어 목소리
+  if (!selectedVoice) {
+    selectedVoice = voices.find(v => v.lang.startsWith('ko'));
+  }
+  
+  if (selectedVoice) {
+    utterance.voice = selectedVoice;
+  }
+  
+  window.speechSynthesis.speak(utterance);
 }
 
 // ===== 저장/로드 =====
@@ -2610,7 +2667,7 @@ if (evoChain.length > 0) {
     `;
   }
   
-  body.innerHTML = `
+body.innerHTML = `
     <div class="modal-art">${pokemonImage(pokemon, '140px')}</div>
     <div class="modal-name">${pokemon.name}</div>
     <div class="modal-types">
@@ -2629,7 +2686,23 @@ if (evoChain.length > 0) {
     ${description ? `<div class="modal-section"><h4>📝 설명</h4><p>${description}</p></div>` : ''}
     ${moves.length > 0 ? `<div class="modal-section"><h4>⚔️ 기술</h4><p>${moves.map(m => '✦ ' + m).join(' ')}</p></div>` : ''}
     
-    ${evoHTML}
+    ${evoChain.length > 0 ? `
+    <div class="modal-section">
+      <h4>🔄 진화 과정</h4>
+      <div class="evo-chain" style="gap:4px; display:flex; align-items:center; flex-wrap:wrap; justify-content:center;">
+        ${evoChain.map((evo, idx) => {
+          const isCurrent = evo.name === pokemon.name;
+          return `
+            ${idx > 0 ? '<span class="evo-arrow" style="font-size:14px; color:var(--sun);">→</span>' : ''}
+            <div class="evo-item" style="padding:4px 6px; min-width:44px; text-align:center; background:rgba(255,255,255,.04); border-radius:8px; ${isCurrent ? 'border:2px solid var(--sun);background:rgba(255,201,60,.1);' : 'border:1px solid rgba(255,255,255,.06);'}">
+              ${evo.image ? `<img src="${evo.image}" alt="${evo.name}" style="width:36px; height:36px; object-fit:contain; display:block; margin:0 auto;">` : `<div style="width:36px;height:36px;background:rgba(255,255,255,.1);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;margin:0 auto;">❓</div>`}
+              <div class="evo-name" style="font-size:10px; margin-top:2px; color:#B7AFDE;">${evo.name} ${isCurrent ? '⭐' : ''}</div>
+              ${evo.level ? `<div class="evo-level" style="font-size:8px; color:#6b6395;">Lv.${evo.level}</div>` : ''}
+            </div>
+          `;
+        }).join('')}
+      </div>
+    </div>` : ''}
     
     <div class="modal-section" style="border-left-color:${rInfo.color};">
       <h4>✨ ${rInfo.label} 등급 보너스</h4>
@@ -2642,13 +2715,21 @@ if (evoChain.length > 0) {
       <button class="btn small" id="closeModalBtn">닫기</button>
     </div>
   `;
-  
   modal.classList.add('open');
-  
-  // 🔥 자동 읽어주기
-  setTimeout(() => {
-    speakPokemonInfo(pokemon);
-  }, 600);
+   if (pokemon.cryUrl) {
+    const audio = new Audio(pokemon.cryUrl);
+    audio.play().catch(() => console.log('울음소리 재생 실패'));
+    
+    // 울음소리 길이만큼 대기 (1.5초 후 설명 시작)
+    setTimeout(() => {
+      speakPokemonInfo(pokemon);
+    }, 1500);
+  } else {
+    // 울음소리가 없으면 바로 설명
+    setTimeout(() => {
+      speakPokemonInfo(pokemon);
+    }, 600);
+  }
   
   document.getElementById('playCryBtn')?.addEventListener('click', function() {
     if (modalCryAudio) {
