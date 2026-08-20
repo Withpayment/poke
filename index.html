@@ -1238,6 +1238,25 @@ function getTypeLabel(type) {
   };
   return labels[type] || type;
 }
+function renderPokemonIcons(pokemon, count, size = '36px') {
+  const pokemonImg = pokemon && pokemon.image ? 
+    `<img src="${pokemon.image}" alt="${pokemon.name}" style="width:${size};height:${size};object-fit:contain;display:inline-block;margin:2px;">` : 
+    '❓';
+  return Array(count).fill(pokemonImg).join('');
+}
+
+function generateOptions(answer, age) {
+  let options = [answer];
+  while (options.length < 4) {
+    let offset = Math.floor(Math.random() * 5) + 1;
+    if (Math.random() < 0.5) offset = -offset;
+    const wrong = answer + offset;
+    if (wrong >= 0 && !options.includes(wrong) && wrong !== answer) {
+      options.push(wrong);
+    }
+  }
+  return options.sort(() => Math.random() - 0.5);
+}
 
 function pokemonImage(pokemon, size = '100%') {
   if (!pokemon || !pokemon.image) {
@@ -1657,6 +1676,7 @@ function handleQuizAnswer(isCorrect) {
 
 // ===== 🔥 수학 퀴즈 =====
 // ===== 수정된 renderMathQuiz =====
+// ===== 🔥 수정된 renderMathQuiz (포켓몬 그림 시각화) =====
 function renderMathQuiz() {
   const panel = document.getElementById('missionPanel');
   const key = todayKey();
@@ -1673,15 +1693,12 @@ function renderMathQuiz() {
     return;
   }
   
-  // 🔥 오늘 퀴즈 상태 확인
   if (!state.mathQuiz || state.mathQuiz.today !== key) {
-    // 오늘 첫 방문 → 10개 문제 생성
     generateMathQuestions();
   }
   
   const q = state.mathQuiz;
   
-  // 🔥 모든 문제를 다 풀었는지 확인
   if (q && q.completed) {
     const correctCount = q.results ? q.results.filter(r => r).length : 0;
     const total = q.questions ? q.questions.length : 10;
@@ -1691,8 +1708,7 @@ function renderMathQuiz() {
         <div class="big-emoji">🎉</div>
         <div style="font-family:var(--font-display);font-size:22px;">수학 퀴즈 완료!</div>
         <div style="font-size:16px;color:#B7AFDE;margin:8px 0;">
-          ${total}문제 중 ${correctCount}문제 정답!
-          (${Math.round(correctCount/total*100)}%)
+          ${total}문제 중 ${correctCount}문제 정답! (${Math.round(correctCount/total*100)}%)
         </div>
         <div style="font-size:13px;color:#6b6395;margin-top:4px;">
           ${correctCount >= 8 ? '🌟 대단해요! 수학 천재!' : 
@@ -1700,51 +1716,145 @@ function renderMathQuiz() {
             '📚 내일 다시 도전해봐요!'}
         </div>
         <div style="margin-top:12px;font-size:12px;color:#8d84b0;">
-          ⏰ 내일 다시 새로운 문제가 나와요!
+          ⏰ 내일 다시 새로운 10문제가 나와요!
         </div>
       </div>
     `;
     return;
   }
   
-  // 🔥 현재 문제 표시
   const currentQ = q.questions[q.currentIndex];
   if (!currentQ) {
-    // 모든 문제 완료 처리
     q.completed = true;
     saveState();
     renderMathQuiz();
     return;
   }
   
+  const isVisual = currentQ.isVisual === true;
+  const pokemon = getPokemonByName(currentQ.pokemonEngName);
+  
+  let visualHTML = '';
+  if (isVisual && currentQ.visualLeft && currentQ.visualRight) {
+    visualHTML = `
+      <div style="
+        background: rgba(255,255,255,.05);
+        border-radius: 16px;
+        padding: 16px 12px;
+        margin: 10px 0;
+        font-size: 28px;
+        line-height: 1.6;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: center;
+        gap: 6px;
+      ">
+        <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:2px;">
+          ${currentQ.visualLeft}
+        </div>
+        <span style="font-size:28px;color:var(--sun);font-weight:700;padding:0 8px;">${currentQ.operation}</span>
+        <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:2px;">
+          ${currentQ.visualRight}
+        </div>
+        <span style="font-size:28px;color:var(--sun);font-weight:700;padding:0 8px;">=</span>
+        <span style="font-size:24px;color:#B7AFDE;">?</span>
+      </div>
+    `;
+  }
+  
   panel.innerHTML = `
     <div class="math-quiz">
-      <div style="display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:12px;color:#B7AFDE;margin-bottom:8px;">
+      <div style="display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:12px;color:#B7AFDE;margin-bottom:6px;">
         <span>📝 ${q.currentIndex + 1} / ${q.questions.length}</span>
         <span>✅ 정답: ${q.results ? q.results.filter(r => r).length : 0}개</span>
       </div>
-      <div class="pokemon-hint">⭐ ${currentQ.pokemonName} ${getTypeLabel(currentQ.pokemonType)}타입 포켓몬과 함께!</div>
-      <div class="question">${currentQ.question}</div>
+      
+      <div style="text-align:center;font-family:var(--font-display);font-size:14px;color:var(--sun-2);margin-bottom:4px;">
+        ${pokemon ? pokemon.name : ''} ${isVisual ? '포켓몬과 함께!' : ''}
+      </div>
+      
+      ${visualHTML}
+      
+      ${!isVisual ? `<div class="question">${currentQ.question}</div>` : ''}
+      
       <div class="options" id="mathOptions">
         ${currentQ.options.map((opt, idx) => `
           <button class="opt-btn" data-idx="${idx}" onclick="checkMathAnswer2(${idx})" ${currentQ.answered ? 'disabled' : ''}>${opt}</button>
         `).join('')}
       </div>
+      
       <div class="feedback" id="mathFeedback"></div>
-      <div style="font-size:11px;color:#6b6395;margin-top:8px;">
+      <div style="font-size:11px;color:#6b6395;margin-top:6px;">
         🎯 정답 시 키우는 포켓몬 경험치 +10% + 카드 획득 15%!
       </div>
     </div>
   `;
 }
+  function generateVisualMathQuestion(age) {
+  const pokemon1 = POKEMON_LIST[Math.floor(Math.random() * POKEMON_LIST.length)];
+  const pokemon2 = POKEMON_LIST[Math.floor(Math.random() * POKEMON_LIST.length)];
+  
+  let num1, num2, operation, answer;
+  
+  if (age <= 7) {
+    num1 = Math.floor(Math.random() * 5) + 1;
+    num2 = Math.floor(Math.random() * num1) + 1;
+    operation = Math.random() < 0.5 ? '+' : '-';
+    
+    if (operation === '+') {
+      answer = num1 + num2;
+      return {
+        question: `${pokemon1.name} ${num1}마리 + ${pokemon2.name} ${num2}마리 = ?`,
+        visualLeft: renderPokemonIcons(pokemon1, num1),
+        visualRight: renderPokemonIcons(pokemon2, num2),
+        num1: num1,
+        num2: num2,
+        operation: '+',
+        answer: answer,
+        options: generateOptions(answer, age),
+        pokemonName: pokemon1.name,
+        pokemonType: pokemon1.type,
+        pokemonEngName: pokemon1.engName,
+        isVisual: true
+      };
+    } else {
+      answer = num1 - num2;
+      return {
+        question: `${pokemon1.name} ${num1}마리 - ${pokemon2.name} ${num2}마리 = ?`,
+        visualLeft: renderPokemonIcons(pokemon1, num1),
+        visualRight: renderPokemonIcons(pokemon2, num2),
+        num1: num1,
+        num2: num2,
+        operation: '-',
+        answer: answer,
+        options: generateOptions(answer, age),
+        pokemonName: pokemon1.name,
+        pokemonType: pokemon1.type,
+        pokemonEngName: pokemon1.engName,
+        isVisual: true
+      };
+    }
+  }
+  return generateSingleMathQuestion(age);
+}
+
 // ===== 🔥 10개 수학 문제 생성 =====
+// ===== 🔥 수정된 generateMathQuestions =====
 function generateMathQuestions() {
   const age = state.playerAge || 8;
   const key = todayKey();
   const questions = [];
   
   for (let i = 0; i < 10; i++) {
-    const q = generateSingleMathQuestion(age);
+    let q;
+    if (age <= 8) {
+      // 🔥 8세 이하: 시각적 문제 (포켓몬 그림)
+      q = generateVisualMathQuestion(age);
+    } else {
+      // 9세 이상: 일반 문제
+      q = generateSingleMathQuestion(age);
+    }
     questions.push(q);
   }
   
