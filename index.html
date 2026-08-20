@@ -4162,7 +4162,6 @@ async function executeSafeTrade2(roomRef, room) {
   const oppRarity = state.owned[oppCard]?.rarity || 'common';
   
   try {
-    // 🔥 이미 완료된 교환인지 확인
     if (room.completed || room.status === 'completed') {
       alert('이미 교환이 완료되었어요!');
       return;
@@ -4172,7 +4171,6 @@ async function executeSafeTrade2(roomRef, room) {
     console.log('📥 받을 카드:', oppCard, '등급:', oppRarity);
     console.log('📦 교환 전 내 카드:', JSON.stringify(state.owned, null, 2));
     
-    // 🔥 1️⃣ 내 카드 차감 (보낼 카드)
     if (!state.owned[myCard]) {
       alert('보낼 카드가 없어요!');
       return;
@@ -4184,7 +4182,6 @@ async function executeSafeTrade2(roomRef, room) {
     }
     console.log('➖ 내 카드 차감 완료:', myCard);
     
-    // 🔥 2️⃣ 상대방 카드 추가 (받을 카드, 등급 유지!)
     if (!state.owned[oppCard]) {
       state.owned[oppCard] = { count: 1, rarity: oppRarity };
     } else {
@@ -4194,10 +4191,8 @@ async function executeSafeTrade2(roomRef, room) {
     
     console.log('📦 교환 후 내 카드:', JSON.stringify(state.owned, null, 2));
     
-    // 🔥 3️⃣ 저장
     saveState();
     
-    // 🔥 4️⃣ Firebase에 교환 결과 저장
     await roomRef.update({
       status: 'completed',
       completed: true,
@@ -4223,8 +4218,8 @@ async function executeSafeTrade2(roomRef, room) {
     renderTradeTab();
     
   } catch (e) {
+    console.error('❌ 교환 오류:', e);
     alert('❌ 교환 중 오류가 발생했어요. 다시 시도해주세요.');
-    console.error('교환 오류:', e);
   }
 }
 
