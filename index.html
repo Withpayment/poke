@@ -4907,8 +4907,7 @@ async function joinTradeRoom(code) {
       return;
     }
     
-    if (room.guest !== null) {
-      console.log('❌ 이미 게스트 있음:', room.guest);
+    if (room.guest && room.guest !== null) {
       alert('❌ 이미 다른 사람이 참가한 방입니다!');
       return;
     }
