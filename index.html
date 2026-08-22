@@ -4814,6 +4814,42 @@ document.querySelectorAll('[data-rarity]').forEach(chip => {
 });
 
 // ===== 자정 초기화 =====
+// ===== 🎉 초기화 알림 함수 (먼저 정의!) =====
+function showDailyResetNotification() {
+  const oldToast = document.querySelector('.daily-reset-toast');
+  if (oldToast) oldToast.remove();
+  
+  const toast = document.createElement('div');
+  toast.className = 'daily-reset-toast';
+  toast.style.cssText = `
+    position: fixed;
+    bottom: 100px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,.85);
+    color: var(--sun-2);
+    padding: 16px 28px;
+    border-radius: 14px;
+    font-size: 18px;
+    z-index: 9999;
+    animation: fadein .4s ease;
+    border: 2px solid var(--sun);
+    font-family: var(--font-display);
+    box-shadow: 0 4px 20px rgba(0,0,0,.5);
+    text-align: center;
+    max-width: 90%;
+    pointer-events: none;
+  `;
+  toast.textContent = '🌅 오늘의 새로운 미션과 레이드가 준비되었어요!';
+  document.body.appendChild(toast);
+  
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transition = 'opacity .3s';
+    setTimeout(() => toast.remove(), 300);
+  }, 3000);
+}
+
 // ===== 🔥 완전한 자정 초기화 (모든 개선사항 포함) =====
 function resetDailyContent() {
 const key = todayKey();
