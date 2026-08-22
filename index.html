@@ -4956,15 +4956,6 @@ toast.style.opacity = '0';
 toast.style.transition = 'opacity .3s';
 setTimeout(() => toast.remove(), 300);
 }, 3000);
-}
-
-// ===== 🔧 수동 초기화 함수 (개발자용, 콘솔에서 실행 가능) =====
-function forceResetDaily() {
-if (confirm('⚠️ 오늘의 콘텐츠를 강제로 초기화할까요?')) {
-resetDailyContent();
-alert('✅ 오늘의 콘텐츠가 초기화되었습니다!');
-}
-}
 
 
 // ===== 초기화 =====
