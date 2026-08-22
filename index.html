@@ -1455,6 +1455,67 @@
     .raid-pokemon-card .rpc-name { font-size: 9px; }
     .raid-pokemon-card .rpc-atk { font-size: 7px; }
   }
+    /* ===== 공격 애니메이션 ===== */
+  @keyframes attackShake {
+    0%, 100% { transform: translateX(0) rotate(0deg); }
+    15% { transform: translateX(-12px) rotate(-3deg); }
+    30% { transform: translateX(10px) rotate(3deg); }
+    45% { transform: translateX(-8px) rotate(-2deg); }
+    60% { transform: translateX(6px) rotate(2deg); }
+    80% { transform: translateX(-4px) rotate(-1deg); }
+  }
+
+  @keyframes hitFlash {
+    0% { box-shadow: 0 0 0 rgba(255,107,53,0); }
+    25% { box-shadow: 0 0 50px rgba(255,107,53,0.8); }
+    50% { box-shadow: 0 0 80px rgba(255,200,50,0.6); }
+    75% { box-shadow: 0 0 50px rgba(255,107,53,0.8); }
+    100% { box-shadow: 0 0 0 rgba(255,107,53,0); }
+  }
+
+  @keyframes damageNumber {
+    0% { opacity: 1; transform: translateY(0) scale(1); }
+    100% { opacity: 0; transform: translateY(-60px) scale(1.5); }
+  }
+
+  @keyframes victoryPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.03); box-shadow: 0 0 60px rgba(255,201,60,0.5); }
+  }
+
+  @keyframes defeatFlash {
+    0%, 100% { border-color: var(--bad); }
+    50% { border-color: var(--bad); box-shadow: 0 0 40px rgba(228,97,75,0.3); }
+  }
+
+  .attacking {
+    animation: attackShake 0.5s ease;
+  }
+
+  .hit-effect {
+    animation: hitFlash 0.5s ease;
+  }
+
+  .damage-number {
+    position: fixed;
+    font-family: var(--font-display);
+    font-size: 42px;
+    font-weight: 800;
+    color: var(--special);
+    text-shadow: 0 0 20px rgba(255,107,53,0.5), 0 2px 4px rgba(0,0,0,0.5);
+    pointer-events: none;
+    z-index: 100;
+    animation: damageNumber 0.8s ease forwards;
+  }
+
+  .victory-glow {
+    animation: victoryPulse 0.8s ease 3;
+  }
+
+  .defeat-effect {
+    animation: defeatFlash 1s ease 2;
+  }
+
 </style>
 </head>
 <body>
@@ -4280,41 +4341,84 @@ function doAiTurn() {
   const p = aiBattle.player[aiBattle.pActive];
   const e = aiBattle.enemy[aiBattle.eActive];
   const order = p.spd >= e.spd ? ['p', 'e'] : ['e', 'p'];
+  
   for (const side of order) {
     if (aiBattle.over) break;
+    
     if (side === 'p') {
       if (p.curHp <= 0) continue;
+      
+      // ===== 효과: 공격 애니메이션 =====
+      const playerArt = document.querySelector('.fighter:first-child .art-wrap');
+      if (playerArt) {
+        playerArt.classList.add('attacking');
+        setTimeout(() => playerArt.classList.remove('attacking'), 500);
+      }
+      
       SFX.attack();
+      
       const mult = getEffMult(p.type, e.type);
       const rarityBonus = getRarityDamageBonus(state.owned[p.engName]?.rarity);
       const dmg = Math.max(3, Math.round(p.atk * mult - e.def * 0.35) + rarityBonus);
       e.curHp -= dmg;
+      
+      // ===== 효과: 데미지 표시 =====
+      const enemyArt = document.querySelector('.fighter:last-child .art-wrap');
+      if (enemyArt) {
+        enemyArt.classList.add('hit-effect');
+        setTimeout(() => enemyArt.classList.remove('hit-effect'), 500);
+        showDamageNumber(enemyArt, dmg);
+      }
+      
       addAiLog(p.name + '의 공격! ' + e.name + '에게 ' + dmg + ' 피해' + (mult > 1 ? ' (효과 굉장!)' : mult < 1 ? ' (효과 별로...)' : ''), mult > 1 ? 'eff' : mult < 1 ? 'bad' : '');
+      
       if (e.curHp <= 0) {
         addAiLog(e.name + ' 쓰러짐!', 'sys');
         const next = aiBattle.enemy.findIndex((c, i) => i > aiBattle.eActive && c.curHp > 0);
         if (next === -1) { 
           endAiBattle(true); 
           SFX.victory();
+          showVictoryEffect();
           break; 
         }
         aiBattle.eActive = next;
         addAiLog('상대가 ' + aiBattle.enemy[next].name + '을(를) 내보냈다!', 'sys');
       }
+      
     } else {
       const ee = aiBattle.enemy[aiBattle.eActive];
       if (ee.curHp <= 0) continue;
+      
+      // ===== 효과: 공격 애니메이션 =====
+      const enemyArt = document.querySelector('.fighter:last-child .art-wrap');
+      if (enemyArt) {
+        enemyArt.classList.add('attacking');
+        setTimeout(() => enemyArt.classList.remove('attacking'), 500);
+      }
+      
       SFX.attack();
+      
       const mult = getEffMult(ee.type, p.type);
       const dmg = Math.max(3, Math.round(ee.atk * mult - p.def * 0.35));
       p.curHp -= dmg;
+      
+      // ===== 효과: 데미지 표시 =====
+      const playerArt = document.querySelector('.fighter:first-child .art-wrap');
+      if (playerArt) {
+        playerArt.classList.add('hit-effect');
+        setTimeout(() => playerArt.classList.remove('hit-effect'), 500);
+        showDamageNumber(playerArt, dmg);
+      }
+      
       addAiLog(ee.name + '의 공격! ' + p.name + '에게 ' + dmg + ' 피해' + (mult > 1 ? ' (효과 굉장!)' : mult < 1 ? ' (효과 별로...)' : ''), mult > 1 ? 'bad' : mult < 1 ? 'eff' : '');
+      
       if (p.curHp <= 0) {
         addAiLog(p.name + ' 쓰러짐!', 'sys');
         const next = aiBattle.player.findIndex((c, i) => i > aiBattle.pActive && c.curHp > 0);
         if (next === -1) { 
           endAiBattle(false); 
           SFX.defeat();
+          showDefeatEffect();
           break; 
         }
         aiBattle.pActive = next;
@@ -4331,10 +4435,12 @@ function endAiBattle(playerWon) {
     state.wins++; 
     addAiLog('승리! 🎉', 'eff'); 
     SFX.victory();
+    showVictoryEffect();
   } else { 
     state.losses++; 
     addAiLog('패배...', 'bad'); 
     SFX.defeat();
+    showDefeatEffect();
   }
   updateStatline(); 
   saveState();
@@ -4572,12 +4678,27 @@ async function doBattleAttack() {
     const myPokemon = me[0];
     const oppPokemon = opp[0];
     
+    // ===== 효과: 공격 애니메이션 =====
+    const playerArt = document.querySelector('.fighter:first-child .art-wrap');
+    if (playerArt) {
+      playerArt.classList.add('attacking');
+      setTimeout(() => playerArt.classList.remove('attacking'), 500);
+    }
+    
     SFX.attack();
     
     const mult = getEffMult(myPokemon.type, oppPokemon.type);
     const rarityBonus = getRarityDamageBonus(state.owned[myPokemon.engName]?.rarity);
     const dmg = Math.max(3, Math.round(myPokemon.atk * mult - oppPokemon.def * 0.35) + rarityBonus);
     oppPokemon.curHp = Math.max(0, oppPokemon.curHp - dmg);
+    
+    // ===== 효과: 데미지 표시 =====
+    const enemyArt = document.querySelector('.fighter:last-child .art-wrap');
+    if (enemyArt) {
+      enemyArt.classList.add('hit-effect');
+      setTimeout(() => enemyArt.classList.remove('hit-effect'), 500);
+      showDamageNumber(enemyArt, dmg);
+    }
     
     let logMsg = myPokemon.name + '의 공격! ' + oppPokemon.name + '에게 ' + dmg + ' 피해';
     if (mult > 1) logMsg += ' (효과 굉장!)';
@@ -4589,6 +4710,7 @@ async function doBattleAttack() {
       const nextIdx = opp.findIndex((p, i) => i > 0 && p.curHp > 0);
       if (nextIdx === -1) {
         SFX.victory();
+        showVictoryEffect();
         await db.ref('battles/' + code).update({
           status: 'finished',
           winner: mySide,
@@ -5286,6 +5408,40 @@ function renderAll() {
 
 // ===== 실행 =====
 initGame();
+function showDamageNumber(targetElement, damage) {
+  if (!targetElement) return;
+  
+  const rect = targetElement.getBoundingClientRect();
+  const damageEl = document.createElement('div');
+  damageEl.className = 'damage-number';
+  damageEl.textContent = '-' + damage;
+  damageEl.style.left = (rect.left + rect.width/2 - 30) + 'px';
+  damageEl.style.top = (rect.top - 10) + 'px';
+  
+  document.body.appendChild(damageEl);
+  
+  setTimeout(() => {
+    damageEl.remove();
+  }, 800);
+}
+
+// ===== 승리 효과 =====
+function showVictoryEffect() {
+  const arena = document.querySelector('.arena');
+  if (arena) {
+    arena.classList.add('victory-glow');
+    setTimeout(() => arena.classList.remove('victory-glow'), 2400);
+  }
+}
+
+// ===== 패배 효과 =====
+function showDefeatEffect() {
+  const arena = document.querySelector('.arena');
+  if (arena) {
+    arena.classList.add('defeat-effect');
+    setTimeout(() => arena.classList.remove('defeat-effect'), 2000);
+  }
+}
 </script>
 </body>
 </html>
