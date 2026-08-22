@@ -4983,23 +4983,50 @@ function updateTradeStatus(msg, type) {
 // ===== 리스너 설정 =====
 function setupTradeListener(code) {
   if (tradeListener) {
-    try { tradeListener.off(); } catch(e) {}
+    try { 
+      console.log('🔍 기존 리스너 제거');
+      tradeListener.off(); 
+    } catch(e) {}
     tradeListener = null;
   }
+  
+  console.log('🔍 [setupTradeListener] 새 리스너 등록 - 코드:', code);
   
   tradeListener = db.ref('trades/' + code);
   tradeListener.on('value', function(snapshot) {
     try {
       const room = snapshot.val();
+      console.log('🔍 [리스너] 방 데이터 감지:', room);
+      
       if (!room) {
+        console.log('❌ 방 삭제됨');
         updateTradeStatus('❌ 방이 삭제되었습니다', 'error');
         return;
       }
+      
+      // ===== completed 상태면 무조건 교환 실행 =====
+      if (room.status === 'completed') {
+        console.log('✅ completed 상태 감지!');
+        if (!room._processed) {
+          console.log('🔄 아직 처리 안됨 - 교환 실행!');
+          handleCompletedState(room);
+        } else {
+          console.log('✅ 이미 처리됨');
+          updateTradeStatus('✅ 교환이 완료되었습니다! 🎉', 'success');
+          document.getElementById('sendTradeBtn').style.display = 'none';
+          document.getElementById('confirmTradeBtn').style.display = 'none';
+        }
+        return;
+      }
+      
       handleTradeUpdate(room);
+      
     } catch(e) {
-      console.error('교환 업데이트 오류:', e);
+      console.error('❌ 교환 업데이트 오류:', e);
     }
   });
+  
+  console.log('✅ 리스너 등록 완료');
 }
 
 // ===== 교환 업데이트 처리 =====
@@ -5120,16 +5147,22 @@ function handleConfirmState(room, me, opp) {
 }
 
 function handleCompletedState(room) {
+  console.log('🔍 [handleCompletedState] 호출됨');
+  console.log('🔍 room 데이터:', room);
+  console.log('🔍 room._processed:', room._processed);
+  
   document.getElementById('sendTradeBtn').style.display = 'none';
   document.getElementById('confirmTradeBtn').style.display = 'none';
   
   // 이미 처리했는지 확인
   if (room._processed) {
+    console.log('✅ 이미 처리됨');
     updateTradeStatus('✅ 교환이 완료되었습니다! 🎉', 'success');
     return;
   }
   
-  // 교환 실행
+  // ===== 교환 실행 (양쪽 모두 실행되도록) =====
+  console.log('🔄 교환 실행 시작...');
   executeTrade(room);
 }
 
@@ -5247,12 +5280,17 @@ async function confirmTradeFinal() {
 
 // ===== 최종 교환 실행 =====
 async function executeTradeFinal(roomRef, room) {
+  console.log('🔍 [executeTradeFinal] 호출됨');
+  
   const mySide = myTradeRoom.side;
   const oppSide = mySide === 'host' ? 'guest' : 'host';
   const myCard = room[mySide].card;
   const oppCard = room[oppSide].card;
   const myRarity = room[mySide].rarity || 'common';
   const oppRarity = room[oppSide].rarity || 'common';
+  
+  console.log('🔍 내 카드:', myCard, '등급:', myRarity);
+  console.log('🔍 받을 카드:', oppCard, '등급:', oppRarity);
   
   try {
     // 내 카드 차감
@@ -5268,7 +5306,6 @@ async function executeTradeFinal(roomRef, room) {
       state.owned[oppCard] = { count: 1, rarity: oppRarity };
     } else {
       state.owned[oppCard].count += 1;
-      // 기존 등급이 없거나 더 낮은 등급이면 업데이트
       const currentRarity = state.owned[oppCard].rarity || 'common';
       if (getRarityInfo(oppRarity).weight > getRarityInfo(currentRarity).weight) {
         state.owned[oppCard].rarity = oppRarity;
@@ -5289,6 +5326,8 @@ async function executeTradeFinal(roomRef, room) {
       },
       log: ['✅ 교환 완료! ' + getPokemonByName(myCard)?.name + ' ↔ ' + getPokemonByName(oppCard)?.name].concat(room.log || [])
     });
+    
+    console.log('✅ Firebase 업데이트 완료');
     
     // 결과 표시
     const receivedPokemon = getPokemonByName(oppCard);
@@ -5313,22 +5352,46 @@ async function executeTradeFinal(roomRef, room) {
     }, 3000);
     
   } catch (e) {
-    console.error('교환 오류:', e);
+    console.error('❌ 교환 오류:', e);
     alert('❌ 교환 중 오류가 발생했어요. 다시 시도해주세요.');
   }
 }
 
 // ===== 교환 실행 (completed 상태에서 호출) =====
 function executeTrade(room) {
-  if (room._processed) return;
+  console.log('🔍 [executeTrade] 호출됨');
+  console.log('🔍 room._processed:', room._processed);
+  
+  if (room._processed) {
+    console.log('✅ 이미 처리됨 - 종료');
+    return;
+  }
   
   const mySide = myTradeRoom.side;
   const oppSide = mySide === 'host' ? 'guest' : 'host';
+  
+  console.log('🔍 내 역할:', mySide);
+  console.log('🔍 상대 역할:', oppSide);
+  
+  const myCard = room[mySide].card;
   const oppCard = room[oppSide].card;
+  const myRarity = room[mySide].rarity || 'common';
   const oppRarity = room[oppSide].rarity || 'common';
   
+  console.log('🔍 내 카드:', myCard, '등급:', myRarity);
+  console.log('🔍 받을 카드:', oppCard, '등급:', oppRarity);
+  
   try {
-    // 상대방 카드 추가 (등급 유지!)
+    // ===== 내 카드 차감 =====
+    if (state.owned[myCard] && state.owned[myCard].count > 0) {
+      state.owned[myCard].count -= 1;
+      if (state.owned[myCard].count <= 0) {
+        delete state.owned[myCard];
+      }
+      console.log('✅ 내 카드 차감 완료');
+    }
+    
+    // ===== 상대방 카드 추가 (등급 유지!) =====
     if (!state.owned[oppCard]) {
       state.owned[oppCard] = { count: 1, rarity: oppRarity };
     } else {
@@ -5338,10 +5401,23 @@ function executeTrade(room) {
         state.owned[oppCard].rarity = oppRarity;
       }
     }
+    console.log('✅ 상대방 카드 추가 완료');
     
     saveState();
-    db.ref('trades/' + myTradeRoom.code).update({ _processed: true });
+    console.log('✅ 상태 저장 완료');
     
+    // ===== Firebase에 처리 완료 표시 (양쪽 모두 감지) =====
+    const roomRef = db.ref('trades/' + myTradeRoom.code);
+    roomRef.update({ 
+      _processed: true,
+      status: 'completed'
+    }).then(() => {
+      console.log('✅ Firebase 업데이트 완료');
+    }).catch(err => {
+      console.error('❌ Firebase 업데이트 실패:', err);
+    });
+    
+    // ===== 결과 표시 =====
     const receivedPokemon = getPokemonByName(oppCard);
     const rInfo = getRarityInfo(oppRarity);
     
@@ -5355,8 +5431,11 @@ function executeTrade(room) {
       showRewardPopup(receivedPokemon, '🔄 교환 완료!', `${rInfo.label} 등급 카드를 받았어요!`);
     }
     
+    console.log('✅ 교환 완료!');
+    
   } catch (e) {
-    console.error('교환 실행 오류:', e);
+    console.error('❌ 교환 실행 오류:', e);
+    alert('❌ 교환 중 오류가 발생했습니다.');
   }
 }
 
