@@ -1490,6 +1490,132 @@
     .raid-pokemon-card .rpc-name { font-size: 9px; }
     .raid-pokemon-card .rpc-atk { font-size: 7px; }
   }
+  /* ===== 생활미션 수정 모달 ===== */
+.mission-edit-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,.85);
+  backdrop-filter: blur(8px);
+  z-index: 999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.mission-edit-overlay.open {
+  display: flex;
+}
+.mission-edit-box {
+  max-width: 480px;
+  width: 100%;
+  max-height: 85vh;
+  background: linear-gradient(160deg, var(--ink-2), #1A1840);
+  border: 3px solid var(--sun);
+  border-radius: 20px;
+  padding: 24px;
+  animation: popin .3s cubic-bezier(.34,1.56,.64,1);
+  overflow-y: auto;
+}
+.mission-edit-box .edit-title {
+  font-family: var(--font-display);
+  font-size: 22px;
+  color: var(--sun-2);
+  text-align: center;
+  margin-bottom: 16px;
+}
+.mission-edit-box .edit-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: rgba(255,255,255,.05);
+  border-radius: 10px;
+  margin-bottom: 8px;
+}
+.mission-edit-box .edit-item .edit-emoji {
+  font-size: 28px;
+  width: 44px;
+  text-align: center;
+}
+.mission-edit-box .edit-item .edit-input {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 2px solid rgba(255,201,60,.2);
+  background: rgba(255,255,255,.05);
+  color: var(--paper);
+  font-family: var(--font-body);
+  font-size: 16px;
+}
+.mission-edit-box .edit-item .edit-input:focus {
+  border-color: var(--sun);
+  outline: none;
+}
+.mission-edit-box .edit-item .edit-emoji-input {
+  width: 50px;
+  text-align: center;
+  padding: 8px 4px;
+  border-radius: 8px;
+  border: 2px solid rgba(255,201,60,.2);
+  background: rgba(255,255,255,.05);
+  color: var(--paper);
+  font-size: 20px;
+}
+.mission-edit-box .edit-item .edit-emoji-input:focus {
+  border-color: var(--sun);
+  outline: none;
+}
+.mission-edit-box .edit-item .edit-del-btn {
+  background: var(--bad);
+  border: none;
+  color: #fff;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-size: 16px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.mission-edit-box .edit-item .edit-del-btn:hover {
+  opacity: .8;
+}
+.mission-edit-box .edit-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+.mission-edit-box .edit-actions .btn {
+  flex: 1;
+  min-width: 80px;
+  font-size: 16px;
+  padding: 12px;
+  min-height: 48px;
+}
+.mission-edit-box .edit-pw-input {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 3px solid rgba(255,201,60,.2);
+  background: rgba(255,255,255,.05);
+  color: var(--paper);
+  font-family: var(--font-body);
+  font-size: 20px;
+  text-align: center;
+  letter-spacing: 8px;
+  margin-bottom: 12px;
+}
+.mission-edit-box .edit-pw-input:focus {
+  border-color: var(--sun);
+  outline: none;
+}
+.mission-edit-box .edit-pw-error {
+  color: var(--bad);
+  font-size: 14px;
+  text-align: center;
+  margin-top: 8px;
+  display: none;
+}
 </style>
 </head>
 <body>
@@ -1610,6 +1736,44 @@
       </div>
     </section>
   </main>
+  
+  <!-- ===== 생활미션 수정 모달 ===== -->
+  <div class="mission-edit-overlay" id="missionEditOverlay">
+    <div class="mission-edit-box">
+      <div class="edit-title">🔧 생활미션 수정</div>
+      
+      <div id="editPasswordSection">
+        <input class="edit-pw-input" id="editPasswordInput" type="password" maxlength="4" placeholder="비밀번호 4자리" inputmode="numeric">
+        <div class="edit-pw-error" id="editPwError">❌ 비밀번호가 틀렸어요!</div>
+        <div style="display:flex;gap:10px;">
+          <button class="btn" id="editPwConfirmBtn" style="flex:1;">확인</button>
+          <button class="btn ghost" id="editPwCancelBtn" style="flex:1;">취소</button>
+        </div>
+      </div>
+      
+      <div id="editContentSection" style="display:none;">
+        <div style="font-size:14px;color:#B7AFDE;margin-bottom:12px;">📝 미션 이름과 이모지를 수정하거나 삭제할 수 있어요</div>
+        <div id="editMissionList"></div>
+        
+        <div style="display:flex;gap:8px;margin-top:12px;padding:10px;background:rgba(255,255,255,.03);border-radius:10px;">
+          <input class="edit-input" id="editNewMissionInput" placeholder="새 미션 이름" style="flex:1;padding:10px;border-radius:8px;border:2px solid rgba(255,201,60,.2);background:rgba(255,255,255,.05);color:var(--paper);font-size:16px;">
+          <input class="edit-emoji-input" id="editNewEmojiInput" placeholder="📌" maxlength="2" style="width:50px;text-align:center;padding:10px;border-radius:8px;border:2px solid rgba(255,201,60,.2);background:rgba(255,255,255,.05);color:var(--paper);font-size:20px;">
+          <button class="btn small" id="editAddBtn" style="padding:10px 16px;min-height:44px;">➕</button>
+        </div>
+        
+        <div class="edit-actions">
+          <button class="btn good" id="editSaveBtn">💾 저장</button>
+          <button class="btn ghost" id="editCloseBtn">닫기</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <nav class="tabbar">
+    <!-- ... -->
+  </nav>
+</div>
+  
 
   <nav class="tabbar">
     <button data-tab="tab-mission" class="active"><span class="ic">🎯</span>미션</button>
@@ -2435,18 +2599,204 @@ function handleQuizAnswer(isCorrect) {
 }
 
 // ===== 🌟 생활미션 =====
+// ============================================================
+// 🔧 생활미션 수정 기능
+// ============================================================
+
+const MISSION_PASSWORD = '4987';
+
+function openMissionEditor() {
+  const overlay = document.getElementById('missionEditOverlay');
+  overlay.classList.add('open');
+  document.getElementById('editPasswordSection').style.display = 'block';
+  document.getElementById('editContentSection').style.display = 'none';
+  document.getElementById('editPasswordInput').value = '';
+  document.getElementById('editPwError').style.display = 'none';
+  document.getElementById('editPasswordInput').focus();
+}
+
+function closeMissionEditor() {
+  document.getElementById('missionEditOverlay').classList.remove('open');
+}
+
+function checkMissionPassword() {
+  const input = document.getElementById('editPasswordInput').value;
+  const errorEl = document.getElementById('editPwError');
+  
+  if (input === MISSION_PASSWORD) {
+    errorEl.style.display = 'none';
+    document.getElementById('editPasswordSection').style.display = 'none';
+    document.getElementById('editContentSection').style.display = 'block';
+    renderMissionEditList();
+  } else {
+    errorEl.style.display = 'block';
+    document.getElementById('editPasswordInput').value = '';
+    document.getElementById('editPasswordInput').focus();
+  }
+}
+
+function renderMissionEditList() {
+  const container = document.getElementById('editMissionList');
+  let baseMissions = DEFAULT_LIFE_MISSIONS.map(m => {
+    if (state.customMissionOverrides && state.customMissionOverrides[m.id]) {
+      return {
+        ...m,
+        label: state.customMissionOverrides[m.id].label,
+        emoji: state.customMissionOverrides[m.id].emoji
+      };
+    }
+    return m;
+  });
+  const allMissions = [...baseMissions, ...(state.customMissions || [])];
+  
+  if (allMissions.length === 0) {
+    container.innerHTML = '<div style="text-align:center;color:#8d84b0;padding:20px;">등록된 미션이 없어요</div>';
+    return;
+  }
+  
+  container.innerHTML = allMissions.map((mission, index) => {
+    const isCustom = mission.id && mission.id.startsWith('custom-');
+    return `
+      <div class="edit-item" data-index="${index}" data-id="${mission.id}" data-custom="${isCustom}">
+        <input class="edit-emoji-input" id="editEmoji_${index}" value="${mission.emoji || '📌'}" maxlength="2">
+        <input class="edit-input" id="editName_${index}" value="${mission.label}" placeholder="미션 이름">
+        ${isCustom ? `<button class="edit-del-btn" onclick="deleteCustomMission('${mission.id}')">✕</button>` : '<span style="width:32px;font-size:11px;color:#6b6395;">기본</span>'}
+      </div>
+    `;
+  }).join('');
+}
+
+function deleteCustomMission(id) {
+  if (!confirm('이 미션을 삭제할까요?')) return;
+  state.customMissions = (state.customMissions || []).filter(m => m.id !== id);
+  saveState();
+  renderMissionEditList();
+  renderLifeMissions();
+}
+
+function saveMissionChanges() {
+  let baseMissions = DEFAULT_LIFE_MISSIONS.map(m => {
+    if (state.customMissionOverrides && state.customMissionOverrides[m.id]) {
+      return {
+        ...m,
+        label: state.customMissionOverrides[m.id].label,
+        emoji: state.customMissionOverrides[m.id].emoji
+      };
+    }
+    return m;
+  });
+  const allMissions = [...baseMissions, ...(state.customMissions || [])];
+  
+  allMissions.forEach((mission, index) => {
+    const nameInput = document.getElementById(`editName_${index}`);
+    const emojiInput = document.getElementById(`editEmoji_${index}`);
+    
+    if (nameInput && emojiInput) {
+      const newName = nameInput.value.trim();
+      const newEmoji = emojiInput.value.trim() || '📌';
+      
+      if (newName) {
+        if (mission.id && mission.id.startsWith('custom-')) {
+          const customMission = state.customMissions.find(m => m.id === mission.id);
+          if (customMission) {
+            customMission.label = newName;
+            customMission.emoji = newEmoji;
+          }
+        } else {
+          if (!state.customMissionOverrides) state.customMissionOverrides = {};
+          state.customMissionOverrides[mission.id] = {
+            label: newName,
+            emoji: newEmoji
+          };
+        }
+      }
+    }
+  });
+  
+  saveState();
+  renderMissionEditList();
+  renderLifeMissions();
+  alert('✅ 미션이 저장되었습니다!');
+}
+
+function addEditMission() {
+  const nameInput = document.getElementById('editNewMissionInput');
+  const emojiInput = document.getElementById('editNewEmojiInput');
+  
+  const label = nameInput.value.trim();
+  const emoji = emojiInput.value.trim() || '📌';
+  
+  if (!label) {
+    alert('미션 이름을 입력해주세요!');
+    return;
+  }
+  
+  if ((state.customMissions || []).length >= 10) {
+    alert('최대 10개까지 추가할 수 있어요!');
+    return;
+  }
+  
+  if (!state.customMissions) state.customMissions = [];
+  state.customMissions.push({
+    id: 'custom-' + Date.now(),
+    label: label,
+    emoji: emoji
+  });
+  
+  nameInput.value = '';
+  emojiInput.value = '';
+  saveState();
+  renderMissionEditList();
+  renderLifeMissions();
+}
+
+function bindMissionEditEvents() {
+  document.getElementById('editPwConfirmBtn').addEventListener('click', checkMissionPassword);
+  document.getElementById('editPasswordInput').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') checkMissionPassword();
+  });
+  document.getElementById('editPwCancelBtn').addEventListener('click', closeMissionEditor);
+  document.getElementById('editCloseBtn').addEventListener('click', closeMissionEditor);
+  document.getElementById('editSaveBtn').addEventListener('click', saveMissionChanges);
+  document.getElementById('editAddBtn').addEventListener('click', addEditMission);
+  document.getElementById('editNewMissionInput').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') addEditMission();
+  });
+  document.getElementById('missionEditOverlay').addEventListener('click', function(e) {
+    if (e.target === this) closeMissionEditor();
+  });
+}
+
 function renderLifeMissions() {
   const key = todayKey();
   const doneToday = state.dailyMissions[key] || {};
-  const allMissions = [...DEFAULT_LIFE_MISSIONS, ...(state.customMissions || [])];
+  
+  // 기본 미션 + 오버라이드 적용
+  let baseMissions = DEFAULT_LIFE_MISSIONS.map(m => {
+    if (state.customMissionOverrides && state.customMissionOverrides[m.id]) {
+      return {
+        ...m,
+        label: state.customMissionOverrides[m.id].label,
+        emoji: state.customMissionOverrides[m.id].emoji
+      };
+    }
+    return m;
+  });
+  
+  const allMissions = [...baseMissions, ...(state.customMissions || [])];
   
   const panel = document.getElementById('missionPanel');
   panel.innerHTML = `
-    <div style="font-family:var(--font-mono);font-size:14px;color:#B7AFDE;margin-bottom:14px;">
-      오늘 할 일 완료 시 <span style="color:var(--sun-2);font-weight:700;">🎁 카드 무조건 획득</span>
-      <br><span style="font-size:12px;color:#6b6395;">모든 미션 완료 시 퀴즈도 풀 수 있어요!</span>
-      <br><span style="font-size:12px;color:#6b6395;">미션 완료 시 키우는 포켓몬 경험치 +10%!</span>
-      <br><span style="font-size:12px;color:#6b6395;">미션 완료 시 레이드 공격 기회 +1!</span>
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;">
+      <div style="font-family:var(--font-mono);font-size:14px;color:#B7AFDE;">
+        오늘 할 일 완료 시 <span style="color:var(--sun-2);font-weight:700;">🎁 카드 무조건 획득</span>
+        <br><span style="font-size:12px;color:#6b6395;">모든 미션 완료 시 퀴즈도 풀 수 있어요!</span>
+        <br><span style="font-size:12px;color:#6b6395;">미션 완료 시 키우는 포켓몬 경험치 +10%!</span>
+        <br><span style="font-size:12px;color:#6b6395;">미션 완료 시 레이드 공격 기회 +1!</span>
+      </div>
+      <button class="btn small ghost" onclick="openMissionEditor()" style="font-size:14px;padding:6px 12px;min-height:32px;flex-shrink:0;margin-left:8px;">
+        ⚙️
+      </button>
     </div>
     <div class="life-mission-list">
       ${allMissions.map(m => {
@@ -5524,6 +5874,7 @@ async function initGame() {
     document.getElementById('tab-mission').classList.add('active');
     renderAll();
   }
+ bindMissionEditEvents();
 }
 
 function renderAll() {
