@@ -4757,7 +4757,14 @@ function leaveBattleRoom() {
 // ============================================================
 // 🔄 카드 교환 시스템 (완전 재구축)
 // ============================================================
+// ============================================================
+// 🔄 카드 교환 시스템 (완전 재구축 v2)
+// ============================================================
 
+let myTradeRoom = null;
+let tradeListener = null;
+
+// ===== 교환 탭 렌더링 =====
 function renderTradeTab() {
   const container = document.getElementById('tradeContent');
   const ownedCards = Object.keys(state.owned).filter(key => state.owned[key].count > 0);
@@ -4810,14 +4817,14 @@ function renderTradeTab() {
     
     <div style="display:flex;gap:8px;margin-top:12px;">
       <button class="btn block" id="sendTradeBtn" style="font-size:16px;padding:12px;flex:1;" disabled>
-        📤 교환 제안
+        📤 교환 준비
       </button>
       <button class="btn good block" id="confirmTradeBtn" style="font-size:16px;padding:12px;flex:1;display:none;">
         ✅ 교환 확정
       </button>
     </div>
     
-    <button class="btn small ghost block" style="margin-top:10px;" onclick="leaveTradeRoom(); renderTradeTab();">
+    <button class="btn small ghost block" style="margin-top:10px;" onclick="leaveTradeRoom();">
       🚪 방 나가기
     </button>
   `;
@@ -4835,40 +4842,34 @@ function renderTradeTab() {
   document.getElementById('confirmTradeBtn').addEventListener('click', confirmTradeFinal);
 }
 
+// ===== 방 생성 =====
 async function createTradeRoom() {
-  console.log('🔍 [createTradeRoom] 시작');
-  
   const code = String(Math.floor(1000 + Math.random() * 9000));
-  console.log('🔍 생성된 코드:', code);
   
   const myCard = document.getElementById('tradeCardSelect')?.value;
-  console.log('🔍 내 카드:', myCard);
-  
   if (!myCard || !state.owned[myCard] || state.owned[myCard].count < 1) {
     alert('보낼 카드를 선택해주세요!');
     return;
   }
   
+  const myRarity = state.owned[myCard].rarity || 'common';
+  
   const roomData = {
     host: {
-      uid: 'host',
       card: myCard,
+      rarity: myRarity,
       ready: false,
       confirmed: false
     },
     guest: null,
     status: 'waiting',
-    log: ['🔵 교환방이 생성되었습니다. 친구를 기다리는 중...'],
+    log: ['🔵 교환방이 생성되었습니다.'],
     createdAt: Date.now()
   };
   
   try {
-    console.log('🔍 방 데이터 저장 중...');
     await db.ref('trades/' + code).set(roomData);
-    console.log('✅ 방 저장 완료');
-    
     myTradeRoom = { code, side: 'host' };
-    console.log('✅ myTradeRoom 설정:', myTradeRoom);
     
     updateTradeStatus('✅ 방 생성 완료! 코드: ' + code, 'success');
     document.getElementById('sendTradeBtn').disabled = true;
@@ -4878,75 +4879,54 @@ async function createTradeRoom() {
     showTradeWaiting(code);
     
   } catch (e) {
-    console.error('❌ 방 생성 오류:', e);
     alert('❌ 방 생성 실패: ' + e.message);
   }
 }
 
+// ===== 방 참가 =====
 async function joinTradeRoom(code) {
-  console.log('🔍 [joinTradeRoom] 시작 - 코드:', code);
-  
   try {
     const roomRef = db.ref('trades/' + code);
-    
-    // 1. 방 존재 확인
-    console.log('🔍 방 확인 중...');
     const snapshot = await roomRef.once('value');
     const room = snapshot.val();
-    console.log('🔍 방 데이터:', room);
     
     if (!room) {
-      console.log('❌ 방 없음');
       alert('❌ 존재하지 않는 방입니다!');
       return;
     }
     
     if (room.status === 'completed') {
-      console.log('❌ 이미 완료된 방');
       alert('❌ 이미 교환이 완료된 방입니다!');
       return;
     }
     
-    if (room.guest && room.guest !== null) {
+    // guest가 있으면 참가 불가
+    if (room.guest !== null && room.guest !== undefined) {
       alert('❌ 이미 다른 사람이 참가한 방입니다!');
       return;
     }
     
     const myCard = document.getElementById('tradeCardSelect')?.value;
-    console.log('🔍 내 카드:', myCard);
-    
     if (!myCard || !state.owned[myCard] || state.owned[myCard].count < 1) {
       alert('보낼 카드를 선택해주세요!');
       return;
     }
     
-    // 2. 참가 처리
-    console.log('🔍 참가 처리 중...');
+    const myRarity = state.owned[myCard].rarity || 'common';
+    
+    // 참가 처리
     await roomRef.update({
       guest: {
-        uid: 'guest',
         card: myCard,
+        rarity: myRarity,
         ready: false,
         confirmed: false
       },
       status: 'ready',
-      log: ['🟢 친구가 참가했습니다! 서로 카드를 확인해주세요.']
+      log: ['🟢 친구가 참가했습니다!']
     });
-    console.log('✅ 참가 처리 완료');
-    
-    // 3. 성공 확인
-    const result = await roomRef.once('value');
-    const updatedRoom = result.val();
-    console.log('🔍 업데이트 후 방 데이터:', updatedRoom);
-    
-    if (!updatedRoom || updatedRoom.guest === null) {
-      console.log('❌ 참가 실패 - guest 없음');
-      alert('❌ 참가에 실패했습니다. 다시 시도해주세요.');
-      return;
-    }
     
     myTradeRoom = { code, side: 'guest' };
-    console.log('✅ myTradeRoom 설정:', myTradeRoom);
     
     updateTradeStatus('✅ 참가 완료!', 'success');
     document.getElementById('sendTradeBtn').disabled = false;
@@ -4956,11 +4936,12 @@ async function joinTradeRoom(code) {
     showTradeReady(code);
     
   } catch (e) {
-    console.error('❌ 참가 오류:', e);
+    console.error('참가 오류:', e);
     alert('❌ 참가 실패: ' + e.message);
   }
 }
 
+// ===== UI 업데이트 =====
 function showTradeWaiting(code) {
   const area = document.getElementById('tradeStatusArea');
   area.innerHTML = `
@@ -5002,14 +4983,10 @@ function updateTradeStatus(msg, type) {
   `;
 }
 
+// ===== 리스너 설정 =====
 function setupTradeListener(code) {
-  console.log('🔍 [setupTradeListener] 시작 - 코드:', code);
-  
   if (tradeListener) {
-    try { 
-      console.log('🔍 기존 리스너 제거');
-      tradeListener.off(); 
-    } catch(e) {}
+    try { tradeListener.off(); } catch(e) {}
     tradeListener = null;
   }
   
@@ -5017,23 +4994,18 @@ function setupTradeListener(code) {
   tradeListener.on('value', function(snapshot) {
     try {
       const room = snapshot.val();
-      console.log('🔍 리스너 감지 - 방 데이터:', room);
-      
       if (!room) {
-        console.log('❌ 방 삭제됨');
         updateTradeStatus('❌ 방이 삭제되었습니다', 'error');
         return;
       }
-      
       handleTradeUpdate(room);
     } catch(e) {
-      console.error('❌ 교환 업데이트 오류:', e);
+      console.error('교환 업데이트 오류:', e);
     }
   });
-  
-  console.log('✅ 리스너 등록 완료');
 }
 
+// ===== 교환 업데이트 처리 =====
 function handleTradeUpdate(room) {
   if (!myTradeRoom) return;
   
@@ -5042,6 +5014,7 @@ function handleTradeUpdate(room) {
   const me = room[mySide];
   const opp = room[oppSide];
   
+  // 상대방 정보 업데이트
   updatePartnerInfo(room);
   
   switch(room.status) {
@@ -5054,7 +5027,7 @@ function handleTradeUpdate(room) {
       handleConfirmState(room, me, opp);
       break;
     case 'completed':
-      handleCompletedState(room, me, opp);
+      handleCompletedState(room);
       break;
   }
 }
@@ -5070,8 +5043,11 @@ function updatePartnerInfo(room) {
   if (!opp) return;
   
   const oppCard = opp.card ? getPokemonByName(opp.card) : null;
+  const oppRarity = opp.rarity || 'common';
+  const rInfo = getRarityInfo(oppRarity);
+  
   const statusText = oppCard ? 
-    `📤 ${oppCard.name} (${getRarityInfo(state.owned[opp.card]?.rarity || 'common').label})` : 
+    `📤 ${oppCard.name} (${rInfo.label})` : 
     '⏳ 카드 선택 중...';
   const readyText = opp.ready ? '✅ 준비 완료' : '⏳ 대기 중';
   
@@ -5113,19 +5089,21 @@ function handleReadyState(room, me, opp) {
       confirmBtn.disabled = false;
       confirmBtn.textContent = '✅ 교환 확정';
       
-      updateTradeStatus('✅ 양쪽 모두 카드를 선택했습니다! "교환 확정"을 눌러주세요.', 'success');
+      updateTradeStatus('✅ 양쪽 모두 준비되었습니다! "교환 확정"을 눌러주세요.', 'success');
+    } else if (me.ready) {
+      sendBtn.style.display = 'none';
+      confirmBtn.style.display = 'none';
+      updateTradeStatus('⏳ 상대방이 준비하는 중...', 'waiting');
     } else {
       sendBtn.style.display = 'block';
       sendBtn.disabled = false;
       confirmBtn.style.display = 'none';
-      
-      updateTradeStatus('📤 "교환 제안" 버튼을 눌러 교환을 제안하세요.', 'info');
+      updateTradeStatus('📤 "교환 준비" 버튼을 눌러주세요.', 'info');
     }
   } else {
     sendBtn.style.display = 'block';
     sendBtn.disabled = true;
     confirmBtn.style.display = 'none';
-    
     updateTradeStatus('⏳ 상대방이 카드를 선택하는 중...', 'waiting');
   }
 }
@@ -5144,16 +5122,21 @@ function handleConfirmState(room, me, opp) {
   }
 }
 
-function handleCompletedState(room, me, opp) {
+function handleCompletedState(room) {
   document.getElementById('sendTradeBtn').style.display = 'none';
   document.getElementById('confirmTradeBtn').style.display = 'none';
   
-  updateTradeStatus('✅ 교환이 완료되었습니다! 🎉', 'success');
+  // 이미 처리했는지 확인
+  if (room._processed) {
+    updateTradeStatus('✅ 교환이 완료되었습니다! 🎉', 'success');
+    return;
+  }
   
-  if (room._processed) return;
+  // 교환 실행
   executeTrade(room);
 }
 
+// ===== 교환 준비 =====
 async function sendTradeProposal() {
   if (!myTradeRoom) {
     alert('먼저 교환방에 참가해주세요!');
@@ -5185,27 +5168,31 @@ async function sendTradeProposal() {
       return;
     }
     
+    const myRarity = state.owned[myCard].rarity || 'common';
+    
     const updateData = {};
     updateData[mySide + '/card'] = myCard;
+    updateData[mySide + '/rarity'] = myRarity;
     updateData[mySide + '/ready'] = true;
     
     if (opp.card && opp.ready) {
       updateData.status = 'ready';
-      updateData.log = ['✅ 양쪽 모두 카드를 선택했습니다!'].concat(room.log || []);
+      updateData.log = ['✅ 양쪽 모두 준비되었습니다!'].concat(room.log || []);
     } else {
-      updateData.log = ['📤 내가 카드를 선택했습니다!'].concat(room.log || []);
+      updateData.log = ['📤 내가 준비했습니다!'].concat(room.log || []);
     }
     
     await roomRef.update(updateData);
     
     document.getElementById('sendTradeBtn').disabled = true;
-    updateTradeStatus('✅ 카드 제안 완료! 상대방을 기다리는 중...', 'success');
+    updateTradeStatus('✅ 준비 완료! 상대방을 기다리는 중...', 'success');
     
   } catch (e) {
-    alert('❌ 제안 실패: ' + e.message);
+    alert('❌ 준비 실패: ' + e.message);
   }
 }
 
+// ===== 교환 확정 =====
 async function confirmTradeFinal() {
   if (!myTradeRoom) {
     alert('교환방에 참가해주세요!');
@@ -5236,16 +5223,19 @@ async function confirmTradeFinal() {
       return;
     }
     
+    // 내 확인 표시
     await roomRef.update({
       [mySide + '/confirmed']: true,
       status: 'confirm',
       log: ['⏳ 한쪽이 최종 확인했습니다.'].concat(room.log || [])
     });
     
+    // 상대방도 확인했는지 확인
     const updated = await roomRef.once('value');
     const updatedRoom = updated.val();
     
     if (updatedRoom[oppSide].confirmed === true) {
+      // 양쪽 모두 확인 완료 → 교환 실행
       await executeTradeFinal(roomRef, updatedRoom);
     } else {
       document.getElementById('confirmTradeBtn').disabled = true;
@@ -5258,48 +5248,63 @@ async function confirmTradeFinal() {
   }
 }
 
+// ===== 최종 교환 실행 =====
 async function executeTradeFinal(roomRef, room) {
   const mySide = myTradeRoom.side;
   const oppSide = mySide === 'host' ? 'guest' : 'host';
   const myCard = room[mySide].card;
   const oppCard = room[oppSide].card;
-  
-  const oppRarity = state.owned[oppCard]?.rarity || 'common';
+  const myRarity = room[mySide].rarity || 'common';
+  const oppRarity = room[oppSide].rarity || 'common';
   
   try {
+    // 내 카드 차감
     if (state.owned[myCard] && state.owned[myCard].count > 0) {
       state.owned[myCard].count -= 1;
       if (state.owned[myCard].count <= 0) {
         delete state.owned[myCard];
       }
-    } else {
-      alert('보낼 카드가 없어요!');
-      return;
     }
     
+    // 상대방 카드 추가 (등급 유지!)
     if (!state.owned[oppCard]) {
       state.owned[oppCard] = { count: 1, rarity: oppRarity };
     } else {
       state.owned[oppCard].count += 1;
+      // 기존 등급이 없거나 더 낮은 등급이면 업데이트
+      const currentRarity = state.owned[oppCard].rarity || 'common';
+      if (getRarityInfo(oppRarity).weight > getRarityInfo(currentRarity).weight) {
+        state.owned[oppCard].rarity = oppRarity;
+      }
     }
     
     saveState();
     
+    // Firebase 완료 표시
     await roomRef.update({
       status: 'completed',
       _processed: true,
+      exchangeResult: {
+        myCard: myCard,
+        oppCard: oppCard,
+        myRarity: myRarity,
+        oppRarity: oppRarity
+      },
       log: ['✅ 교환 완료! ' + getPokemonByName(myCard)?.name + ' ↔ ' + getPokemonByName(oppCard)?.name].concat(room.log || [])
     });
     
+    // 결과 표시
     const receivedPokemon = getPokemonByName(oppCard);
-    updateTradeStatus(`✅ 교환 완료! ${receivedPokemon ? receivedPokemon.name : oppCard} 카드를 받았어요! 🎉`, 'success');
+    const rInfo = getRarityInfo(oppRarity);
+    
+    updateTradeStatus(`✅ 교환 완료! ${receivedPokemon ? receivedPokemon.name : oppCard} (${rInfo.label}) 카드를 받았어요! 🎉`, 'success');
     
     renderDex();
     updateStatline();
     SFX.cardReward();
     
     if (receivedPokemon) {
-      showRewardPopup(receivedPokemon, '🔄 교환 완료!', `${getRarityInfo(oppRarity).label} 등급 카드를 받았어요!`);
+      showRewardPopup(receivedPokemon, '🔄 교환 완료!', `${rInfo.label} 등급 카드를 받았어요!`);
     }
     
     document.getElementById('sendTradeBtn').style.display = 'none';
@@ -5316,34 +5321,41 @@ async function executeTradeFinal(roomRef, room) {
   }
 }
 
+// ===== 교환 실행 (completed 상태에서 호출) =====
 function executeTrade(room) {
   if (room._processed) return;
   
   const mySide = myTradeRoom.side;
   const oppSide = mySide === 'host' ? 'guest' : 'host';
-  const myCard = room[mySide].card;
   const oppCard = room[oppSide].card;
-  const oppRarity = state.owned[oppCard]?.rarity || 'common';
+  const oppRarity = room[oppSide].rarity || 'common';
   
   try {
+    // 상대방 카드 추가 (등급 유지!)
     if (!state.owned[oppCard]) {
       state.owned[oppCard] = { count: 1, rarity: oppRarity };
     } else {
       state.owned[oppCard].count += 1;
+      const currentRarity = state.owned[oppCard].rarity || 'common';
+      if (getRarityInfo(oppRarity).weight > getRarityInfo(currentRarity).weight) {
+        state.owned[oppCard].rarity = oppRarity;
+      }
     }
     
     saveState();
     db.ref('trades/' + myTradeRoom.code).update({ _processed: true });
     
     const receivedPokemon = getPokemonByName(oppCard);
-    updateTradeStatus(`✅ 교환 완료! ${receivedPokemon ? receivedPokemon.name : oppCard} 카드를 받았어요! 🎉`, 'success');
+    const rInfo = getRarityInfo(oppRarity);
+    
+    updateTradeStatus(`✅ 교환 완료! ${receivedPokemon ? receivedPokemon.name : oppCard} (${rInfo.label}) 카드를 받았어요! 🎉`, 'success');
     
     renderDex();
     updateStatline();
     SFX.cardReward();
     
     if (receivedPokemon) {
-      showRewardPopup(receivedPokemon, '🔄 교환 완료!', `${getRarityInfo(oppRarity).label} 등급 카드를 받았어요!`);
+      showRewardPopup(receivedPokemon, '🔄 교환 완료!', `${rInfo.label} 등급 카드를 받았어요!`);
     }
     
   } catch (e) {
@@ -5351,6 +5363,7 @@ function executeTrade(room) {
   }
 }
 
+// ===== 교환방 나가기 =====
 function leaveTradeRoom() {
   if (tradeListener) {
     try { tradeListener.off(); } catch(e) {}
@@ -5384,7 +5397,10 @@ function leaveTradeRoom() {
       </div>
     `;
   }
+  
+  renderTradeTab();
 }
+
 
 // ===== 소유 필터 =====
 document.querySelectorAll('#ownershipFilter .chip').forEach(chip => {
