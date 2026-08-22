@@ -6,7 +6,7 @@
 <title>포켓몬 카드 마스터 v7.5</title>
 
 <script>
-  // ===== 설정 값 (YOUR_API_KEY 등을 여기에 입력) =====
+  // ===== 설정 값 =====
   const MY_CONFIG = {
     FIREBASE_API_KEY: "AIzaSyAnNMf2GxcLs7abmetxwWmoxBkIrFy1jQQ",
     FIREBASE_AUTH_DOMAIN: "pokebattle-45a99.firebaseapp.com",
@@ -27,7 +27,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 
 <style>
-  /* ===== 모든 스타일 ===== */
+  /* ===== 모든 스타일 (축약) ===== */
   :root {
     --ink: #232042;
     --ink-2: #312B57;
@@ -46,7 +46,6 @@
     --font-display: 'Baloo 2', sans-serif;
     --font-body: 'Inter', sans-serif;
     --font-mono: 'JetBrains Mono', monospace;
-    
     --common: #A6A0BE;
     --rare: #4CAF7D;
     --super-rare: #3E9FDC;
@@ -117,7 +116,6 @@
     overflow: hidden;
   }
   
-  /* ===== 🔥 모든 버튼 크기 대폭 증가 ===== */
   .btn {
     font-family: var(--font-display);
     font-weight: 700;
@@ -142,7 +140,6 @@
   .btn.good { background: var(--good); box-shadow: 0 4px 0 #2E7A54; color: #fff; }
   .btn.danger { background: var(--bad); box-shadow: 0 4px 0 #A04030; color: #fff; }
   
-  /* ===== 🎯 미션 카드 스타일 ===== */
   .mission-intro { text-align: center; }
   .mission-intro .big-emoji { font-size: 56px; margin-bottom: 6px; }
   .mission-intro .title-text { font-family: var(--font-display); font-size: 24px; margin: 4px 0; }
@@ -157,7 +154,6 @@
     padding: 4px 0;
   }
   
-  /* ===== 🔥 미션 카드 (포켓몬 카드 스타일) ===== */
   .mission-card {
     background: linear-gradient(160deg, var(--paper) 0%, var(--paper-2) 100%);
     border-radius: 16px;
@@ -179,18 +175,8 @@
     gap: 14px;
     flex: 1;
   }
-  .mission-card .mc-emoji {
-    font-size: 36px;
-    width: 52px;
-    text-align: center;
-    flex-shrink: 0;
-  }
-  .mission-card .mc-label {
-    font-family: var(--font-display);
-    font-size: 18px;
-    font-weight: 700;
-    color: var(--text-dark);
-  }
+  .mission-card .mc-emoji { font-size: 36px; width: 52px; text-align: center; flex-shrink: 0; }
+  .mission-card .mc-label { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--text-dark); }
   .mission-card .mc-status {
     font-family: var(--font-mono);
     font-size: 14px;
@@ -198,24 +184,11 @@
     border-radius: 8px;
     font-weight: 700;
   }
-  .mission-card .mc-status.done {
-    background: var(--good);
-    color: #fff;
-  }
-  .mission-card .mc-status.pending {
-    background: var(--sun);
-    color: var(--text-dark);
-    cursor: pointer;
-  }
-  .mission-card .mc-status.pending:active {
-    transform: scale(.95);
-  }
-  .mission-card.completed {
-    border-color: var(--good);
-    opacity: .7;
-  }
+  .mission-card .mc-status.done { background: var(--good); color: #fff; }
+  .mission-card .mc-status.pending { background: var(--sun); color: var(--text-dark); cursor: pointer; }
+  .mission-card .mc-status.pending:active { transform: scale(.95); }
+  .mission-card.completed { border-color: var(--good); opacity: .7; }
   
-  /* ===== 퀴즈 ===== */
   .quiz-box { text-align: center; }
   .quiz-q { font-family: var(--font-display); font-size: 20px; margin-bottom: 12px; color: var(--paper); }
   .quiz-art-wrap {
@@ -252,7 +225,6 @@
   .quiz-feedback.ok { color: var(--sun-2); }
   .quiz-feedback.no { color: #F0A79A; }
   
-  /* ===== 카드 ===== */
   .card {
     border-radius: 14px;
     position: relative;
@@ -308,7 +280,6 @@
     line-height: 1.2;
   }
   
-  /* ===== 도감 ===== */
   .grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -368,11 +339,6 @@
     color: #5A5170;
     padding: 0 2px;
   }
-  .card.mini .statrow span {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
   .card.mini .statrow span b {
     font-size: 12px;
     color: var(--text-dark);
@@ -393,9 +359,7 @@
     letter-spacing: .04em;
     line-height: 1.4;
   }
-  .card.mini.locked {
-    filter: grayscale(1) brightness(0.5);
-  }
+  .card.mini.locked { filter: grayscale(1) brightness(0.5); }
   .card.mini.locked .name { color: #aaa; }
   
   .filter-row {
@@ -418,12 +382,7 @@
     touch-action: manipulation;
     min-height: 44px;
   }
-  .chip.active {
-    background: var(--sun);
-    color: #2A2440;
-    border-color: var(--sun);
-    font-weight: 700;
-  }
+  .chip.active { background: var(--sun); color: #2A2440; border-color: var(--sun); font-weight: 700; }
   .chip:active { transform: scale(.95); }
   
   .ownership-filter {
@@ -432,12 +391,8 @@
     flex-wrap: wrap;
     margin: 6px 0 10px;
   }
-  .ownership-filter .chip {
-    font-size: 14px;
-    padding: 8px 18px;
-  }
+  .ownership-filter .chip { font-size: 14px; padding: 8px 18px; }
   
-  /* ===== 배틀 ===== */
   .arena {
     background: linear-gradient(180deg, rgba(255,255,255,.04), transparent);
     border: 2px solid rgba(255,201,60,.2);
@@ -458,11 +413,7 @@
     display: flex; align-items: center; justify-content: center;
   }
   .fighter .art-wrap img { width: 62%; object-fit: contain; }
-  .fighter .fname {
-    font-family: var(--font-display);
-    font-weight: 700;
-    font-size: 18px;
-  }
+  .fighter .fname { font-family: var(--font-display); font-weight: 700; font-size: 18px; }
   .fighter .hpbar {
     height: 12px;
     border-radius: 6px;
@@ -560,13 +511,7 @@
   .slot.filled { border-style: solid; border-color: var(--sun); }
   .slot .mini-art { width: 65%; }
   .slot .mini-art img { width: 100%; object-fit: contain; }
-  .slot .x {
-    position: absolute;
-    top: 4px;
-    right: 6px;
-    font-size: 18px;
-    color: #B7AFDE;
-  }
+  .slot .x { position: absolute; top: 4px; right: 6px; font-size: 18px; color: #B7AFDE; }
   
   .picker { display: none; margin-bottom: 14px; }
   .picker.open { display: block; }
@@ -587,15 +532,9 @@
     background: rgba(255,255,255,.03);
   }
   .pick-item img { width: 52px; height: 52px; object-fit: contain; }
-  .pick-item .n {
-    font-size: 14px;
-    font-family: var(--font-mono);
-    margin-top: 3px;
-    color: #B7AFDE;
-  }
+  .pick-item .n { font-size: 14px; font-family: var(--font-mono); margin-top: 3px; color: #B7AFDE; }
   .pick-item.disabled { opacity: .3; pointer-events: none; }
   
-  /* ===== 탭바 ===== */
   nav.tabbar {
     position: fixed; bottom: 0; left: 0; right: 0;
     background: rgba(35,32,66,.95);
@@ -613,7 +552,6 @@
   nav.tabbar button .ic { font-size: 26px; }
   nav.tabbar button.active { color: var(--sun); }
   
-  /* ===== 키우기 ===== */
   .pet-hero { text-align: center; padding: 8px 0; }
   .pet-hero .art-big {
     width: 140px; height: 140px; margin: 0 auto 8px; border-radius: 50%;
@@ -692,7 +630,6 @@
   .starter-card img { width: 60px; height: 60px; object-fit: contain; }
   .starter-card .n { font-family: var(--font-display); font-weight: 700; font-size: 16px; margin-top: 4px; }
   
-  /* ===== 수학퀴즈 ===== */
   .math-quiz { text-align: center; padding: 10px 0; }
   .math-quiz .question {
     font-family: var(--font-display);
@@ -766,7 +703,6 @@
     color: #B7AFDE;
   }
   
-  /* ===== 레이드 ===== */
   .raid-boss {
     text-align: center;
     padding: 24px 18px;
@@ -800,7 +736,62 @@
     margin: 6px 0;
   }
   
-  /* ===== 모달 ===== */
+  /* ===== 레이드 속성 선택 ===== */
+  .raid-type-selector {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin: 12px 0;
+  }
+  .raid-type-btn {
+    padding: 12px 8px;
+    border-radius: 12px;
+    border: 3px solid rgba(255,255,255,.1);
+    background: rgba(255,255,255,.05);
+    color: var(--paper);
+    font-family: var(--font-display);
+    font-size: 16px;
+    cursor: pointer;
+    transition: all .2s;
+    touch-action: manipulation;
+    min-height: 56px;
+  }
+  .raid-type-btn:active { transform: scale(.95); }
+  .raid-type-btn.selected {
+    border-color: var(--sun);
+    background: rgba(255,201,60,.15);
+    box-shadow: 0 0 20px rgba(255,201,60,.2);
+  }
+  .raid-type-btn .type-icon { font-size: 28px; display: block; margin-bottom: 2px; }
+  .raid-type-btn .type-label { font-size: 12px; opacity: .8; }
+  
+  .raid-pokemon-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    max-height: 200px;
+    overflow-y: auto;
+    padding: 4px;
+  }
+  .raid-pokemon-card {
+    border: 2px solid rgba(255,255,255,.1);
+    border-radius: 10px;
+    padding: 6px;
+    text-align: center;
+    cursor: pointer;
+    background: rgba(255,255,255,.03);
+    transition: all .2s;
+  }
+  .raid-pokemon-card:active { transform: scale(.95); }
+  .raid-pokemon-card.selected {
+    border-color: var(--sun);
+    background: rgba(255,201,60,.15);
+    box-shadow: 0 0 16px rgba(255,201,60,.15);
+  }
+  .raid-pokemon-card .rpc-art { font-size: 36px; }
+  .raid-pokemon-card .rpc-name { font-size: 12px; font-family: var(--font-display); margin-top: 2px; }
+  .raid-pokemon-card .rpc-atk { font-size: 10px; font-family: var(--font-mono); color: #B7AFDE; }
+  
   .modal-overlay {
     display: none;
     position: fixed;
@@ -958,11 +949,7 @@
     min-width: 80px;
     min-height: 52px;
   }
-  .mode-toggle button.active {
-    background: var(--sun);
-    color: #2A2440;
-    border-color: var(--sun);
-  }
+  .mode-toggle button.active { background: var(--sun); color: #2A2440; border-color: var(--sun); }
   
   .room-box { text-align: center; padding: 10px 4px; }
   .room-code {
@@ -1033,106 +1020,6 @@
   .evo-chain .evo-item .evo-level { font-size: 12px; color: #6b6395; }
   .evo-chain .evo-arrow { color: var(--sun); font-size: 28px; font-weight: 700; }
   
-  .cry-btn {
-    display: inline-block;
-    padding: 10px 24px;
-    border-radius: 12px;
-    background: rgba(255,201,60,.15);
-    border: 2px solid rgba(255,201,60,.3);
-    color: var(--sun-2);
-    cursor: pointer;
-    font-family: var(--font-body);
-    font-size: 16px;
-    margin: 8px 0;
-  }
-  .cry-btn:active { transform: scale(.95); }
-  
-  .trade-modal .modal-content { max-width: 440px; }
-  .trade-modal select {
-    width: 100%;
-    padding: 14px 16px;
-    border-radius: 12px;
-    border: 3px solid rgba(255,201,60,.2);
-    background: rgba(255,255,255,.05);
-    color: var(--paper);
-    font-size: 18px;
-    margin: 6px 0;
-    min-height: 52px;
-  }
-  .trade-modal .trade-info {
-    font-family: var(--font-mono);
-    font-size: 14px;
-    color: #B7AFDE;
-    text-align: center;
-    padding: 10px;
-    background: rgba(255,255,255,.05);
-    border-radius: 8px;
-    margin: 8px 0;
-  }
-  .trade-modal .trade-status {
-    font-family: var(--font-mono);
-    font-size: 16px;
-    color: var(--sun-2);
-    text-align: center;
-    padding: 14px;
-    background: rgba(255,201,60,.1);
-    border-radius: 10px;
-    margin: 10px 0;
-  }
-  
-  .raid-card-select {
-    transition: all .2s;
-    border-radius: 12px;
-    padding: 8px 6px;
-    text-align: center;
-    cursor: pointer;
-    background: rgba(255,255,255,.05);
-  }
-  .raid-card-select:hover { transform: scale(1.04); }
-  .raid-card-select.selected {
-    border-color: var(--sun) !important;
-    background: rgba(255,201,60,.15) !important;
-    box-shadow: 0 0 24px rgba(255,201,60,.2);
-  }
-  .raid-card-select .rds-art { font-size: 40px; }
-  .raid-card-select .rds-name { font-size: 14px; font-family: var(--font-display); margin-top: 3px; }
-  .raid-card-select .rds-rarity { font-size: 11px; font-family: var(--font-mono); }
-  
-  .raid-boss-info {
-    background: rgba(255,255,255,.06);
-    border-radius: 14px;
-    padding: 16px;
-    margin: 8px 0 14px;
-    text-align: left;
-    font-size: 16px;
-    color: #D8D2EF;
-  }
-  .raid-boss-info .rb-row {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-  }
-  .raid-boss-info .rb-row .rb-art { font-size: 64px; }
-  .raid-boss-info .rb-row .rb-detail { flex: 1; }
-  .raid-boss-info .rb-row .rb-detail .rb-name {
-    font-family: var(--font-display);
-    font-size: 24px;
-    color: var(--paper);
-  }
-  .raid-boss-info .rb-row .rb-detail .rb-stat {
-    font-size: 15px;
-    color: #B7AFDE;
-    margin: 3px 0;
-  }
-  .raid-boss-info .rb-owner {
-    font-size: 14px;
-    margin-top: 8px;
-    padding: 6px 14px;
-    border-radius: 8px;
-    background: rgba(255,255,255,.05);
-    display: inline-block;
-  }
-  
   .age-input-wrap {
     text-align: center;
     padding: 30px 20px;
@@ -1195,11 +1082,12 @@
     .reward-popup-content .card { width: 160px; }
     .modal-content { padding: 18px 14px 22px; }
     .raid-boss .boss-name { font-size: 24px; }
-    .raid-card-select .rds-art { font-size: 28px; }
     .btn { font-size: 16px; padding: 14px 18px; min-height: 50px; }
     .mission-card .mc-label { font-size: 15px; }
     .mission-card .mc-emoji { font-size: 28px; width: 40px; }
     .age-buttons { grid-template-columns: repeat(3, 1fr); }
+    .raid-type-selector { grid-template-columns: repeat(3, 1fr); }
+    .raid-pokemon-grid { grid-template-columns: repeat(2, 1fr); }
   }
 </style>
 </head>
@@ -1331,7 +1219,7 @@
 
 <script>
 // ============================================================
-// 🚀 포켓몬 카드 마스터 v7.5 - 전체 코드 (대규모 UI 개선 + 진화 버그 수정)
+// 🚀 포켓몬 카드 마스터 v7.5 - 전체 코드
 // ============================================================
 
 // ===== Firebase 설정 =====
@@ -1418,7 +1306,7 @@ function getRarityDamageBonus(rarity) {
   return bonuses[rarity] || 0;
 }
 
-// ===== 특성/기술 한글 맵 (축약) =====
+// ===== 특성/기술 한글 맵 =====
 function getAbilityKorean(engName) {
   const map = {
     'overgrow': '초목', 'blaze': '맹화', 'torrent': '급류',
@@ -1454,7 +1342,10 @@ let state = {
   playerAge: null,
   mathQuiz: { today: null, questions: [], currentIndex: 0, results: [], completed: false },
   mathStats: { total: 0, correct: 0 },
-  raid: { boss: null, hp: 0, maxHp: 0, completed: false, today: null, rewardCollected: false, attackChance: 0 }
+  raid: { boss: null, hp: 0, maxHp: 0, completed: false, today: null, rewardCollected: false, attackChance: 0 },
+  // 레이드 선택 상태
+  raidSelectedType: null,
+  raidSelectedCard: null
 };
 
 let ownershipFilter = 'all';
@@ -1467,7 +1358,6 @@ let myBattleRoom = null;
 let battleListener = null;
 let myTradeRoom = null;
 let tradeListener = null;
-let selectedRaidCard = null;
 
 const DEFAULT_LIFE_MISSIONS = [
   { id:'go-out', label:'등원하기', emoji:'🎒' },
@@ -2043,7 +1933,7 @@ function handleQuizAnswer(isCorrect) {
   }, 1500);
 }
 
-// ===== 🌟 생활미션 (카드 스타일) =====
+// ===== 🌟 생활미션 =====
 function renderLifeMissions() {
   const key = todayKey();
   const doneToday = state.dailyMissions[key] || {};
@@ -2540,65 +2430,7 @@ function checkMathAnswer2(selectedIdx) {
   }, 1500);
 }
 
-// ===== ⚔️ 레이드 =====
-function renderRaidCardSelector() {
-  const ownedCards = Object.keys(state.owned).filter(key => state.owned[key].count > 0);
-  
-  if (ownedCards.length === 0) {
-    return '<div style="color:#8d84b0;font-size:14px;text-align:center;padding:10px;">보유한 카드가 없어요</div>';
-  }
-  
-  const sortedCards = ownedCards.sort((a, b) => {
-    const rarityOrder = { 'special': 5, 'ultra-rare': 4, 'super-rare': 3, 'rare': 2, 'common': 1 };
-    return (rarityOrder[state.owned[b].rarity] || 0) - (rarityOrder[state.owned[a].rarity] || 0);
-  });
-  
-  let html = '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;max-height:200px;overflow-y:auto;padding:4px;">';
-  
-  sortedCards.forEach(key => {
-    const c = getPokemonByName(key);
-    const info = state.owned[key];
-    const rInfo = getRarityInfo(info.rarity);
-    if (c) {
-      html += `
-        <div class="raid-card-select" data-key="${key}" style="border:3px solid ${rInfo.color};border-radius:10px;padding:6px;text-align:center;cursor:pointer;background:rgba(255,255,255,.05);">
-          <div class="rds-art">${pokemonImage(c, '36px')}</div>
-          <div class="rds-name">${c.name}</div>
-          <div class="rds-rarity" style="color:${rInfo.color};">${rInfo.label}</div>
-        </div>
-      `;
-    }
-  });
-  
-  html += '</div>';
-  html += `
-    <div style="margin-top:6px;font-size:12px;color:#6b6395;text-align:center;">💡 등급 높은 순 · 클릭으로 선택</div>
-    <div id="selectedRaidCardDisplay" style="margin-top:6px;font-size:16px;color:var(--sun-2);text-align:center;font-weight:700;">선택된 카드: 없음</div>
-  `;
-  
-  return html;
-}
-
-function renderRaidBossInfo(boss) {
-  const ownedData = state.owned[boss.engName];
-  const hasCard = !!ownedData;
-  
-  return `
-    <div class="raid-boss-info">
-      <div class="rb-row">
-        <div class="rb-art">${pokemonImage(boss, '52px')}</div>
-        <div class="rb-detail">
-          <div class="rb-name">${boss.name}</div>
-          <div class="rb-stat">⭐ 타입: ${getTypeLabel(boss.type)}</div>
-          <div class="rb-stat">❤️ HP: ${boss.hp} · ⚔️ 공격: ${boss.atk}</div>
-          <div class="rb-owner">${hasCard ? '✅ 보유한 카드입니다' : '❌ 아직 미보유 카드입니다'}</div>
-        </div>
-      </div>
-      <div style="margin-top:8px;font-size:13px;color:#6b6395;text-align:center;">⚔️ 레이드 보스는 체력이 15배 증가합니다</div>
-    </div>
-  `;
-}
-
+// ===== ⚔️ 레이드 (속성 선택 → 포켓몬 선택) =====
 function renderRaidMission() {
   const panel = document.getElementById('missionPanel');
   const key = todayKey();
@@ -2625,6 +2457,8 @@ function renderRaidMission() {
       attackChance: 0,
       rewardCollected: false
     };
+    state.raidSelectedType = null;
+    state.raidSelectedCard = null;
     saveState();
   }
   
@@ -2652,7 +2486,25 @@ function renderRaidMission() {
   
   const hpPercent = Math.max(0, (raid.hp / raid.maxHp) * 100);
   const atkChance = raid.attackChance || 0;
-  const cardSelectorHTML = renderRaidCardSelector();
+  
+  // ===== 속성 선택 UI =====
+  const allTypes = ['normal', 'fire', 'water', 'electric', 'grass', 'ice', 'fighting', 'poison', 'ground', 'flying', 'psychic', 'bug', 'rock', 'ghost', 'dragon', 'dark', 'steel', 'fairy'];
+  const typeEmojis = {
+    normal: '⚪', fire: '🔥', water: '💧', electric: '⚡', grass: '🌿', ice: '❄️',
+    fighting: '👊', poison: '☠️', ground: '⛰️', flying: '🕊️', psychic: '🔮', bug: '🐛',
+    rock: '🪨', ghost: '👻', dragon: '🐉', dark: '🌙', steel: '🔩', fairy: '🧚'
+  };
+  
+  // ===== 선택된 속성에 맞는 포켓몬 목록 =====
+  const selectedType = state.raidSelectedType;
+  let filteredPokemon = [];
+  if (selectedType) {
+    filteredPokemon = POKEMON_LIST
+      .filter(p => state.owned[p.engName] && p.types.includes(selectedType))
+      .sort((a, b) => (b.atk || 0) - (a.atk || 0)); // 공격력 순 정렬
+  }
+  
+  const selectedCard = state.raidSelectedCard;
   
   panel.innerHTML = `
     <div class="raid-boss">
@@ -2661,38 +2513,120 @@ function renderRaidMission() {
       <div class="boss-hp"><div style="width:${hpPercent}%"></div></div>
       <div class="boss-info">❤️ HP ${Math.max(0, Math.round(raid.hp))} / ${raid.maxHp}</div>
       
-      <div style="margin-top:12px;text-align:left;font-size:14px;color:#B7AFDE;">
-        <div>⚔️ 공격 기회: <b style="color:var(--sun-2);font-size:20px;">${atkChance}회</b></div>
-        <div style="margin-top:6px;font-size:14px;">📤 공격할 카드 선택:</div>
-        ${cardSelectorHTML}
+      <div style="margin-top:14px;text-align:left;">
+        <div style="font-family:var(--font-display);font-size:18px;color:var(--sun-2);margin-bottom:8px;">🎯 공격할 속성 선택</div>
+        <div class="raid-type-selector">
+          ${allTypes.map(type => `
+            <button class="raid-type-btn ${state.raidSelectedType === type ? 'selected' : ''}" 
+                    data-type="${type}"
+                    onclick="selectRaidType('${type}')">
+              <span class="type-icon">${typeEmojis[type] || '❓'}</span>
+              <span class="type-label">${getTypeLabel(type)}</span>
+            </button>
+          `).join('')}
+        </div>
+      </div>
+      
+      ${selectedType ? `
+        <div style="margin-top:12px;text-align:left;">
+          <div style="font-family:var(--font-display);font-size:16px;color:var(--sun-2);margin-bottom:6px;">
+            ⚔️ ${getTypeLabel(selectedType)} 타입 포켓몬 (공격력 순)
+          </div>
+          ${filteredPokemon.length === 0 ? `
+            <div style="color:#8d84b0;font-size:14px;text-align:center;padding:10px;">
+              ${getTypeLabel(selectedType)} 타입 포켓몬이 없어요 😢
+            </div>
+          ` : `
+            <div class="raid-pokemon-grid">
+              ${filteredPokemon.slice(0, 12).map(p => {
+                const ownedData = state.owned[p.engName];
+                const rarityInfo = getRarityInfo(ownedData?.rarity || 'common');
+                const isSelected = selectedCard === p.engName;
+                return `
+                  <div class="raid-pokemon-card ${isSelected ? 'selected' : ''}" 
+                       data-key="${p.engName}"
+                       onclick="selectRaidPokemon('${p.engName}')"
+                       style="border-color: ${isSelected ? 'var(--sun)' : 'rgba(255,255,255,.1)'}">
+                    <div class="rpc-art">${pokemonImage(p, '40px')}</div>
+                    <div class="rpc-name">${p.name}</div>
+                    <div class="rpc-atk">⚔️ ${p.atk} ${rarityInfo.emoji}</div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+            ${filteredPokemon.length > 12 ? `<div style="font-size:11px;color:#6b6395;text-align:center;margin-top:4px;">+ ${filteredPokemon.length - 12}마리 더 있음</div>` : ''}
+          `}
+        </div>
+      ` : ''}
+      
+      ${selectedCard ? `
+        <div style="margin-top:10px;font-size:14px;color:var(--sun-2);">
+          ✅ 선택된 카드: ${getPokemonByName(selectedCard)?.name || selectedCard}
+        </div>
+      ` : ''}
+      
+      <div style="margin-top:12px;font-size:14px;color:#B7AFDE;text-align:center;">
+        ⚔️ 공격 기회: <b style="color:var(--sun-2);font-size:20px;">${atkChance}회</b>
+        ${selectedCard ? ' | ✅ 카드 선택됨' : ' | ❌ 카드 선택 필요'}
       </div>
       
       <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;justify-content:center;">
-        <button class="btn" id="raidAttackBtn" ${atkChance > 0 ? '' : 'disabled'}>⚔️ 공격 (${atkChance}회)</button>
+        <button class="btn" id="raidAttackBtn" 
+                ${atkChance > 0 && selectedCard ? '' : 'disabled'}>
+          ⚔️ 공격! (${atkChance}회)
+        </button>
         <button class="btn small ghost" onclick="renderRaidMission()">🔄 새로고침</button>
+        <button class="btn small ghost" onclick="resetRaidSelection()">↩️ 선택 초기화</button>
       </div>
-      <div style="font-size:13px;color:#6b6395;margin-top:6px;">💡 생활미션 완료 시 공격 기회 +1</div>
+      <div style="font-size:13px;color:#6b6395;margin-top:6px;">
+        💡 생활미션 완료 시 공격 기회 +1 · 속성 선택 → 포켓몬 선택
+      </div>
     </div>
   `;
-  
-  document.querySelectorAll('.raid-card-select').forEach(el => {
-    el.addEventListener('click', function() {
-      document.querySelectorAll('.raid-card-select').forEach(e => {
-        e.style.border = '3px solid ' + getRarityInfo(state.owned[e.dataset.key]?.rarity || 'common').color;
-        e.style.background = 'rgba(255,255,255,.05)';
-        e.classList.remove('selected');
-      });
-      this.style.border = '4px solid var(--sun)';
-      this.style.background = 'rgba(255,201,60,.15)';
-      this.classList.add('selected');
-      selectedRaidCard = this.dataset.key;
-      document.getElementById('selectedRaidCardDisplay').textContent = '✅ ' + (getPokemonByName(selectedRaidCard)?.name || '없음');
-    });
-  });
   
   document.getElementById('raidAttackBtn')?.addEventListener('click', function() {
     doRaidAttack();
   });
+}
+
+function selectRaidType(type) {
+  state.raidSelectedType = type;
+  state.raidSelectedCard = null; // 속성 바꾸면 카드 선택 초기화
+  saveState();
+  renderRaidMission();
+}
+
+function selectRaidPokemon(engName) {
+  state.raidSelectedCard = engName;
+  saveState();
+  renderRaidMission();
+}
+
+function resetRaidSelection() {
+  state.raidSelectedType = null;
+  state.raidSelectedCard = null;
+  saveState();
+  renderRaidMission();
+}
+
+function renderRaidBossInfo(boss) {
+  const ownedData = state.owned[boss.engName];
+  const hasCard = !!ownedData;
+  
+  return `
+    <div class="raid-boss-info">
+      <div class="rb-row">
+        <div class="rb-art">${pokemonImage(boss, '52px')}</div>
+        <div class="rb-detail">
+          <div class="rb-name">${boss.name}</div>
+          <div class="rb-stat">⭐ 타입: ${getTypeLabel(boss.type)}</div>
+          <div class="rb-stat">❤️ HP: ${boss.hp} · ⚔️ 공격: ${boss.atk}</div>
+          <div class="rb-owner">${hasCard ? '✅ 보유한 카드입니다' : '❌ 아직 미보유 카드입니다'}</div>
+        </div>
+      </div>
+      <div style="margin-top:8px;font-size:13px;color:#6b6395;text-align:center;">⚔️ 레이드 보스는 체력이 15배 증가합니다</div>
+    </div>
+  `;
 }
 
 function doRaidAttack() {
@@ -2703,18 +2637,18 @@ function doRaidAttack() {
     return;
   }
   
-  if (!selectedRaidCard) {
-    alert('공격할 카드를 선택해주세요!');
+  if (!state.raidSelectedCard) {
+    alert('공격할 포켓몬을 선택해주세요!');
     return;
   }
   
-  const selectedCard = getPokemonByName(selectedRaidCard);
+  const selectedCard = getPokemonByName(state.raidSelectedCard);
   if (!selectedCard) {
-    alert('선택한 카드를 찾을 수 없어요!');
+    alert('선택한 포켓몬을 찾을 수 없어요!');
     return;
   }
   
-  const rarityBonus = getRarityDamageBonus(state.owned[selectedRaidCard]?.rarity);
+  const rarityBonus = getRarityDamageBonus(state.owned[state.raidSelectedCard]?.rarity);
   const baseAtk = selectedCard.atk || 20;
   const randomBonus = Math.floor(Math.random() * 15) + 5;
   const damage = Math.max(10, Math.floor(baseAtk * 0.7 + rarityBonus + randomBonus));
@@ -2785,512 +2719,81 @@ function getEvoChain(engName) {
   return evoMap[engName] || null;
 }
 
-// ===== 🔥 진화 맵 (수정됨 - 더 많은 포켓몬 지원) =====
+// ===== 🔥 진화 맵 (Lv.5 → Lv.10 → Lv.15) =====
 const EVOLUTION_MAP = {
-  // 1세대
   'bulbasaur': { next: 'ivysaur', level: 5 },
-  'ivysaur': { next: 'venusaur', level: 15 },
+  'ivysaur': { next: 'venusaur', level: 10 },
   'charmander': { next: 'charmeleon', level: 5 },
-  'charmeleon': { next: 'charizard', level: 15 },
+  'charmeleon': { next: 'charizard', level: 10 },
   'squirtle': { next: 'wartortle', level: 5 },
-  'wartortle': { next: 'blastoise', level: 15 },
+  'wartortle': { next: 'blastoise', level: 10 },
   'caterpie': { next: 'metapod', level: 5 },
   'metapod': { next: 'butterfree', level: 10 },
   'weedle': { next: 'kakuna', level: 5 },
   'kakuna': { next: 'beedrill', level: 10 },
   'pidgey': { next: 'pidgeotto', level: 5 },
-  'pidgeotto': { next: 'pidgeot', level: 15 },
-  'rattata': { next: 'raticate', level: 5 },
-  'spearow': { next: 'fearow', level: 5 },
-  'ekans': { next: 'arbok', level: 5 },
-  'pikachu': { next: 'raichu', level: 10 },
-  'sandshrew': { next: 'sandslash', level: 5 },
-  'nidoran-f': { next: 'nidorina', level: 5 },
-  'nidorina': { next: 'nidoqueen', level: 10 },
-  'nidoran-m': { next: 'nidorino', level: 5 },
-  'nidorino': { next: 'nidoking', level: 10 },
-  'clefairy': { next: 'clefable', level: 10 },
-  'vulpix': { next: 'ninetales', level: 10 },
-  'jigglypuff': { next: 'wigglytuff', level: 10 },
-  'zubat': { next: 'golbat', level: 5 },
-  'golbat': { next: 'crobat', level: 15 },
-  'oddish': { next: 'gloom', level: 5 },
-  'gloom': { next: 'vileplume', level: 10 },
-  'paras': { next: 'parasect', level: 5 },
-  'venonat': { next: 'venomoth', level: 5 },
-  'diglett': { next: 'dugtrio', level: 5 },
-  'meowth': { next: 'persian', level: 5 },
-  'psyduck': { next: 'golduck', level: 5 },
-  'mankey': { next: 'primeape', level: 5 },
-  'growlithe': { next: 'arcanine', level: 10 },
-  'poliwag': { next: 'poliwhirl', level: 5 },
-  'poliwhirl': { next: 'poliwrath', level: 10 },
-  'abra': { next: 'kadabra', level: 5 },
-  'kadabra': { next: 'alakazam', level: 10 },
-  'machop': { next: 'machoke', level: 5 },
-  'machoke': { next: 'machamp', level: 10 },
-  'bellsprout': { next: 'weepinbell', level: 5 },
-  'weepinbell': { next: 'victreebel', level: 10 },
-  'tentacool': { next: 'tentacruel', level: 5 },
-  'geodude': { next: 'graveler', level: 5 },
-  'graveler': { next: 'golem', level: 10 },
-  'ponyta': { next: 'rapidash', level: 5 },
-  'slowpoke': { next: 'slowbro', level: 5 },
-  'magnemite': { next: 'magneton', level: 5 },
-  'magneton': { next: 'magnezone', level: 15 },
-  'farfetchd': { next: 'sirfetchd', level: 15 },
-  'doduo': { next: 'dodrio', level: 5 },
-  'seel': { next: 'dewgong', level: 5 },
-  'grimer': { next: 'muk', level: 5 },
-  'shellder': { next: 'cloyster', level: 5 },
-  'gastly': { next: 'haunter', level: 5 },
-  'haunter': { next: 'gengar', level: 10 },
-  'onix': { next: 'steelix', level: 10 },
-  'drowzee': { next: 'hypno', level: 5 },
-  'krabby': { next: 'kingler', level: 5 },
-  'voltorb': { next: 'electrode', level: 5 },
-  'exeggcute': { next: 'exeggutor', level: 5 },
-  'cubone': { next: 'marowak', level: 5 },
-  'tyrogue': { next: 'hitmonlee', level: 5 },
-  'lickitung': { next: 'lickilicky', level: 15 },
-  'koffing': { next: 'weezing', level: 5 },
-  'rhyhorn': { next: 'rhydon', level: 5 },
-  'rhydon': { next: 'rhyperior', level: 15 },
-  'tangela': { next: 'tangrowth', level: 15 },
-  'horsea': { next: 'seadra', level: 5 },
-  'seadra': { next: 'kingdra', level: 10 },
-  'seadra': { next: 'kingdra', level: 10 },
-  'goldeen': { next: 'seaking', level: 5 },
-  'staryu': { next: 'starmie', level: 5 },
-  'scyther': { next: 'scizor', level: 10 },
-  'porygon': { next: 'porygon2', level: 5 },
-  'porygon2': { next: 'porygon-z', level: 15 },
-  'eevee': { 
-    next: 'vaporeon', 
-    level: 5,
-    branches: ['vaporeon', 'jolteon', 'flareon', 'espeon', 'umbreon', 'leafeon', 'glaceon', 'sylveon']
-  },
+  'pidgeotto': { next: 'pidgeot', level: 10 },
+  'pikachu': { next: 'raichu', level: 5 },
+  'eevee': { next: 'vaporeon', level: 5 },
+  'vaporeon': { next: null, level: 0 },
+  'jolteon': { next: null, level: 0 },
+  'flareon': { next: null, level: 0 },
+  'magikarp': { next: 'gyarados', level: 5 },
+  'gyarados': { next: null, level: 0 },
   // 2세대
   'chikorita': { next: 'bayleef', level: 5 },
-  'bayleef': { next: 'meganium', level: 15 },
+  'bayleef': { next: 'meganium', level: 10 },
   'cyndaquil': { next: 'quilava', level: 5 },
-  'quilava': { next: 'typhlosion', level: 15 },
+  'quilava': { next: 'typhlosion', level: 10 },
   'totodile': { next: 'croconaw', level: 5 },
-  'croconaw': { next: 'feraligatr', level: 15 },
-  'sentret': { next: 'furret', level: 5 },
-  'hoothoot': { next: 'noctowl', level: 5 },
-  'ledyba': { next: 'ledian', level: 5 },
-  'spinarak': { next: 'ariados', level: 5 },
-  'chinchou': { next: 'lanturn', level: 5 },
-  'togepi': { next: 'togetic', level: 5 },
-  'togetic': { next: 'togekiss', level: 15 },
-  'natu': { next: 'xatu', level: 5 },
-  'mareep': { next: 'flaaffy', level: 5 },
-  'flaaffy': { next: 'ampharos', level: 15 },
-  'marill': { next: 'azumarill', level: 5 },
-  'sudowoodo': { next: 'bonsly', level: 5 },
-  'politoed': { next: 'poliwrath', level: 10 },
-  'hoppip': { next: 'skiploom', level: 5 },
-  'skiploom': { next: 'jumpluff', level: 10 },
-  'aipom': { next: 'ambipom', level: 5 },
-  'sunkern': { next: 'sunflora', level: 5 },
-  'yanma': { next: 'yanmega', level: 15 },
-  'wooper': { next: 'quagsire', level: 5 },
-  'murkrow': { next: 'honchkrow', level: 15 },
-  'misdreavus': { next: 'mismagius', level: 15 },
-  'unown': { next: null, level: 0 },
-  'girafarig': { next: null, level: 0 },
-  'pineco': { next: 'forretress', level: 5 },
-  'dunsparce': { next: null, level: 0 },
-  'gligar': { next: 'gliscor', level: 15 },
-  'snubbull': { next: 'granbull', level: 5 },
-  'qwilfish': { next: 'overqwil', level: 15 },
-  'scizor': { next: null, level: 0 },
-  'shuckle': { next: null, level: 0 },
-  'heracross': { next: null, level: 0 },
-  'sneasel': { next: 'weavile', level: 15 },
-  'teddiursa': { next: 'ursaring', level: 5 },
-  'ursaring': { next: 'ursaluna', level: 15 },
-  'slugma': { next: 'magcargo', level: 5 },
-  'swinub': { next: 'piloswine', level: 5 },
-  'piloswine': { next: 'mamoswine', level: 15 },
-  'corsola': { next: null, level: 0 },
-  'remoraid': { next: 'octillery', level: 5 },
-  'delibird': { next: null, level: 0 },
-  'mantine': { next: null, level: 0 },
-  'skarmory': { next: null, level: 0 },
-  'houndour': { next: 'houndoom', level: 5 },
-  'phanpy': { next: 'donphan', level: 5 },
-  'stantler': { next: 'wyrdeer', level: 15 },
-  'smeargle': { next: null, level: 0 },
-  'tyrogue': { next: 'hitmonlee', level: 5 },
-  'smoochum': { next: 'jynx', level: 5 },
-  'elekid': { next: 'electabuzz', level: 5 },
-  'electabuzz': { next: 'electivire', level: 15 },
-  'magby': { next: 'magmar', level: 5 },
-  'magmar': { next: 'magmortar', level: 15 },
-  'miltank': { next: null, level: 0 },
-  'blissey': { next: null, level: 0 },
-  'raikou': { next: null, level: 0 },
-  'entei': { next: null, level: 0 },
-  'suicune': { next: null, level: 0 },
-  'larvitar': { next: 'pupitar', level: 5 },
-  'pupitar': { next: 'tyranitar', level: 15 },
+  'croconaw': { next: 'feraligatr', level: 10 },
   // 3세대
   'treecko': { next: 'grovyle', level: 5 },
-  'grovyle': { next: 'sceptile', level: 15 },
+  'grovyle': { next: 'sceptile', level: 10 },
   'torchic': { next: 'combusken', level: 5 },
-  'combusken': { next: 'blaziken', level: 15 },
+  'combusken': { next: 'blaziken', level: 10 },
   'mudkip': { next: 'marshtomp', level: 5 },
-  'marshtomp': { next: 'swampert', level: 15 },
-  'poochyena': { next: 'mightyena', level: 5 },
-  'zigzagoon': { next: 'linoone', level: 5 },
-  'wurmple': { next: 'silcoon', level: 5 },
-  'silcoon': { next: 'beautifly', level: 10 },
-  'cascoon': { next: 'dustox', level: 10 },
-  'lotad': { next: 'lombre', level: 5 },
-  'lombre': { next: 'ludicolo', level: 10 },
-  'seedot': { next: 'nuzleaf', level: 5 },
-  'nuzleaf': { next: 'shiftry', level: 10 },
-  'taillow': { next: 'swellow', level: 5 },
-  'wingull': { next: 'pelipper', level: 5 },
-  'ralts': { next: 'kirlia', level: 5 },
-  'kirlia': { next: 'gardevoir', level: 10 },
-  'surskit': { next: 'masquerain', level: 5 },
-  'shroomish': { next: 'breloom', level: 5 },
-  'slakoth': { next: 'vigoroth', level: 5 },
-  'vigoroth': { next: 'slaking', level: 10 },
-  'nincada': { next: 'ninjask', level: 5 },
-  'whismur': { next: 'loudred', level: 5 },
-  'loudred': { next: 'exploud', level: 10 },
-  'makuhita': { next: 'hariyama', level: 5 },
-  'azurill': { next: 'marill', level: 5 },
-  'nosepass': { next: 'probopass', level: 15 },
-  'skitty': { next: 'delcatty', level: 5 },
-  'meditite': { next: 'medicham', level: 5 },
-  'plusle': { next: null, level: 0 },
-  'minun': { next: null, level: 0 },
-  'electrike': { next: 'manectric', level: 5 },
-  'roselia': { next: 'roserade', level: 15 },
-  'gulpin': { next: 'swalot', level: 5 },
-  'carvanha': { next: 'sharpedo', level: 5 },
-  'wailmer': { next: 'wailord', level: 5 },
-  'numel': { next: 'camerupt', level: 5 },
-  'torkoal': { next: null, level: 0 },
-  'spoink': { next: 'grumpig', level: 5 },
-  'spinda': { next: null, level: 0 },
-  'trapinch': { next: 'vibrava', level: 5 },
-  'vibrava': { next: 'flygon', level: 10 },
-  'cacnea': { next: 'cacturne', level: 5 },
-  'swablu': { next: 'altaria', level: 5 },
-  'zangoose': { next: null, level: 0 },
-  'seviper': { next: null, level: 0 },
-  'lunatone': { next: null, level: 0 },
-  'solrock': { next: null, level: 0 },
-  'barboach': { next: 'whiscash', level: 5 },
-  'corphish': { next: 'crawdaunt', level: 5 },
-  'baltoy': { next: 'claydol', level: 5 },
-  'lileep': { next: 'cradily', level: 5 },
-  'anorith': { next: 'armaldo', level: 5 },
-  'feebas': { next: 'milotic', level: 5 },
-  'castform': { next: null, level: 0 },
-  'kecleon': { next: null, level: 0 },
-  'shuppet': { next: 'banette', level: 5 },
-  'duskull': { next: 'dusclops', level: 5 },
-  'dusclops': { next: 'dusknoir', level: 15 },
-  'tropius': { next: null, level: 0 },
-  'chingling': { next: 'chimecho', level: 5 },
-  'absol': { next: null, level: 0 },
-  'snorunt': { next: 'glalie', level: 5 },
-  'spheal': { next: 'sealeo', level: 5 },
-  'sealeo': { next: 'walrein', level: 10 },
-  'clamperl': { next: 'huntail', level: 5 },
-  'relicanth': { next: null, level: 0 },
-  'luvdisc': { next: null, level: 0 },
-  'bagon': { next: 'shelgon', level: 5 },
-  'shelgon': { next: 'salamence', level: 15 },
-  'beldum': { next: 'metang', level: 5 },
-  'metang': { next: 'metagross', level: 15 },
-  'regirock': { next: null, level: 0 },
-  'regice': { next: null, level: 0 },
-  'registeel': { next: null, level: 0 },
-  'latias': { next: null, level: 0 },
-  'latios': { next: null, level: 0 },
-  'kyogre': { next: null, level: 0 },
-  'groudon': { next: null, level: 0 },
-  'rayquaza': { next: null, level: 0 },
+  'marshtomp': { next: 'swampert', level: 10 },
   // 4세대
   'turtwig': { next: 'grotle', level: 5 },
-  'grotle': { next: 'torterra', level: 15 },
+  'grotle': { next: 'torterra', level: 10 },
   'chimchar': { next: 'monferno', level: 5 },
-  'monferno': { next: 'infernape', level: 15 },
+  'monferno': { next: 'infernape', level: 10 },
   'piplup': { next: 'prinplup', level: 5 },
-  'prinplup': { next: 'empoleon', level: 15 },
-  'starly': { next: 'staravia', level: 5 },
-  'staravia': { next: 'staraptor', level: 10 },
-  'bidoof': { next: 'bibarel', level: 5 },
-  'kricketot': { next: 'kricketune', level: 5 },
-  'shinx': { next: 'luxio', level: 5 },
-  'luxio': { next: 'luxray', level: 10 },
-  'budew': { next: 'roselia', level: 5 },
-  'roselia': { next: 'roserade', level: 15 },
-  'cranidos': { next: 'rampardos', level: 5 },
-  'shieldon': { next: 'bastiodon', level: 5 },
-  'burmy': { next: 'mothim', level: 5 },
-  'combee': { next: 'vespiquen', level: 5 },
-  'pachirisu': { next: null, level: 0 },
-  'buizel': { next: 'floatzel', level: 5 },
-  'cherubi': { next: 'cherrim', level: 5 },
-  'shellos': { next: 'gastrodon', level: 5 },
-  'drifloon': { next: 'drifblim', level: 5 },
-  'buneary': { next: 'lopunny', level: 5 },
-  'glameow': { next: 'purugly', level: 5 },
-  'chingling': { next: 'chimecho', level: 5 },
-  'stunky': { next: 'skuntank', level: 5 },
-  'bronzor': { next: 'bronzong', level: 5 },
-  'bonsly': { next: 'sudowoodo', level: 5 },
-  'mime-jr': { next: 'mr-mime', level: 5 },
-  'happiny': { next: 'chansey', level: 5 },
-  'chansey': { next: 'blissey', level: 10 },
-  'munchlax': { next: 'snorlax', level: 5 },
-  'hippopotas': { next: 'hippowdon', level: 5 },
-  'skorupi': { next: 'drapion', level: 5 },
-  'croagunk': { next: 'toxicroak', level: 5 },
-  'carnivine': { next: null, level: 0 },
-  'finneon': { next: 'lumineon', level: 5 },
-  'snover': { next: 'abomasnow', level: 5 },
-  'rotom': { next: null, level: 0 },
-  'uxie': { next: null, level: 0 },
-  'mesprit': { next: null, level: 0 },
-  'azelf': { next: null, level: 0 },
-  'dialga': { next: null, level: 0 },
-  'palkia': { next: null, level: 0 },
-  'heatran': { next: null, level: 0 },
-  'regigigas': { next: null, level: 0 },
-  'giratina': { next: null, level: 0 },
-  'cresselia': { next: null, level: 0 },
-  'phione': { next: null, level: 0 },
-  'manaphy': { next: null, level: 0 },
-  'darkrai': { next: null, level: 0 },
-  'shaymin': { next: null, level: 0 },
-  'arceus': { next: null, level: 0 },
+  'prinplup': { next: 'empoleon', level: 10 },
   // 5세대
-  'victini': { next: null, level: 0 },
   'snivy': { next: 'servine', level: 5 },
-  'servine': { next: 'serperior', level: 15 },
+  'servine': { next: 'serperior', level: 10 },
   'tepig': { next: 'pignite', level: 5 },
-  'pignite': { next: 'emboar', level: 15 },
+  'pignite': { next: 'emboar', level: 10 },
   'oshawott': { next: 'dewott', level: 5 },
-  'dewott': { next: 'samurott', level: 15 },
-  'patrat': { next: 'watchog', level: 5 },
-  'lillipup': { next: 'herdier', level: 5 },
-  'herdier': { next: 'stoutland', level: 10 },
-  'purrloin': { next: 'liepard', level: 5 },
-  'pansage': { next: 'simisage', level: 5 },
-  'pansear': { next: 'simisear', level: 5 },
-  'panpour': { next: 'simipour', level: 5 },
-  'munna': { next: 'musharna', level: 5 },
-  'pidove': { next: 'tranquill', level: 5 },
-  'tranquill': { next: 'unfezant', level: 10 },
-  'blitzle': { next: 'zebstrika', level: 5 },
-  'roggenrola': { next: 'boldore', level: 5 },
-  'boldore': { next: 'gigalith', level: 10 },
-  'woobat': { next: 'swoobat', level: 5 },
-  'drilbur': { next: 'excadrill', level: 5 },
-  'audino': { next: null, level: 0 },
-  'timburr': { next: 'gurdurr', level: 5 },
-  'gurdurr': { next: 'conkeldurr', level: 10 },
-  'sewaddle': { next: 'swadloon', level: 5 },
-  'swadloon': { next: 'leavanny', level: 10 },
-  'cottonee': { next: 'whimsicott', level: 5 },
-  'petilil': { next: 'lilligant', level: 5 },
-  'basculin': { next: null, level: 0 },
-  'sandile': { next: 'krokorok', level: 5 },
-  'krokorok': { next: 'krookodile', level: 10 },
-  'darumaka': { next: 'darmanitan', level: 5 },
-  'maractus': { next: null, level: 0 },
-  'dwebble': { next: 'crustle', level: 5 },
-  'scraggy': { next: 'scrafty', level: 5 },
-  'sigilyph': { next: null, level: 0 },
-  'yamask': { next: 'cofagrigus', level: 5 },
-  'tirtouga': { next: 'carracosta', level: 5 },
-  'archen': { next: 'archeops', level: 5 },
-  'trubbish': { next: 'garbodor', level: 5 },
-  'zorua': { next: 'zoroark', level: 5 },
-  'minccino': { next: 'cinccino', level: 5 },
-  'gothita': { next: 'gothorita', level: 5 },
-  'gothorita': { next: 'gothitelle', level: 10 },
-  'solosis': { next: 'duosion', level: 5 },
-  'duosion': { next: 'reuniclus', level: 10 },
-  'ducklett': { next: 'swanna', level: 5 },
-  'vanillite': { next: 'vanillish', level: 5 },
-  'vanillish': { next: 'vanilluxe', level: 10 },
-  'deerling': { next: 'sawsbuck', level: 5 },
-  'emolga': { next: null, level: 0 },
-  'karrablast': { next: 'escavalier', level: 5 },
-  'foongus': { next: 'amoonguss', level: 5 },
-  'frillish': { next: 'jellicent', level: 5 },
-  'alomomola': { next: null, level: 0 },
-  'joltik': { next: 'galvantula', level: 5 },
-  'ferroseed': { next: 'ferrothorn', level: 5 },
-  'tynamo': { next: 'eelektrik', level: 5 },
-  'eelektrik': { next: 'eelektross', level: 10 },
-  'elgyem': { next: 'beheeyem', level: 5 },
-  'litwick': { next: 'lampent', level: 5 },
-  'lampent': { next: 'chandelure', level: 10 },
-  'axew': { next: 'fraxure', level: 5 },
-  'fraxure': { next: 'haxorus', level: 10 },
-  'cubchoo': { next: 'beartic', level: 5 },
-  'shelmet': { next: 'accelgor', level: 5 },
-  'mienfoo': { next: 'mienshao', level: 5 },
-  'druddigon': { next: null, level: 0 },
-  'golett': { next: 'golurk', level: 5 },
-  'pawniard': { next: 'bisharp', level: 5 },
-  'bisharp': { next: 'kingambit', level: 15 },
-  'bouffalant': { next: null, level: 0 },
-  'rufflet': { next: 'braviary', level: 5 },
-  'vullaby': { next: 'mandibuzz', level: 5 },
-  'heatmor': { next: null, level: 0 },
-  'durant': { next: null, level: 0 },
-  'deino': { next: 'zweilous', level: 5 },
-  'zweilous': { next: 'hydreigon', level: 10 },
-  'larvesta': { next: 'volcarona', level: 5 },
+  'dewott': { next: 'samurott', level: 10 },
   // 6세대
   'chespin': { next: 'quilladin', level: 5 },
-  'quilladin': { next: 'chesnaught', level: 15 },
+  'quilladin': { next: 'chesnaught', level: 10 },
   'fennekin': { next: 'braixen', level: 5 },
-  'braixen': { next: 'delphox', level: 15 },
+  'braixen': { next: 'delphox', level: 10 },
   'froakie': { next: 'frogadier', level: 5 },
-  'frogadier': { next: 'greninja', level: 15 },
-  'bunnelby': { next: 'diggersby', level: 5 },
-  'fletchling': { next: 'fletchinder', level: 5 },
-  'fletchinder': { next: 'talonflame', level: 10 },
-  'scatterbug': { next: 'spewpa', level: 5 },
-  'spewpa': { next: 'vivillon', level: 10 },
-  'litleo': { next: 'pyroar', level: 5 },
-  'flabebe': { next: 'floette', level: 5 },
-  'floette': { next: 'florges', level: 10 },
-  'skiddo': { next: 'gogoat', level: 5 },
-  'pancham': { next: 'pangoro', level: 5 },
-  'furfrou': { next: null, level: 0 },
-  'espurr': { next: 'meowstic', level: 5 },
-  'honedge': { next: 'doublade', level: 5 },
-  'doublade': { next: 'aegislash', level: 10 },
-  'spritzee': { next: 'aromatisse', level: 5 },
-  'swirlix': { next: 'slurpuff', level: 5 },
-  'inkay': { next: 'malamar', level: 5 },
-  'binacle': { next: 'barbaracle', level: 5 },
-  'skrelp': { next: 'dragalge', level: 5 },
-  'clauncher': { next: 'clawitzer', level: 5 },
-  'helioptile': { next: 'heliolisk', level: 5 },
-  'tyrunt': { next: 'tyrantrum', level: 5 },
-  'amaura': { next: 'aurorus', level: 5 },
-  'sylveon': { next: null, level: 0 },
-  'hawlucha': { next: null, level: 0 },
-  'dedenne': { next: null, level: 0 },
-  'carbink': { next: null, level: 0 },
-  'goomy': { next: 'sliggoo', level: 5 },
-  'sliggoo': { next: 'goodra', level: 10 },
-  'klefki': { next: null, level: 0 },
-  'phantump': { next: 'trevenant', level: 5 },
-  'pumpkaboo': { next: 'gourgeist', level: 5 },
-  'bergmite': { next: 'avalugg', level: 5 },
-  'noibat': { next: 'noivern', level: 5 },
+  'frogadier': { next: 'greninja', level: 10 },
   // 7세대
   'rowlet': { next: 'dartrix', level: 5 },
-  'dartrix': { next: 'decidueye', level: 15 },
+  'dartrix': { next: 'decidueye', level: 10 },
   'litten': { next: 'torracat', level: 5 },
-  'torracat': { next: 'incineroar', level: 15 },
+  'torracat': { next: 'incineroar', level: 10 },
   'popplio': { next: 'brionne', level: 5 },
-  'brionne': { next: 'primarina', level: 15 },
-  'pikipek': { next: 'trumbeak', level: 5 },
-  'trumbeak': { next: 'toucannon', level: 10 },
-  'yungoos': { next: 'gumshoos', level: 5 },
-  'grubbin': { next: 'charjabug', level: 5 },
-  'charjabug': { next: 'vikavolt', level: 10 },
-  'crabrawler': { next: 'crabominable', level: 5 },
-  'oricorio': { next: null, level: 0 },
-  'cutiefly': { next: 'ribombee', level: 5 },
-  'rockruff': { next: 'lycanroc', level: 5 },
-  'wishiwashi': { next: null, level: 0 },
-  'mareanie': { next: 'toxapex', level: 5 },
-  'mudbray': { next: 'mudsdale', level: 5 },
-  'dewpider': { next: 'araquanid', level: 5 },
-  'fomantis': { next: 'lurantis', level: 5 },
-  'morelull': { next: 'shiinotic', level: 5 },
-  'salandit': { next: 'salazzle', level: 5 },
-  'stufful': { next: 'bewear', level: 5 },
-  'bounsweet': { next: 'steenee', level: 5 },
-  'steenee': { next: 'tsareena', level: 10 },
-  'comfey': { next: null, level: 0 },
-  'oranguru': { next: null, level: 0 },
-  'passimian': { next: null, level: 0 },
-  'wimpod': { next: 'golisopod', level: 5 },
-  'sandygast': { next: 'palossand', level: 5 },
-  'pyukumuku': { next: null, level: 0 },
-  'type-null': { next: 'silvally', level: 5 },
-  'minior': { next: null, level: 0 },
-  'komala': { next: null, level: 0 },
-  'turtonator': { next: null, level: 0 },
-  'togedemaru': { next: null, level: 0 },
-  'mimikyu': { next: null, level: 0 },
-  'drampa': { next: null, level: 0 },
-  'dhelmise': { next: null, level: 0 },
-  'jangmo-o': { next: 'hakamo-o', level: 5 },
-  'hakamo-o': { next: 'kommo-o', level: 10 },
+  'brionne': { next: 'primarina', level: 10 },
   // 8세대
   'grookey': { next: 'thwackey', level: 5 },
-  'thwackey': { next: 'rillaboom', level: 15 },
+  'thwackey': { next: 'rillaboom', level: 10 },
   'scorbunny': { next: 'raboot', level: 5 },
-  'raboot': { next: 'cinderace', level: 15 },
+  'raboot': { next: 'cinderace', level: 10 },
   'sobble': { next: 'drizzile', level: 5 },
-  'drizzile': { next: 'inteleon', level: 15 },
-  'skwovet': { next: 'greedent', level: 5 },
-  'rookidee': { next: 'corvisquire', level: 5 },
-  'corvisquire': { next: 'corviknight', level: 10 },
-  'blipbug': { next: 'dottler', level: 5 },
-  'dottler': { next: 'orbeetle', level: 10 },
-  'nickit': { next: 'thievul', level: 5 },
-  'gossifleur': { next: 'eldegoss', level: 5 },
-  'wooloo': { next: 'dubwool', level: 5 },
-  'chewtle': { next: 'drednaw', level: 5 },
-  'yamper': { next: 'boltund', level: 5 },
-  'rolycoly': { next: 'carkol', level: 5 },
-  'carkol': { next: 'coalossal', level: 10 },
-  'applin': { next: 'flapple', level: 5 },
-  'silicobra': { next: 'sandaconda', level: 5 },
-  'cramorant': { next: null, level: 0 },
-  'arrokuda': { next: 'barraskewda', level: 5 },
-  'toxel': { next: 'toxtricity', level: 5 },
-  'sizzlipede': { next: 'centiskorch', level: 5 },
-  'clobbopus': { next: 'grapploct', level: 5 },
-  'sinistea': { next: 'polteageist', level: 5 },
-  'hatenna': { next: 'hattrem', level: 5 },
-  'hattrem': { next: 'hatterene', level: 10 },
-  'impidimp': { next: 'morgrem', level: 5 },
-  'morgrem': { next: 'grimmsnarl', level: 10 },
-  'milcery': { next: 'alcremie', level: 5 },
-  'falinks': { next: null, level: 0 },
-  'pincurchin': { next: null, level: 0 },
-  'snom': { next: 'frosmoth', level: 5 },
-  'stonjourner': { next: null, level: 0 },
-  'eiscue': { next: null, level: 0 },
-  'indeedee': { next: null, level: 0 },
-  'morpeko': { next: null, level: 0 },
-  'cufant': { next: 'copperajah', level: 5 },
-  'dracozolt': { next: null, level: 0 },
-  'arctozolt': { next: null, level: 0 },
-  'dracovish': { next: null, level: 0 },
-  'arctovish': { next: null, level: 0 },
-  'duraludon': { next: 'archaludon', level: 15 },
-  'dreepy': { next: 'drakloak', level: 5 },
-  'drakloak': { next: 'dragapult', level: 10 }
+  'drizzile': { next: 'inteleon', level: 10 }
 };
 
-// ===== 키우기 =====
+// ===== 🐣 키우기 (Lv.5 / Lv.10 / Lv.15 진화 + 레벨 보너스) =====
 function petCreature() {
   if (!state.pet) return null;
-  // pet.evolvedId가 있으면 그대로 사용, 없으면 baseId 사용
   const id = state.pet.evolvedId || state.pet.baseId;
   return getPokemonByName(id);
 }
@@ -3309,9 +2812,12 @@ function tickPet() {
   }
 }
 
-function petExpThreshold() { return state.pet.level * 25; }
+function petExpThreshold() { 
+  // 레벨당 필요 경험치 (점진적 증가)
+  return Math.floor(25 + state.pet.level * 3); 
+}
 
-// ===== 🔥 진화 체크 (수정됨 - EVOLUTION_MAP 사용) =====
+// ===== 🐣 진화 체크 (Lv.5 → Lv.10 → Lv.15) =====
 function checkPetLevelUp() {
   let leveled = false, evolved = false;
   let evoMessage = '';
@@ -3323,21 +2829,26 @@ function checkPetLevelUp() {
     leveled = true;
     console.log('📈 레벨업! 현재 레벨:', state.pet.level);
     
-    // 현재 포켓몬 ID (진화된 경우 evolvedId 사용)
+    // 최대 레벨 50 제한
+    if (state.pet.level >= 50) {
+      state.pet.exp = 0;
+      console.log('🌟 최대 레벨 도달! Lv.50');
+      break;
+    }
+    
+    // 현재 포켓몬 ID
     const currentId = state.pet.evolvedId || state.pet.baseId;
     const evoInfo = EVOLUTION_MAP[currentId];
     
-    // 진화 조건 체크
+    // 진화 조건 체크 (Lv.5, Lv.10, Lv.15)
     if (evoInfo && evoInfo.next && state.pet.level >= evoInfo.level) {
-      // 이미 진화했는지 체크 (중복 진화 방지)
+      // 이미 진화했는지 체크 (중복 방지)
       if (state.pet.evolvedId !== evoInfo.next) {
         const nextPokemon = getPokemonByName(evoInfo.next);
         if (nextPokemon) {
           console.log('🎉 진화! ' + currentId + ' → ' + evoInfo.next + ' (Lv.' + evoInfo.level + ')');
           
-          // 진화 처리
           state.pet.evolvedId = evoInfo.next;
-          // 진화 단계 표시 (일반 진화는 true로)
           if (!state.pet.evolved) state.pet.evolved = true;
           
           evolved = true;
@@ -3352,7 +2863,6 @@ function checkPetLevelUp() {
             state.owned[nextPokemon.engName].count += 1;
           }
           
-          // 진화 팝업 표시
           showRewardPopup(nextPokemon, evoMessage, '진화 성공! 🌟');
           
           saveState();
@@ -3364,6 +2874,20 @@ function checkPetLevelUp() {
   }
   
   return { leveled, evolved };
+}
+
+// ===== 🐣 레벨 보너스 (애정 보너스) =====
+function getPetLevelBonus(pet) {
+  if (!pet) return { hp: 0, atk: 0, def: 0, spd: 0 };
+  const level = pet.level || 1;
+  // 레벨당 +2씩 상승 (최대 100)
+  const bonus = Math.min(level * 2, 100);
+  return {
+    hp: bonus,
+    atk: bonus,
+    def: bonus,
+    spd: Math.floor(bonus * 0.7)
+  };
 }
 
 function petStatusMessage() {
@@ -3402,7 +2926,7 @@ function renderStarterSelect() {
     <div style="text-align:center;font-family:var(--font-display);font-size:20px;margin-bottom:6px;">함께할 첫 포켓몬을 골라주세요</div>
     <div style="text-align:center;font-family:var(--font-mono);font-size:13px;color:#B7AFDE;margin-bottom:12px;">
       진화 가능 ${candidates.length}종 중 6종 추천!
-      <br><span style="font-size:11px;color:#6b6395;">진화는 Lv.5, Lv.10, Lv.15에서!</span>
+      <br><span style="font-size:11px;color:#6b6395;">진화: Lv.5 → Lv.10 → Lv.15 · 최대 Lv.50</span>
     </div>
     <div class="starter-grid" id="starterGrid">
       ${starters.map(id => {
@@ -3465,6 +2989,9 @@ function renderPetCare() {
     saveState();
   }
   
+  // 레벨 보너스 계산
+  const levelBonus = getPetLevelBonus(p);
+  
   const feedCooldown = getCooldownRemaining(p.lastFeed, COOLDOWN.FEED);
   const playCooldown = getCooldownRemaining(p.lastPlay, COOLDOWN.PLAY);
   const sleepCooldown = getCooldownRemaining(p.lastSleep, COOLDOWN.SLEEP);
@@ -3473,7 +3000,6 @@ function renderPetCare() {
   const playReady = playCooldown <= 0;
   const sleepReady = sleepCooldown <= 0;
   
-  // 현재 진화 가능 여부 표시
   const currentId = p.evolvedId || p.baseId;
   const evoInfo = EVOLUTION_MAP[currentId];
   let nextEvoInfo = '';
@@ -3489,20 +3015,43 @@ function renderPetCare() {
   if (p.evolved) evoStatus = '⭐ 진화 완료!';
   else evoStatus = '🌱 진화 대기 중...';
   
+  // 실제 능력치 (기본 + 레벨 보너스)
+  const baseStats = c ? { hp: c.hp, atk: c.atk, def: c.def, spd: c.spd } : { hp: 0, atk: 0, def: 0, spd: 0 };
+  const totalStats = {
+    hp: baseStats.hp + levelBonus.hp,
+    atk: baseStats.atk + levelBonus.atk,
+    def: baseStats.def + levelBonus.def,
+    spd: baseStats.spd + levelBonus.spd
+  };
+  
   document.getElementById('petPanel').innerHTML = `
     ${evolveNote}
     <div class="pet-hero">
       <div class="art-big">${c ? pokemonImage(c) : '❓'}</div>
       <div class="pname">${c ? c.name : '???'}</div>
-      <div class="plevel">Lv.${p.level} ${p.evolved ? '⭐' : '🌱'}</div>
+      <div class="plevel">Lv.${p.level} ${p.evolved ? '⭐' : '🌱'} / 최대 50</div>
     </div>
     <div class="pet-mood">${petStatusMessage()}</div>
-    <div style="font-family:var(--font-mono);font-size:14px;color:#B7AFDE;text-align:center;margin:4px 0 12px;">${evoStatus}</div>
+    
+    <div style="font-family:var(--font-mono);font-size:13px;color:#B7AFDE;text-align:center;margin:4px 0 8px;">${evoStatus}</div>
     <div style="font-family:var(--font-mono);font-size:12px;color:var(--sun-2);text-align:center;margin:0 0 12px;">${nextEvoInfo}</div>
+    
+    <div style="background:rgba(255,201,60,.08);border-radius:10px;padding:10px;margin-bottom:12px;text-align:center;border:1px solid rgba(255,201,60,.15);">
+      <div style="font-family:var(--font-display);font-size:14px;color:var(--sun-2);">❤️ 애정 보너스 (Lv.${p.level})</div>
+      <div style="font-family:var(--font-mono);font-size:12px;color:#B7AFDE;">
+        HP +${levelBonus.hp} · 공격 +${levelBonus.atk} · 방어 +${levelBonus.def} · 속도 +${levelBonus.spd}
+      </div>
+      <div style="font-family:var(--font-mono);font-size:11px;color:#6b6395;margin-top:4px;">
+        💪 실제 능력치: HP ${totalStats.hp} · ATK ${totalStats.atk} · DEF ${totalStats.def} · SPD ${totalStats.spd}
+      </div>
+    </div>
+    
     <div class="stat-row hunger"><div class="stat-label"><span>배고픔</span><span>${Math.round(p.hunger)}</span></div><div class="progress-bar"><div style="width:${p.hunger}%"></div></div></div>
     <div class="stat-row happy"><div class="stat-label"><span>기분</span><span>${Math.round(p.happy)}</span></div><div class="progress-bar"><div style="width:${p.happy}%"></div></div></div>
     <div class="stat-row energy"><div class="stat-label"><span>에너지</span><span>${Math.round(p.energy)}</span></div><div class="progress-bar"><div style="width:${p.energy}%"></div></div></div>
     <div class="stat-row exp"><div class="stat-label"><span>경험치</span><span>${Math.round(p.exp)}/${petExpThreshold()}</span></div><div class="progress-bar"><div style="width:${Math.min(100, p.exp / petExpThreshold() * 100)}%"></div></div></div>
+    <div style="font-family:var(--font-mono);font-size:11px;color:#6b6395;text-align:center;margin-top:2px;">경험치 획득: 퀴즈/미션/수학퀴즈 정답 시 +10%</div>
+    
     <div class="pet-actions">
       <button class="btn" id="feedBtn" ${feedReady ? '' : 'disabled'}>🍖 먹이</button>
       <button class="btn" id="playBtn" ${playReady ? '' : 'disabled'}>🎾 놀이</button>
@@ -3561,7 +3110,6 @@ function petAction(statKey, statAmt, expKey, expAmt) {
     state.pet.justEvolved = true;
   }
   saveState();
-  // 중복 렌더링 방지: 진화 시에는 checkPetLevelUp()에서 renderPetTab()을 호출하므로 여기서는 호출하지 않음
   if (!result.evolved) {
     renderPetTab();
   }
@@ -4812,103 +4360,86 @@ document.querySelectorAll('[data-rarity]').forEach(chip => {
     renderDex();
   });
 });
-  // ===== 🔥 자정 초기화 (알림 없는 안전 버전) =====
-  function resetDailyContent() {
-    const key = todayKey();
-    
-    console.log('🔄 오늘의 콘텐츠를 초기화합니다!', key);
-    
-    // ===== 1. 퀴즈 초기화 =====
-    state.quizDoneToday = null;
-    currentQuiz = { 
-      questions: [], 
-      currentIndex: 0, 
-      correctCount: 0, 
-      isFinished: false,
-      totalQuestions: 0
-    };
-    
-    // ===== 2. 생활미션 초기화 (이전 데이터 정리) =====
-    const today = todayKey();
-    for (const dateKey in state.dailyMissions) {
-      if (dateKey !== today) {
-        delete state.dailyMissions[dateKey];
-      }
+
+// ===== 🔥 자정 초기화 =====
+function resetDailyContent() {
+  const key = todayKey();
+  
+  console.log('🔄 오늘의 콘텐츠를 초기화합니다!', key);
+  
+  // ===== 1. 퀴즈 초기화 =====
+  state.quizDoneToday = null;
+  currentQuiz = { 
+    questions: [], 
+    currentIndex: 0, 
+    correctCount: 0, 
+    isFinished: false,
+    totalQuestions: 0
+  };
+  
+  // ===== 2. 생활미션 초기화 (이전 데이터 정리) =====
+  const today = todayKey();
+  for (const dateKey in state.dailyMissions) {
+    if (dateKey !== today) {
+      delete state.dailyMissions[dateKey];
     }
-    if (!state.dailyMissions[today]) {
-      state.dailyMissions[today] = {};
-    }
-    
-    // ===== 3. 수학퀴즈 초기화 =====
-    state.mathQuiz = { 
-      today: null, 
-      questions: [], 
-      currentIndex: 0, 
-      results: [], 
-      completed: false 
-    };
-    
-    // ===== 4. ⚔️ 레이드 초기화 (무조건 초기화!) =====
-    const shouldResetRaid = !state.raid || 
-                            state.raid.today !== today || 
-                            state.raid.completed === true;
-    
-    if (shouldResetRaid) {
-      const finalForms = POKEMON_LIST.filter(p => {
-        const evoChain = getEvoChain(p.engName);
-        return evoChain && evoChain.length >= 2 && evoChain[evoChain.length-1] === p.engName;
-      });
-      
-      let boss;
-      if (finalForms.length === 0) {
-        boss = POKEMON_LIST[Math.floor(Math.random() * POKEMON_LIST.length)];
-      } else {
-        boss = finalForms[Math.floor(Math.random() * finalForms.length)];
-      }
-      
-      state.raid = {
-        boss: boss,
-        hp: boss.hp * 15,
-        maxHp: boss.hp * 15,
-        completed: false,
-        today: today,
-        attackChance: 0,
-        rewardCollected: false
-      };
-      console.log('⚔️ 새로운 레이드 보스 등장!', boss.name);
-    }
-    
-    saveState();
-    
-    // 모든 탭 새로고침
-    renderQuizMission();
-    renderMathQuiz();
-    renderLifeMissions();
-    renderRaidMission();
-    updateStatline();
-    
-    console.log('✅ 오늘의 콘텐츠 초기화 완료!');
   }
-
-// ===== 소유 필터 =====
-document.querySelectorAll('#ownershipFilter .chip').forEach(chip => {
-  chip.addEventListener('click', function() {
-    document.querySelectorAll('#ownershipFilter .chip').forEach(c => c.classList.remove('active'));
-    this.classList.add('active');
-    ownershipFilter = this.dataset.ownership;
-    renderDex();
-  });
-});
-
-// ===== 등급 필터 =====
-document.querySelectorAll('[data-rarity]').forEach(chip => {
-  chip.addEventListener('click', function() {
-    activeRarity = this.dataset.rarity;
-    document.querySelectorAll('[data-rarity]').forEach(c => c.classList.remove('active'));
-    this.classList.add('active');
-    renderDex();
-  });
-});
+  if (!state.dailyMissions[today]) {
+    state.dailyMissions[today] = {};
+  }
+  
+  // ===== 3. 수학퀴즈 초기화 =====
+  state.mathQuiz = { 
+    today: null, 
+    questions: [], 
+    currentIndex: 0, 
+    results: [], 
+    completed: false 
+  };
+  
+  // ===== 4. ⚔️ 레이드 초기화 =====
+  const shouldResetRaid = !state.raid || 
+                          state.raid.today !== today || 
+                          state.raid.completed === true;
+  
+  if (shouldResetRaid) {
+    const finalForms = POKEMON_LIST.filter(p => {
+      const evoChain = getEvoChain(p.engName);
+      return evoChain && evoChain.length >= 2 && evoChain[evoChain.length-1] === p.engName;
+    });
+    
+    let boss;
+    if (finalForms.length === 0) {
+      boss = POKEMON_LIST[Math.floor(Math.random() * POKEMON_LIST.length)];
+    } else {
+      boss = finalForms[Math.floor(Math.random() * finalForms.length)];
+    }
+    
+    state.raid = {
+      boss: boss,
+      hp: boss.hp * 15,
+      maxHp: boss.hp * 15,
+      completed: false,
+      today: today,
+      attackChance: 0,
+      rewardCollected: false
+    };
+    state.raidSelectedType = null;
+    state.raidSelectedCard = null;
+    console.log('⚔️ 새로운 레이드 보스 등장!', boss.name);
+  }
+  
+  saveState();
+  
+  // 모든 탭 새로고침
+  renderQuizMission();
+  renderMathQuiz();
+  renderLifeMissions();
+  renderRaidMission();
+  updateStatline();
+  
+  console.log('✅ 오늘의 콘텐츠 초기화 완료!');
+}
 
 // ===== 자정 초기화 타이머 =====
 let lastCheckedDate = todayKey();
@@ -4945,6 +4476,8 @@ async function initGame() {
     state.mathQuiz = { today: null, questions: [], currentIndex: 0, results: [], completed: false };
     state.mathStats = { total: 0, correct: 0 };
     state.raid = { boss: null, hp: 0, maxHp: 0, completed: false, today: null, rewardCollected: false, attackChance: 0 };
+    state.raidSelectedType = null;
+    state.raidSelectedCard = null;
     saveState();
   }
   
