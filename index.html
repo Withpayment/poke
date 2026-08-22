@@ -4877,7 +4877,7 @@ async function joinTradeRoom(code) {
   try {
     const roomRef = db.ref('trades/' + code);
     
-    // 먼저 방이 존재하는지 확인
+    // 1. 방 존재 확인
     const snapshot = await roomRef.once('value');
     const room = snapshot.val();
     
@@ -4902,38 +4902,31 @@ async function joinTradeRoom(code) {
       return;
     }
     
-    // ===== 트랜잭션으로 안전하게 참가 (수정됨) =====
-    const result = await roomRef.transaction((currentData) => {
-      if (currentData === null) {
-        return currentData;
-      }
-      
-      // 이미 게스트가 있으면 변경 없이 반환 (트랜잭션 실패)
-      if (currentData.guest !== null) {
-        return currentData;
-      }
-      
-      // 게스트 추가
-      currentData.guest = {
+    // 2. 다시 한번 확인 (동시성 방지)
+    const checkAgain = await roomRef.once('value');
+    const roomAgain = checkAgain.val();
+    
+    if (roomAgain.guest !== null) {
+      alert('❌ 누군가 먼저 참가했어요!');
+      return;
+    }
+    
+    // 3. 참가 처리 (일반 업데이트)
+    await roomRef.update({
+      guest: {
         uid: 'guest',
         card: myCard,
         ready: false,
         confirmed: false
-      };
-      currentData.status = 'ready';
-      currentData.log = ['🟢 친구가 참가했습니다! 서로 카드를 확인해주세요.'];
-      
-      return currentData;
+      },
+      status: 'ready',
+      log: ['🟢 친구가 참가했습니다! 서로 카드를 확인해주세요.']
     });
     
-    // 트랜잭션이 커밋되지 않음 = 이미 누군가 참가함
-    if (!result.committed) {
-      alert('❌ 이미 다른 사람이 참가한 방입니다!');
-      return;
-    }
+    // 4. 성공 확인
+    const result = await roomRef.once('value');
+    const updatedRoom = result.val();
     
-    // 성공적으로 참가했는지 확인
-    const updatedRoom = result.snapshot.val();
     if (!updatedRoom || updatedRoom.guest === null) {
       alert('❌ 참가에 실패했습니다. 다시 시도해주세요.');
       return;
