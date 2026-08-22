@@ -3988,6 +3988,7 @@ function renderBattleSetup() {
 }
 
 // ===== 배틀 카드 선택창 열기 (속성 필터 + 공격력 순 정렬) =====
+// ===== 배틀 카드 선택창 열기 (속성 필터 + 공격력 순 정렬) =====
 function openBattlePicker(slotIndex) {
   const overlay = document.getElementById('battlePicker');
   const grid = document.getElementById('battlePickerGrid');
@@ -4007,11 +4008,12 @@ function openBattlePicker(slotIndex) {
   
   const currentFilter = window._battleTypeFilter || 'all';
   
+  // ===== 속성 필터 버튼 (간결하게) =====
   const filterHTML = `
-    <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px;">
+    <div style="display:flex;gap:3px;flex-wrap:wrap;margin-bottom:6px;padding:2px 0;max-height:70px;overflow-y:auto;">
       ${allTypes.map(type => `
         <button class="chip ${currentFilter === type ? 'active' : ''}" 
-                style="font-size:10px;padding:4px 10px;min-height:28px;"
+                style="font-size:9px;padding:2px 8px;min-height:22px;border-radius:12px;border-width:1px;"
                 onclick="setBattleTypeFilter('${type}')">
           ${typeEmojis[type] || '❓'} ${type === 'all' ? '전체' : getTypeLabel(type)}
         </button>
@@ -4019,16 +4021,17 @@ function openBattlePicker(slotIndex) {
     </div>
   `;
   
+  // ===== 보유 카드 필터링 =====
   let owned = POKEMON_LIST.filter(c => state.owned[c.engName]);
   
   if (currentFilter !== 'all') {
     owned = owned.filter(c => c.types.includes(currentFilter));
   }
   
+  // ===== 공격력 순 정렬 =====
   owned.sort((a, b) => (b.atk || 0) - (a.atk || 0));
   
-  const alreadySelected = state.team.filter((_, i) => i !== slotIndex);
-  
+  // ===== 카드 그리드 생성 =====
   const cardHTML = owned.map(c => {
     const isInTeam = state.team.includes(c.engName);
     const isSelected = state.team[slotIndex] === c.engName;
@@ -4041,18 +4044,20 @@ function openBattlePicker(slotIndex) {
       <div class="pick-card ${disabled ? 'disabled' : ''} ${isSelected ? 'selected' : ''}" 
            data-eng="${c.engName}" 
            style="${isSelected ? 'border-color:var(--sun);background:rgba(255,201,60,.1);' : ''}">
-        <div class="pc-art">${pokemonImage(c, '36px')}</div>
-        <div class="pc-name">${c.name}</div>
-        <span class="pc-type" style="background:${typeColor}">${getTypeLabel(c.type)}</span>
-        <div class="pc-stats">⚔️${c.atk} · ❤️${c.hp} ${rarityInfo.emoji}</div>
-        ${isInTeam ? '<div class="pc-badge">⚠️ 이미 선택됨</div>' : ''}
-        <div style="font-size:7px;color:#6b6395;">등급: ${rarityInfo.label}</div>
+        <div class="pc-art">${pokemonImage(c, '32px')}</div>
+        <div class="pc-name" style="font-size:11px;">${c.name}</div>
+        <span class="pc-type" style="background:${typeColor};font-size:7px;padding:1px 6px;">${getTypeLabel(c.type)}</span>
+        <div class="pc-stats" style="font-size:7px;">⚔️${c.atk} · ❤️${c.hp} ${rarityInfo.emoji}</div>
+        ${isInTeam ? '<div class="pc-badge" style="font-size:8px;">⚠️ 선택됨</div>' : ''}
+        <div style="font-size:6px;color:#6b6395;">${rarityInfo.label}</div>
       </div>
     `;
   }).join('');
   
+  // ===== 전체 렌더링 =====
   grid.innerHTML = filterHTML + cardHTML;
   
+  // ===== 카드 클릭 이벤트 =====
   document.querySelectorAll('.pick-card:not(.disabled)').forEach(el => {
     el.addEventListener('click', function() {
       const engName = this.dataset.eng;
