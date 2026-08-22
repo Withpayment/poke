@@ -6,7 +6,6 @@
 <title>포켓몬 카드 마스터 v7.5</title>
 
 <script>
-  // ===== 설정 값 =====
   const MY_CONFIG = {
     FIREBASE_API_KEY: "AIzaSyAnNMf2GxcLs7abmetxwWmoxBkIrFy1jQQ",
     FIREBASE_AUTH_DOMAIN: "pokebattle-45a99.firebaseapp.com",
@@ -19,7 +18,6 @@
   };
 </script>
 
-<!-- ===== Firebase SDK ===== -->
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 
@@ -27,7 +25,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 
 <style>
-  /* ===== 모든 스타일 (축약) ===== */
+  /* ===== 모든 스타일 ===== */
   :root {
     --ink: #232042;
     --ink-2: #312B57;
@@ -703,9 +701,10 @@
     color: #B7AFDE;
   }
   
+  /* ===== 레이드 - 개선된 UI ===== */
   .raid-boss {
     text-align: center;
-    padding: 24px 18px;
+    padding: 20px 14px;
     background: radial-gradient(circle at 50% 30%, rgba(255,107,53,.12), transparent 70%);
     border-radius: 18px;
     border: 4px solid var(--special);
@@ -715,14 +714,14 @@
     from { box-shadow: 0 0 24px rgba(255,107,53,.15); }
     to { box-shadow: 0 0 48px rgba(255,107,53,.35); }
   }
-  .raid-boss .boss-art { font-size: 100px; margin: 4px 0; }
-  .raid-boss .boss-name { font-family: var(--font-display); font-size: 32px; color: var(--special); }
+  .raid-boss .boss-art { font-size: 80px; margin: 2px 0; }
+  .raid-boss .boss-name { font-family: var(--font-display); font-size: 28px; color: var(--special); }
   .raid-boss .boss-hp {
-    height: 18px;
+    height: 16px;
     border-radius: 10px;
     background: rgba(255,255,255,.1);
     overflow: hidden;
-    margin: 12px 0;
+    margin: 10px 0;
   }
   .raid-boss .boss-hp > div {
     height: 100%;
@@ -731,66 +730,174 @@
   }
   .raid-boss .boss-info {
     font-family: var(--font-mono);
-    font-size: 16px;
+    font-size: 15px;
     color: #B7AFDE;
-    margin: 6px 0;
+    margin: 4px 0;
   }
   
-  /* ===== 레이드 속성 선택 ===== */
+  /* 레이드 - 속성 선택 (6열) */
+  .raid-section {
+    margin-bottom: 8px;
+  }
+  .raid-section-title {
+    font-family: var(--font-display);
+    font-size: 15px;
+    color: var(--sun-2);
+    margin-bottom: 5px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .raid-section-title .step-badge {
+    background: var(--sun);
+    color: var(--text-dark);
+    padding: 1px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-family: var(--font-mono);
+  }
+  
   .raid-type-selector {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 8px;
-    margin: 12px 0;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 4px;
+    margin: 4px 0;
   }
   .raid-type-btn {
-    padding: 12px 8px;
-    border-radius: 12px;
-    border: 3px solid rgba(255,255,255,.1);
-    background: rgba(255,255,255,.05);
+    padding: 5px 2px;
+    border-radius: 8px;
+    border: 2px solid rgba(255,255,255,.08);
+    background: rgba(255,255,255,.04);
     color: var(--paper);
     font-family: var(--font-display);
-    font-size: 16px;
+    font-size: 10px;
     cursor: pointer;
     transition: all .2s;
     touch-action: manipulation;
-    min-height: 56px;
+    min-height: 40px;
+    text-align: center;
   }
   .raid-type-btn:active { transform: scale(.95); }
   .raid-type-btn.selected {
     border-color: var(--sun);
-    background: rgba(255,201,60,.15);
-    box-shadow: 0 0 20px rgba(255,201,60,.2);
+    background: rgba(255,201,60,.12);
+    box-shadow: 0 0 12px rgba(255,201,60,.1);
   }
-  .raid-type-btn .type-icon { font-size: 28px; display: block; margin-bottom: 2px; }
-  .raid-type-btn .type-label { font-size: 12px; opacity: .8; }
+  .raid-type-btn .type-icon { font-size: 15px; display: block; }
+  .raid-type-btn .type-label { font-size: 8px; opacity: .7; }
   
+  /* 레이드 - 포켓몬 선택 */
+  .raid-pokemon-selector {
+    margin-top: 6px;
+    padding: 8px;
+    background: rgba(255,255,255,.03);
+    border-radius: 10px;
+    border: 2px solid rgba(255,201,60,.1);
+  }
   .raid-pokemon-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 6px;
-    max-height: 200px;
+    gap: 4px;
+    max-height: 150px;
     overflow-y: auto;
-    padding: 4px;
+    padding: 2px;
   }
   .raid-pokemon-card {
-    border: 2px solid rgba(255,255,255,.1);
-    border-radius: 10px;
-    padding: 6px;
+    border: 2px solid rgba(255,255,255,.06);
+    border-radius: 8px;
+    padding: 4px 2px;
     text-align: center;
     cursor: pointer;
-    background: rgba(255,255,255,.03);
+    background: rgba(255,255,255,.02);
     transition: all .2s;
+    min-height: 48px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
   }
   .raid-pokemon-card:active { transform: scale(.95); }
   .raid-pokemon-card.selected {
     border-color: var(--sun);
-    background: rgba(255,201,60,.15);
-    box-shadow: 0 0 16px rgba(255,201,60,.15);
+    background: rgba(255,201,60,.12);
+    box-shadow: 0 0 10px rgba(255,201,60,.1);
   }
-  .raid-pokemon-card .rpc-art { font-size: 36px; }
-  .raid-pokemon-card .rpc-name { font-size: 12px; font-family: var(--font-display); margin-top: 2px; }
-  .raid-pokemon-card .rpc-atk { font-size: 10px; font-family: var(--font-mono); color: #B7AFDE; }
+  .raid-pokemon-card .rpc-art { font-size: 26px; line-height: 1; }
+  .raid-pokemon-card .rpc-name { font-size: 10px; font-family: var(--font-display); margin-top: 1px; }
+  .raid-pokemon-card .rpc-atk { font-size: 8px; font-family: var(--font-mono); color: #B7AFDE; }
+  
+  .raid-selected-info {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--sun-2);
+    text-align: center;
+    padding: 5px;
+    background: rgba(255,201,60,.06);
+    border-radius: 6px;
+    margin: 5px 0;
+  }
+  .raid-selected-info .highlight {
+    color: var(--paper);
+    font-weight: 700;
+  }
+  
+  .raid-attack-area {
+    margin-top: 8px;
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .raid-attack-area .btn {
+    flex: 1;
+    min-width: 80px;
+    font-size: 16px;
+    padding: 10px 14px;
+    min-height: 48px;
+  }
+  
+  .raid-empty-msg {
+    color: #8d84b0;
+    font-size: 12px;
+    text-align: center;
+    padding: 8px;
+  }
+  
+  .raid-boss-info {
+    background: rgba(255,255,255,.05);
+    border-radius: 12px;
+    padding: 12px;
+    margin: 4px 0 10px;
+    text-align: left;
+    font-size: 14px;
+    color: #D8D2EF;
+  }
+  .raid-boss-info .rb-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .raid-boss-info .rb-row .rb-art { font-size: 52px; }
+  .raid-boss-info .rb-row .rb-detail { flex: 1; }
+  .raid-boss-info .rb-row .rb-detail .rb-name {
+    font-family: var(--font-display);
+    font-size: 20px;
+    color: var(--paper);
+  }
+  .raid-boss-info .rb-row .rb-detail .rb-stat {
+    font-size: 13px;
+    color: #B7AFDE;
+    margin: 2px 0;
+  }
+  .raid-boss-info .rb-owner {
+    font-size: 12px;
+    margin-top: 4px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    background: rgba(255,255,255,.04);
+    display: inline-block;
+  }
   
   .modal-overlay {
     display: none;
@@ -1086,8 +1193,15 @@
     .mission-card .mc-label { font-size: 15px; }
     .mission-card .mc-emoji { font-size: 28px; width: 40px; }
     .age-buttons { grid-template-columns: repeat(3, 1fr); }
-    .raid-type-selector { grid-template-columns: repeat(3, 1fr); }
-    .raid-pokemon-grid { grid-template-columns: repeat(2, 1fr); }
+    .raid-type-selector { grid-template-columns: repeat(6, 1fr); gap: 3px; }
+    .raid-type-btn { font-size: 9px; min-height: 34px; padding: 3px 1px; }
+    .raid-type-btn .type-icon { font-size: 13px; }
+    .raid-type-btn .type-label { font-size: 7px; }
+    .raid-pokemon-grid { grid-template-columns: repeat(3, 1fr); gap: 3px; max-height: 120px; }
+    .raid-pokemon-card { min-height: 40px; }
+    .raid-pokemon-card .rpc-art { font-size: 20px; }
+    .raid-pokemon-card .rpc-name { font-size: 9px; }
+    .raid-pokemon-card .rpc-atk { font-size: 7px; }
   }
 </style>
 </head>
@@ -1306,7 +1420,6 @@ function getRarityDamageBonus(rarity) {
   return bonuses[rarity] || 0;
 }
 
-// ===== 특성/기술 한글 맵 =====
 function getAbilityKorean(engName) {
   const map = {
     'overgrow': '초목', 'blaze': '맹화', 'torrent': '급류',
@@ -1343,7 +1456,6 @@ let state = {
   mathQuiz: { today: null, questions: [], currentIndex: 0, results: [], completed: false },
   mathStats: { total: 0, correct: 0 },
   raid: { boss: null, hp: 0, maxHp: 0, completed: false, today: null, rewardCollected: false, attackChance: 0 },
-  // 레이드 선택 상태
   raidSelectedType: null,
   raidSelectedCard: null
 };
@@ -1672,7 +1784,8 @@ function resetGame() {
   state.mathQuiz = { today: null, questions: [], currentIndex: 0, results: [], completed: false };
   state.mathStats = { total: 0, correct: 0 };
   state.raid = { boss: null, hp: 0, maxHp: 0, completed: false, today: null, rewardCollected: false, attackChance: 0 };
-  
+  state.raidSelectedType = null;
+  state.raidSelectedCard = null;
   saveState();
   location.reload();
 }
@@ -2487,7 +2600,6 @@ function renderRaidMission() {
   const hpPercent = Math.max(0, (raid.hp / raid.maxHp) * 100);
   const atkChance = raid.attackChance || 0;
   
-  // ===== 속성 선택 UI =====
   const allTypes = ['normal', 'fire', 'water', 'electric', 'grass', 'ice', 'fighting', 'poison', 'ground', 'flying', 'psychic', 'bug', 'rock', 'ghost', 'dragon', 'dark', 'steel', 'fairy'];
   const typeEmojis = {
     normal: '⚪', fire: '🔥', water: '💧', electric: '⚡', grass: '🌿', ice: '❄️',
@@ -2495,16 +2607,100 @@ function renderRaidMission() {
     rock: '🪨', ghost: '👻', dragon: '🐉', dark: '🌙', steel: '🔩', fairy: '🧚'
   };
   
-  // ===== 선택된 속성에 맞는 포켓몬 목록 =====
   const selectedType = state.raidSelectedType;
+  const selectedCard = state.raidSelectedCard;
+  
   let filteredPokemon = [];
+  let selectedPokemonData = null;
   if (selectedType) {
     filteredPokemon = POKEMON_LIST
       .filter(p => state.owned[p.engName] && p.types.includes(selectedType))
-      .sort((a, b) => (b.atk || 0) - (a.atk || 0)); // 공격력 순 정렬
+      .sort((a, b) => (b.atk || 0) - (a.atk || 0));
+  }
+  if (selectedCard) {
+    selectedPokemonData = getPokemonByName(selectedCard);
   }
   
-  const selectedCard = state.raidSelectedCard;
+  // ===== 속성 선택 UI =====
+  const typeHTML = `
+    <div class="raid-section">
+      <div class="raid-section-title">
+        <span class="step-badge">1</span>
+        공격할 속성 선택
+      </div>
+      <div class="raid-type-selector">
+        ${allTypes.map(type => `
+          <button class="raid-type-btn ${state.raidSelectedType === type ? 'selected' : ''}" 
+                  onclick="selectRaidType('${type}')">
+            <span class="type-icon">${typeEmojis[type] || '❓'}</span>
+            <span class="type-label">${getTypeLabel(type)}</span>
+          </button>
+        `).join('')}
+      </div>
+    </div>
+  `;
+  
+  // ===== 포켓몬 선택 UI =====
+  let pokemonHTML = '';
+  if (selectedType) {
+    if (filteredPokemon.length === 0) {
+      pokemonHTML = `
+        <div class="raid-pokemon-selector">
+          <div class="raid-section-title">
+            <span class="step-badge">2</span>
+            ${getTypeLabel(selectedType)} 타입 포켓몬
+          </div>
+          <div class="raid-empty-msg">
+            😢 ${getTypeLabel(selectedType)} 타입 포켓몬이 없어요<br>
+            <span style="font-size:11px;color:#6b6395;">다른 속성을 선택해보세요!</span>
+          </div>
+        </div>
+      `;
+    } else {
+      pokemonHTML = `
+        <div class="raid-pokemon-selector">
+          <div class="raid-section-title">
+            <span class="step-badge">2</span>
+            ${getTypeLabel(selectedType)} 타입 포켓몬 (공격력 순)
+            <span style="font-size:11px;color:#6b6395;margin-left:auto;">${filteredPokemon.length}마리</span>
+          </div>
+          <div class="raid-pokemon-grid">
+            ${filteredPokemon.slice(0, 12).map(p => {
+              const ownedData = state.owned[p.engName];
+              const rarityInfo = getRarityInfo(ownedData?.rarity || 'common');
+              const isSelected = selectedCard === p.engName;
+              return `
+                <div class="raid-pokemon-card ${isSelected ? 'selected' : ''}" 
+                     onclick="selectRaidPokemon('${p.engName}')">
+                  <div class="rpc-art">${pokemonImage(p, '28px')}</div>
+                  <div class="rpc-name">${p.name}</div>
+                  <div class="rpc-atk">⚔️ ${p.atk} ${rarityInfo.emoji}</div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+          ${filteredPokemon.length > 12 ? `<div style="font-size:10px;color:#6b6395;text-align:center;margin-top:3px;">+ ${filteredPokemon.length - 12}마리 더 있음</div>` : ''}
+        </div>
+      `;
+    }
+  }
+  
+  // ===== 선택된 카드 정보 =====
+  let selectedInfoHTML = '';
+  if (selectedCard && selectedPokemonData) {
+    const rarityInfo = getRarityInfo(state.owned[selectedCard]?.rarity || 'common');
+    selectedInfoHTML = `
+      <div class="raid-selected-info">
+        ✅ 선택된 카드: <span class="highlight">${selectedPokemonData.name}</span>
+        <span style="color:${rarityInfo.color};">${rarityInfo.emoji} ${rarityInfo.label}</span>
+        ⚔️ 공격력 ${selectedPokemonData.atk}
+      </div>
+    `;
+  }
+  
+  // ===== 공격 버튼 =====
+  const attackDisabled = atkChance <= 0 || !selectedCard;
+  const attackBtnText = atkChance <= 0 ? '⏳ 공격 기회 없음' : selectedCard ? `⚔️ 공격! (${atkChance}회)` : '❌ 카드 선택 필요';
   
   panel.innerHTML = `
     <div class="raid-boss">
@@ -2513,73 +2709,20 @@ function renderRaidMission() {
       <div class="boss-hp"><div style="width:${hpPercent}%"></div></div>
       <div class="boss-info">❤️ HP ${Math.max(0, Math.round(raid.hp))} / ${raid.maxHp}</div>
       
-      <div style="margin-top:14px;text-align:left;">
-        <div style="font-family:var(--font-display);font-size:18px;color:var(--sun-2);margin-bottom:8px;">🎯 공격할 속성 선택</div>
-        <div class="raid-type-selector">
-          ${allTypes.map(type => `
-            <button class="raid-type-btn ${state.raidSelectedType === type ? 'selected' : ''}" 
-                    data-type="${type}"
-                    onclick="selectRaidType('${type}')">
-              <span class="type-icon">${typeEmojis[type] || '❓'}</span>
-              <span class="type-label">${getTypeLabel(type)}</span>
-            </button>
-          `).join('')}
-        </div>
-      </div>
+      ${typeHTML}
+      ${pokemonHTML}
+      ${selectedInfoHTML}
       
-      ${selectedType ? `
-        <div style="margin-top:12px;text-align:left;">
-          <div style="font-family:var(--font-display);font-size:16px;color:var(--sun-2);margin-bottom:6px;">
-            ⚔️ ${getTypeLabel(selectedType)} 타입 포켓몬 (공격력 순)
-          </div>
-          ${filteredPokemon.length === 0 ? `
-            <div style="color:#8d84b0;font-size:14px;text-align:center;padding:10px;">
-              ${getTypeLabel(selectedType)} 타입 포켓몬이 없어요 😢
-            </div>
-          ` : `
-            <div class="raid-pokemon-grid">
-              ${filteredPokemon.slice(0, 12).map(p => {
-                const ownedData = state.owned[p.engName];
-                const rarityInfo = getRarityInfo(ownedData?.rarity || 'common');
-                const isSelected = selectedCard === p.engName;
-                return `
-                  <div class="raid-pokemon-card ${isSelected ? 'selected' : ''}" 
-                       data-key="${p.engName}"
-                       onclick="selectRaidPokemon('${p.engName}')"
-                       style="border-color: ${isSelected ? 'var(--sun)' : 'rgba(255,255,255,.1)'}">
-                    <div class="rpc-art">${pokemonImage(p, '40px')}</div>
-                    <div class="rpc-name">${p.name}</div>
-                    <div class="rpc-atk">⚔️ ${p.atk} ${rarityInfo.emoji}</div>
-                  </div>
-                `;
-              }).join('')}
-            </div>
-            ${filteredPokemon.length > 12 ? `<div style="font-size:11px;color:#6b6395;text-align:center;margin-top:4px;">+ ${filteredPokemon.length - 12}마리 더 있음</div>` : ''}
-          `}
-        </div>
-      ` : ''}
-      
-      ${selectedCard ? `
-        <div style="margin-top:10px;font-size:14px;color:var(--sun-2);">
-          ✅ 선택된 카드: ${getPokemonByName(selectedCard)?.name || selectedCard}
-        </div>
-      ` : ''}
-      
-      <div style="margin-top:12px;font-size:14px;color:#B7AFDE;text-align:center;">
-        ⚔️ 공격 기회: <b style="color:var(--sun-2);font-size:20px;">${atkChance}회</b>
-        ${selectedCard ? ' | ✅ 카드 선택됨' : ' | ❌ 카드 선택 필요'}
-      </div>
-      
-      <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;justify-content:center;">
-        <button class="btn" id="raidAttackBtn" 
-                ${atkChance > 0 && selectedCard ? '' : 'disabled'}>
-          ⚔️ 공격! (${atkChance}회)
+      <div class="raid-attack-area">
+        <button class="btn" id="raidAttackBtn" ${attackDisabled ? 'disabled' : ''}>
+          ${attackBtnText}
         </button>
-        <button class="btn small ghost" onclick="renderRaidMission()">🔄 새로고침</button>
-        <button class="btn small ghost" onclick="resetRaidSelection()">↩️ 선택 초기화</button>
+        <button class="btn small ghost" onclick="resetRaidSelection()" style="flex:0.5;min-width:60px;">
+          ↺
+        </button>
       </div>
-      <div style="font-size:13px;color:#6b6395;margin-top:6px;">
-        💡 생활미션 완료 시 공격 기회 +1 · 속성 선택 → 포켓몬 선택
+      <div style="font-size:12px;color:#6b6395;text-align:center;margin-top:4px;">
+        💡 생활미션 완료 시 공격 기회 +1
       </div>
     </div>
   `;
@@ -2591,7 +2734,7 @@ function renderRaidMission() {
 
 function selectRaidType(type) {
   state.raidSelectedType = type;
-  state.raidSelectedCard = null; // 속성 바꾸면 카드 선택 초기화
+  state.raidSelectedCard = null;
   saveState();
   renderRaidMission();
 }
@@ -2719,7 +2862,7 @@ function getEvoChain(engName) {
   return evoMap[engName] || null;
 }
 
-// ===== 🔥 진화 맵 (Lv.5 → Lv.10 → Lv.15) =====
+// ===== 진화 맵 (Lv.5 → Lv.10 → Lv.15) =====
 const EVOLUTION_MAP = {
   'bulbasaur': { next: 'ivysaur', level: 5 },
   'ivysaur': { next: 'venusaur', level: 10 },
@@ -2740,49 +2883,42 @@ const EVOLUTION_MAP = {
   'flareon': { next: null, level: 0 },
   'magikarp': { next: 'gyarados', level: 5 },
   'gyarados': { next: null, level: 0 },
-  // 2세대
   'chikorita': { next: 'bayleef', level: 5 },
   'bayleef': { next: 'meganium', level: 10 },
   'cyndaquil': { next: 'quilava', level: 5 },
   'quilava': { next: 'typhlosion', level: 10 },
   'totodile': { next: 'croconaw', level: 5 },
   'croconaw': { next: 'feraligatr', level: 10 },
-  // 3세대
   'treecko': { next: 'grovyle', level: 5 },
   'grovyle': { next: 'sceptile', level: 10 },
   'torchic': { next: 'combusken', level: 5 },
   'combusken': { next: 'blaziken', level: 10 },
   'mudkip': { next: 'marshtomp', level: 5 },
   'marshtomp': { next: 'swampert', level: 10 },
-  // 4세대
   'turtwig': { next: 'grotle', level: 5 },
   'grotle': { next: 'torterra', level: 10 },
   'chimchar': { next: 'monferno', level: 5 },
   'monferno': { next: 'infernape', level: 10 },
   'piplup': { next: 'prinplup', level: 5 },
   'prinplup': { next: 'empoleon', level: 10 },
-  // 5세대
   'snivy': { next: 'servine', level: 5 },
   'servine': { next: 'serperior', level: 10 },
   'tepig': { next: 'pignite', level: 5 },
   'pignite': { next: 'emboar', level: 10 },
   'oshawott': { next: 'dewott', level: 5 },
   'dewott': { next: 'samurott', level: 10 },
-  // 6세대
   'chespin': { next: 'quilladin', level: 5 },
   'quilladin': { next: 'chesnaught', level: 10 },
   'fennekin': { next: 'braixen', level: 5 },
   'braixen': { next: 'delphox', level: 10 },
   'froakie': { next: 'frogadier', level: 5 },
   'frogadier': { next: 'greninja', level: 10 },
-  // 7세대
   'rowlet': { next: 'dartrix', level: 5 },
   'dartrix': { next: 'decidueye', level: 10 },
   'litten': { next: 'torracat', level: 5 },
   'torracat': { next: 'incineroar', level: 10 },
   'popplio': { next: 'brionne', level: 5 },
   'brionne': { next: 'primarina', level: 10 },
-  // 8세대
   'grookey': { next: 'thwackey', level: 5 },
   'thwackey': { next: 'rillaboom', level: 10 },
   'scorbunny': { next: 'raboot', level: 5 },
@@ -2791,7 +2927,7 @@ const EVOLUTION_MAP = {
   'drizzile': { next: 'inteleon', level: 10 }
 };
 
-// ===== 🐣 키우기 (Lv.5 / Lv.10 / Lv.15 진화 + 레벨 보너스) =====
+// ===== 🐣 키우기 =====
 function petCreature() {
   if (!state.pet) return null;
   const id = state.pet.evolvedId || state.pet.baseId;
@@ -2813,11 +2949,9 @@ function tickPet() {
 }
 
 function petExpThreshold() { 
-  // 레벨당 필요 경험치 (점진적 증가)
   return Math.floor(25 + state.pet.level * 3); 
 }
 
-// ===== 🐣 진화 체크 (Lv.5 → Lv.10 → Lv.15) =====
 function checkPetLevelUp() {
   let leveled = false, evolved = false;
   let evoMessage = '';
@@ -2829,20 +2963,16 @@ function checkPetLevelUp() {
     leveled = true;
     console.log('📈 레벨업! 현재 레벨:', state.pet.level);
     
-    // 최대 레벨 50 제한
     if (state.pet.level >= 50) {
       state.pet.exp = 0;
       console.log('🌟 최대 레벨 도달! Lv.50');
       break;
     }
     
-    // 현재 포켓몬 ID
     const currentId = state.pet.evolvedId || state.pet.baseId;
     const evoInfo = EVOLUTION_MAP[currentId];
     
-    // 진화 조건 체크 (Lv.5, Lv.10, Lv.15)
     if (evoInfo && evoInfo.next && state.pet.level >= evoInfo.level) {
-      // 이미 진화했는지 체크 (중복 방지)
       if (state.pet.evolvedId !== evoInfo.next) {
         const nextPokemon = getPokemonByName(evoInfo.next);
         if (nextPokemon) {
@@ -2855,7 +2985,6 @@ function checkPetLevelUp() {
           evoPokemon = nextPokemon;
           evoMessage = '🎉 ' + nextPokemon.name + '(으)로 진화했어요!';
           
-          // 진화한 포켓몬 카드 획득
           const rarity = rollRarity();
           if (!state.owned[nextPokemon.engName]) {
             state.owned[nextPokemon.engName] = { count: 1, rarity: rarity };
@@ -2876,11 +3005,9 @@ function checkPetLevelUp() {
   return { leveled, evolved };
 }
 
-// ===== 🐣 레벨 보너스 (애정 보너스) =====
 function getPetLevelBonus(pet) {
   if (!pet) return { hp: 0, atk: 0, def: 0, spd: 0 };
   const level = pet.level || 1;
-  // 레벨당 +2씩 상승 (최대 100)
   const bonus = Math.min(level * 2, 100);
   return {
     hp: bonus,
@@ -2989,7 +3116,6 @@ function renderPetCare() {
     saveState();
   }
   
-  // 레벨 보너스 계산
   const levelBonus = getPetLevelBonus(p);
   
   const feedCooldown = getCooldownRemaining(p.lastFeed, COOLDOWN.FEED);
@@ -3015,7 +3141,6 @@ function renderPetCare() {
   if (p.evolved) evoStatus = '⭐ 진화 완료!';
   else evoStatus = '🌱 진화 대기 중...';
   
-  // 실제 능력치 (기본 + 레벨 보너스)
   const baseStats = c ? { hp: c.hp, atk: c.atk, def: c.def, spd: c.spd } : { hp: 0, atk: 0, def: 0, spd: 0 };
   const totalStats = {
     hp: baseStats.hp + levelBonus.hp,
@@ -4367,7 +4492,6 @@ function resetDailyContent() {
   
   console.log('🔄 오늘의 콘텐츠를 초기화합니다!', key);
   
-  // ===== 1. 퀴즈 초기화 =====
   state.quizDoneToday = null;
   currentQuiz = { 
     questions: [], 
@@ -4377,7 +4501,6 @@ function resetDailyContent() {
     totalQuestions: 0
   };
   
-  // ===== 2. 생활미션 초기화 (이전 데이터 정리) =====
   const today = todayKey();
   for (const dateKey in state.dailyMissions) {
     if (dateKey !== today) {
@@ -4388,7 +4511,6 @@ function resetDailyContent() {
     state.dailyMissions[today] = {};
   }
   
-  // ===== 3. 수학퀴즈 초기화 =====
   state.mathQuiz = { 
     today: null, 
     questions: [], 
@@ -4397,7 +4519,6 @@ function resetDailyContent() {
     completed: false 
   };
   
-  // ===== 4. ⚔️ 레이드 초기화 =====
   const shouldResetRaid = !state.raid || 
                           state.raid.today !== today || 
                           state.raid.completed === true;
@@ -4431,7 +4552,6 @@ function resetDailyContent() {
   
   saveState();
   
-  // 모든 탭 새로고침
   renderQuizMission();
   renderMathQuiz();
   renderLifeMissions();
