@@ -4836,9 +4836,14 @@ function renderTradeTab() {
 }
 
 async function createTradeRoom() {
+  console.log('🔍 [createTradeRoom] 시작');
+  
   const code = String(Math.floor(1000 + Math.random() * 9000));
+  console.log('🔍 생성된 코드:', code);
   
   const myCard = document.getElementById('tradeCardSelect')?.value;
+  console.log('🔍 내 카드:', myCard);
+  
   if (!myCard || !state.owned[myCard] || state.owned[myCard].count < 1) {
     alert('보낼 카드를 선택해주세요!');
     return;
@@ -4858,8 +4863,12 @@ async function createTradeRoom() {
   };
   
   try {
+    console.log('🔍 방 데이터 저장 중...');
     await db.ref('trades/' + code).set(roomData);
+    console.log('✅ 방 저장 완료');
+    
     myTradeRoom = { code, side: 'host' };
+    console.log('✅ myTradeRoom 설정:', myTradeRoom);
     
     updateTradeStatus('✅ 방 생성 완료! 코드: ' + code, 'success');
     document.getElementById('sendTradeBtn').disabled = true;
@@ -4869,49 +4878,51 @@ async function createTradeRoom() {
     showTradeWaiting(code);
     
   } catch (e) {
+    console.error('❌ 방 생성 오류:', e);
     alert('❌ 방 생성 실패: ' + e.message);
   }
 }
 
 async function joinTradeRoom(code) {
+  console.log('🔍 [joinTradeRoom] 시작 - 코드:', code);
+  
   try {
     const roomRef = db.ref('trades/' + code);
     
     // 1. 방 존재 확인
+    console.log('🔍 방 확인 중...');
     const snapshot = await roomRef.once('value');
     const room = snapshot.val();
+    console.log('🔍 방 데이터:', room);
     
     if (!room) {
+      console.log('❌ 방 없음');
       alert('❌ 존재하지 않는 방입니다!');
       return;
     }
     
     if (room.status === 'completed') {
+      console.log('❌ 이미 완료된 방');
       alert('❌ 이미 교환이 완료된 방입니다!');
       return;
     }
     
     if (room.guest !== null) {
+      console.log('❌ 이미 게스트 있음:', room.guest);
       alert('❌ 이미 다른 사람이 참가한 방입니다!');
       return;
     }
     
     const myCard = document.getElementById('tradeCardSelect')?.value;
+    console.log('🔍 내 카드:', myCard);
+    
     if (!myCard || !state.owned[myCard] || state.owned[myCard].count < 1) {
       alert('보낼 카드를 선택해주세요!');
       return;
     }
     
-    // 2. 다시 한번 확인 (동시성 방지)
-    const checkAgain = await roomRef.once('value');
-    const roomAgain = checkAgain.val();
-    
-    if (roomAgain.guest !== null) {
-      alert('❌ 누군가 먼저 참가했어요!');
-      return;
-    }
-    
-    // 3. 참가 처리 (일반 업데이트)
+    // 2. 참가 처리
+    console.log('🔍 참가 처리 중...');
     await roomRef.update({
       guest: {
         uid: 'guest',
@@ -4922,17 +4933,21 @@ async function joinTradeRoom(code) {
       status: 'ready',
       log: ['🟢 친구가 참가했습니다! 서로 카드를 확인해주세요.']
     });
+    console.log('✅ 참가 처리 완료');
     
-    // 4. 성공 확인
+    // 3. 성공 확인
     const result = await roomRef.once('value');
     const updatedRoom = result.val();
+    console.log('🔍 업데이트 후 방 데이터:', updatedRoom);
     
     if (!updatedRoom || updatedRoom.guest === null) {
+      console.log('❌ 참가 실패 - guest 없음');
       alert('❌ 참가에 실패했습니다. 다시 시도해주세요.');
       return;
     }
     
     myTradeRoom = { code, side: 'guest' };
+    console.log('✅ myTradeRoom 설정:', myTradeRoom);
     
     updateTradeStatus('✅ 참가 완료!', 'success');
     document.getElementById('sendTradeBtn').disabled = false;
@@ -4942,7 +4957,7 @@ async function joinTradeRoom(code) {
     showTradeReady(code);
     
   } catch (e) {
-    console.error('참가 오류:', e);
+    console.error('❌ 참가 오류:', e);
     alert('❌ 참가 실패: ' + e.message);
   }
 }
@@ -4989,8 +5004,13 @@ function updateTradeStatus(msg, type) {
 }
 
 function setupTradeListener(code) {
+  console.log('🔍 [setupTradeListener] 시작 - 코드:', code);
+  
   if (tradeListener) {
-    try { tradeListener.off(); } catch(e) {}
+    try { 
+      console.log('🔍 기존 리스너 제거');
+      tradeListener.off(); 
+    } catch(e) {}
     tradeListener = null;
   }
   
@@ -4998,16 +5018,21 @@ function setupTradeListener(code) {
   tradeListener.on('value', function(snapshot) {
     try {
       const room = snapshot.val();
+      console.log('🔍 리스너 감지 - 방 데이터:', room);
+      
       if (!room) {
+        console.log('❌ 방 삭제됨');
         updateTradeStatus('❌ 방이 삭제되었습니다', 'error');
         return;
       }
       
       handleTradeUpdate(room);
     } catch(e) {
-      console.error('교환 업데이트 오류:', e);
+      console.error('❌ 교환 업데이트 오류:', e);
     }
   });
+  
+  console.log('✅ 리스너 등록 완료');
 }
 
 function handleTradeUpdate(room) {
