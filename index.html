@@ -5059,20 +5059,20 @@ function showDefeatEffect() {
 
 // ===== Firebase PVP 배틀 =====
 function renderPvpIntro() {
-    const pvpChances = state.pvpChances || 0;
+  const pvpChances = state.pvpChances || 0;
   
   if (pvpChances <= 0) {
     toast('⚠️ PVP 배틀 횟수가 부족합니다! 생활미션을 완료해주세요.');
     renderBattleSetup();
-    return;
+    return;  // ← 여기 return 추가!
+  }
+  
   document.getElementById('battleBody').innerHTML = `
     <div class="room-box">
       <div style="font-family:var(--font-mono);font-size:13px;color:#B7AFDE;">Firebase로 친구와 실시간 배틀!</div>
-           // ⬇️⬇️⬇️ 횟수 표시 추가 ⬇️⬇️⬇️
       <div style="font-family:var(--font-mono);font-size:12px;color:var(--sun-2);margin:4px 0;">
         🌐 PVP 배틀 잔여 횟수: <b>${pvpChances}</b>회
       </div>
-      // ⬆️⬆️⬆️ 여기까지 추가 ⬆️⬆️⬆️
       <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;justify-content:center;">
         <button class="btn block" id="createRoomBtn" style="flex:1;min-width:100px;font-size:16px;padding:14px;">🚀 방 만들기</button>
       </div>
@@ -5080,21 +5080,26 @@ function renderPvpIntro() {
       <input class="room-input" id="joinCodeInput" maxlength="4" inputmode="numeric" placeholder="0000">
       <button class="btn ghost block" id="joinRoomBtn">코드로 참가</button>
       <div class="quiz-feedback" id="pvpFeedback" style="margin-top:8px;"></div>
-    </div>`;
-  document.getElementById('createRoomBtn').addEventListener('click', createBattleRoom);
+    </div>
+  `;
+  
+  document.getElementById('createRoomBtn').addEventListener('click', function() {
+    if (state.pvpChances <= 0) {
+      toast('⚠️ PVP 배틀 횟수가 부족합니다!');
+      return;
+    }
+    state.pvpChances = (state.pvpChances || 0) - 1;
+    saveState();
+    renderBattleSetup();
+    createBattleRoom();
+  });
+  
   document.getElementById('joinRoomBtn').addEventListener('click', function() {
-      // ⬇️⬇️⬇️ 횟수 차감 추가 ⬇️⬇️⬇️
-    if (state.pvpChances <= 0) {
-      toast('⚠️ PVP 배틀 횟수가 부족합니다!');
-      return;
-    }
-    state.pvpChances = (state.pvpChances || 0) - 1;
-    saveState();
-    renderBattleSetup();
-    // ⬆️⬆️⬆️ 여기까지 추가 ⬆️⬆️⬆️
     const code = document.getElementById('joinCodeInput').value.trim();
-    if (code.length !== 4) { setPvpFeedback('4자리 코드를 입력해주세요', true); return; }
-     // ⬇️⬇️⬇️ 횟수 차감 추가 ⬇️⬇️⬇️
+    if (code.length !== 4) {
+      setPvpFeedback('4자리 코드를 입력해주세요', true);
+      return;
+    }
     if (state.pvpChances <= 0) {
       toast('⚠️ PVP 배틀 횟수가 부족합니다!');
       return;
@@ -5102,7 +5107,6 @@ function renderPvpIntro() {
     state.pvpChances = (state.pvpChances || 0) - 1;
     saveState();
     renderBattleSetup();
-    // ⬆️⬆️⬆️ 여기까지 추가 ⬆️⬆️⬆️
     joinBattleRoom(code);
   });
 }
