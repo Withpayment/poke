@@ -4226,7 +4226,6 @@ function renderPetCare() {
     }
   });
 }
-
 function petAction(statKey, statAmt, expKey, expAmt) {
   state.pet[statKey] = clamp(state.pet[statKey] + statAmt, 0, 100);
   state.pet[expKey] = state.pet[expKey] + expAmt;
