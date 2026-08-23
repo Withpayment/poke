@@ -4117,19 +4117,29 @@ function renderPetCare() {
   const sleepReady = sleepCooldown <= 0;
   
   const currentId = p.evolvedId || p.baseId;
-  const evoInfo = EVOLUTION_MAP[currentId];
+  
+  // ===== EVOLUTION_MAP 대신 getEvoChain() 사용 =====
+  const evoChain = getEvoChain(currentId);
   let nextEvoInfo = '';
-  if (evoInfo && evoInfo.next && p.level < evoInfo.level) {
-    nextEvoInfo = `🌱 다음 진화: ${getPokemonByName(evoInfo.next)?.name || evoInfo.next} (Lv.${evoInfo.level} 필요)`;
-  } else if (evoInfo && evoInfo.next && p.level >= evoInfo.level) {
-    nextEvoInfo = '⭐ 진화 가능! (키우기에서 자동 진화)';
+  
+  if (evoChain && evoChain.length > 1) {
+    const currentIndex = evoChain.indexOf(currentId);
+    if (currentIndex !== -1 && currentIndex < evoChain.length - 1) {
+      const nextId = evoChain[currentIndex + 1];
+      const evoLevel = 5 + (currentIndex * 5);
+      const nextPokemon = getPokemonByName(nextId);
+      nextEvoInfo = `🌱 다음 진화: ${nextPokemon ? nextPokemon.name : nextId} (Lv.${evoLevel} 필요)`;
+    } else {
+      nextEvoInfo = '🌟 최종 진화 형태입니다!';
+    }
   } else {
     nextEvoInfo = '🌟 최종 진화 형태입니다!';
   }
   
   let evoStatus = '';
   if (p.evolved) evoStatus = '⭐ 진화 완료!';
-  else evoStatus = '🌱 진화 대기 중...';
+  else if (evoChain && evoChain.length > 1) evoStatus = '🌱 진화 대기 중...';
+  else evoStatus = '🌟 진화 불가능';
   
   const baseStats = c ? { hp: c.hp, atk: c.atk, def: c.def, spd: c.spd } : { hp: 0, atk: 0, def: 0, spd: 0 };
   const totalStats = {
