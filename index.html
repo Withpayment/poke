@@ -2008,6 +2008,9 @@ let state = {
   raid: { boss: null, hp: 0, maxHp: 0, completed: false, today: null, rewardCollected: false, attackChance: 0 },
   raidSelectedType: null,
   raidSelectedCard: null
+  battleChances: 0,  // AI 배틀 가능 횟수
+  pvpChances: 0     // PVP 배틀 가능 횟수
+
 };
 
 let ownershipFilter = 'all';
@@ -2126,30 +2129,64 @@ function getFallbackData() {
 
 async function getAllEvolvablePokemon() {
   try {
+    console.log('🔄 진화 가능 포켓몬 목록 로드 중...');
+    
     const listRes = await fetch('https://pokeapi.co/api/v2/evolution-chain?limit=1000');
     const listData = await listRes.json();
     const allEvolvable = [];
+    
+    let processed = 0;
+    const total = listData.results.length;
+    
     for (const chainRef of listData.results) {
-      const chainRes = await fetch(chainRef.url);
-      const chainData = await chainRes.json();
-      function extractAllNames(chainLink) {
-        const names = [];
-        names.push(chainLink.species.name);
-        if (chainLink.evolves_to && chainLink.evolves_to.length > 0) {
-          for (const nextLink of chainLink.evolves_to) {
-            names.push(...extractAllNames(nextLink));
+      try {
+        const chainRes = await fetch(chainRef.url);
+        const chainData = await chainRes.json();
+        
+        function extractAllNames(chainLink) {
+          const names = [];
+          names.push(chainLink.species.name);
+          if (chainLink.evolves_to && chainLink.evolves_to.length > 0) {
+            for (const nextLink of chainLink.evolves_to) {
+              names.push(...extractAllNames(nextLink));
+            }
+          }
+          return names;
+        }
+        
+        const chain = extractAllNames(chainData.chain);
+        
+        // 모든 진화 단계 추가
+        allEvolvable.push(...chain);
+        
+        // ===== 진화 체인 캐시에 저장 =====
+        if (chain.length > 0) {
+          for (const name of chain) {
+            _evoChainCache[name] = chain;
           }
         }
-        return names;
+        
+        processed++;
+        if (processed % 50 === 0) {
+          console.log(`⏳ 진화 데이터 로딩 중... ${processed}/${total}`);
+        }
+        
+      } catch (e) {
+        console.warn('⚠️ 진화 체인 로드 실패:', chainRef.url, e);
       }
-      allEvolvable.push(...extractAllNames(chainData.chain));
     }
+    
     const unique = [...new Set(allEvolvable)].sort();
     console.log('✅ 진화 가능 포켓몬', unique.length + '종');
+    console.log('📋 예시:', unique.slice(0, 10).join(', '));
+    
     return unique;
+    
   } catch (error) {
     console.error('❌ 진화 가능 포켓몬 로드 실패:', error);
-    return ['bulbasaur', 'charmander', 'squirtle', 'pikachu', 'eevee', 'magikarp'];
+    // 실패 시 기본값
+    const fallback = ['bulbasaur', 'charmander', 'squirtle', 'pikachu', 'eevee', 'magikarp', 'riolu', 'ralts', 'gible'];
+    return fallback;
   }
 }
 
@@ -2793,10 +2830,16 @@ function renderLifeMissions() {
         <br><span style="font-size:12px;color:#6b6395;">모든 미션 완료 시 퀴즈도 풀 수 있어요!</span>
         <br><span style="font-size:12px;color:#6b6395;">미션 완료 시 키우는 포켓몬 경험치 +10%!</span>
         <br><span style="font-size:12px;color:#6b6395;">미션 완료 시 레이드 공격 기회 +1!</span>
+        <br><span style="font-size:12px;color:#6b6395;">미션 완료 시 AI 배틀 +1, PVP 배틀 +1 (누적 가능)</span>
       </div>
       <button class="btn small ghost" onclick="openMissionEditor()" style="font-size:14px;padding:6px 12px;min-height:32px;flex-shrink:0;margin-left:8px;">
         ⚙️
       </button>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;font-family:var(--font-mono);font-size:13px;color:var(--sun-2);">
+      <span>⚔️ 레이드 공격: <b>${state.raid?.attackChance || 0}</b>회</span>
+      <span>🤖 AI 배틀: <b>${state.battleChances || 0}</b>회</span>
+      <span>🌐 PVP 배틀: <b>${state.pvpChances || 0}</b>회</span>
     </div>
     <div class="life-mission-list">
       ${allMissions.map(m => {
@@ -2837,7 +2880,15 @@ function renderLifeMissions() {
       saveState();
       
       const reward = grantCardReward();
-      
+      if (state.raid && state.raid.boss && !state.raid.completed) {
+      state.raid.attackChance = (state.raid.attackChance || 0) + 1;
+    }
+    
+    // AI 배틀 +1 (누적)
+    state.battleChances = (state.battleChances || 0) + 1;
+    
+    // PVP 배틀 +1 (누적)
+    state.pvpChances = (state.pvpChances || 0) + 1;
       if (state.pet) {
         const expBonus = Math.round(petExpThreshold() * 0.1);
         state.pet.exp += expBonus;
@@ -3590,83 +3641,251 @@ function collectRaidReward() {
   renderRaidMission();
 }
 
+// ===== 진화 체인 가져오기 (PokeAPI 기반 자동 조회) =====
+const _evoChainCache = {};
+
 function getEvoChain(engName) {
-  const evoMap = {
+  // 캐시 확인
+  if (_evoChainCache[engName]) {
+    return _evoChainCache[engName];
+  }
+  
+  // 하드코딩된 기본 맵 (API 실패 시 대비 - 최소한의 필수 포켓몬)
+  const fallbackMap = {
     'bulbasaur': ['bulbasaur', 'ivysaur', 'venusaur'],
+    'ivysaur': ['bulbasaur', 'ivysaur', 'venusaur'],
+    'venusaur': ['bulbasaur', 'ivysaur', 'venusaur'],
     'charmander': ['charmander', 'charmeleon', 'charizard'],
+    'charmeleon': ['charmander', 'charmeleon', 'charizard'],
+    'charizard': ['charmander', 'charmeleon', 'charizard'],
     'squirtle': ['squirtle', 'wartortle', 'blastoise'],
+    'wartortle': ['squirtle', 'wartortle', 'blastoise'],
+    'blastoise': ['squirtle', 'wartortle', 'blastoise'],
     'caterpie': ['caterpie', 'metapod', 'butterfree'],
+    'metapod': ['caterpie', 'metapod', 'butterfree'],
+    'butterfree': ['caterpie', 'metapod', 'butterfree'],
     'weedle': ['weedle', 'kakuna', 'beedrill'],
+    'kakuna': ['weedle', 'kakuna', 'beedrill'],
+    'beedrill': ['weedle', 'kakuna', 'beedrill'],
     'pidgey': ['pidgey', 'pidgeotto', 'pidgeot'],
-    'eevee': ['eevee', 'vaporeon', 'jolteon', 'flareon', 'espeon', 'umbreon', 'leafeon', 'glaceon', 'sylveon']
+    'pidgeotto': ['pidgey', 'pidgeotto', 'pidgeot'],
+    'pidgeot': ['pidgey', 'pidgeotto', 'pidgeot'],
+    'pichu': ['pichu', 'pikachu', 'raichu'],
+    'pikachu': ['pichu', 'pikachu', 'raichu'],
+    'raichu': ['pichu', 'pikachu', 'raichu'],
+    'eevee': ['eevee', 'vaporeon', 'jolteon', 'flareon', 'espeon', 'umbreon', 'leafeon', 'glaceon', 'sylveon'],
+    'vaporeon': ['eevee', 'vaporeon', 'jolteon', 'flareon', 'espeon', 'umbreon', 'leafeon', 'glaceon', 'sylveon'],
+    'jolteon': ['eevee', 'vaporeon', 'jolteon', 'flareon', 'espeon', 'umbreon', 'leafeon', 'glaceon', 'sylveon'],
+    'flareon': ['eevee', 'vaporeon', 'jolteon', 'flareon', 'espeon', 'umbreon', 'leafeon', 'glaceon', 'sylveon'],
+    'espeon': ['eevee', 'vaporeon', 'jolteon', 'flareon', 'espeon', 'umbreon', 'leafeon', 'glaceon', 'sylveon'],
+    'umbreon': ['eevee', 'vaporeon', 'jolteon', 'flareon', 'espeon', 'umbreon', 'leafeon', 'glaceon', 'sylveon'],
+    'leafeon': ['eevee', 'vaporeon', 'jolteon', 'flareon', 'espeon', 'umbreon', 'leafeon', 'glaceon', 'sylveon'],
+    'glaceon': ['eevee', 'vaporeon', 'jolteon', 'flareon', 'espeon', 'umbreon', 'leafeon', 'glaceon', 'sylveon'],
+    'sylveon': ['eevee', 'vaporeon', 'jolteon', 'flareon', 'espeon', 'umbreon', 'leafeon', 'glaceon', 'sylveon'],
+    'magikarp': ['magikarp', 'gyarados'],
+    'gyarados': ['magikarp', 'gyarados'],
+    'riolu': ['riolu', 'lucario'],
+    'lucario': ['riolu', 'lucario'],
+    'ralts': ['ralts', 'kirlia', 'gardevoir'],
+    'kirlia': ['ralts', 'kirlia', 'gardevoir'],
+    'gardevoir': ['ralts', 'kirlia', 'gardevoir'],
+    'gible': ['gible', 'gabite', 'garchomp'],
+    'gabite': ['gible', 'gabite', 'garchomp'],
+    'garchomp': ['gible', 'gabite', 'garchomp'],
+    'dratini': ['dratini', 'dragonair', 'dragonite'],
+    'dragonair': ['dratini', 'dragonair', 'dragonite'],
+    'dragonite': ['dratini', 'dragonair', 'dragonite'],
+    'bagon': ['bagon', 'shelgon', 'salamence'],
+    'shelgon': ['bagon', 'shelgon', 'salamence'],
+    'salamence': ['bagon', 'shelgon', 'salamence'],
+    'beldum': ['beldum', 'metang', 'metagross'],
+    'metang': ['beldum', 'metang', 'metagross'],
+    'metagross': ['beldum', 'metang', 'metagross'],
+    'gastly': ['gastly', 'haunter', 'gengar'],
+    'haunter': ['gastly', 'haunter', 'gengar'],
+    'gengar': ['gastly', 'haunter', 'gengar'],
+    'abra': ['abra', 'kadabra', 'alakazam'],
+    'kadabra': ['abra', 'kadabra', 'alakazam'],
+    'alakazam': ['abra', 'kadabra', 'alakazam'],
+    'machop': ['machop', 'machoke', 'machamp'],
+    'machoke': ['machop', 'machoke', 'machamp'],
+    'machamp': ['machop', 'machoke', 'machamp'],
+    'geodude': ['geodude', 'graveler', 'golem'],
+    'graveler': ['geodude', 'graveler', 'golem'],
+    'golem': ['geodude', 'graveler', 'golem'],
+    'chikorita': ['chikorita', 'bayleef', 'meganium'],
+    'bayleef': ['chikorita', 'bayleef', 'meganium'],
+    'meganium': ['chikorita', 'bayleef', 'meganium'],
+    'cyndaquil': ['cyndaquil', 'quilava', 'typhlosion'],
+    'quilava': ['cyndaquil', 'quilava', 'typhlosion'],
+    'typhlosion': ['cyndaquil', 'quilava', 'typhlosion'],
+    'totodile': ['totodile', 'croconaw', 'feraligatr'],
+    'croconaw': ['totodile', 'croconaw', 'feraligatr'],
+    'feraligatr': ['totodile', 'croconaw', 'feraligatr'],
+    'treecko': ['treecko', 'grovyle', 'sceptile'],
+    'grovyle': ['treecko', 'grovyle', 'sceptile'],
+    'sceptile': ['treecko', 'grovyle', 'sceptile'],
+    'torchic': ['torchic', 'combusken', 'blaziken'],
+    'combusken': ['torchic', 'combusken', 'blaziken'],
+    'blaziken': ['torchic', 'combusken', 'blaziken'],
+    'mudkip': ['mudkip', 'marshtomp', 'swampert'],
+    'marshtomp': ['mudkip', 'marshtomp', 'swampert'],
+    'swampert': ['mudkip', 'marshtomp', 'swampert'],
+    'turtwig': ['turtwig', 'grotle', 'torterra'],
+    'grotle': ['turtwig', 'grotle', 'torterra'],
+    'torterra': ['turtwig', 'grotle', 'torterra'],
+    'chimchar': ['chimchar', 'monferno', 'infernape'],
+    'monferno': ['chimchar', 'monferno', 'infernape'],
+    'infernape': ['chimchar', 'monferno', 'infernape'],
+    'piplup': ['piplup', 'prinplup', 'empoleon'],
+    'prinplup': ['piplup', 'prinplup', 'empoleon'],
+    'empoleon': ['piplup', 'prinplup', 'empoleon'],
+    'snivy': ['snivy', 'servine', 'serperior'],
+    'servine': ['snivy', 'servine', 'serperior'],
+    'serperior': ['snivy', 'servine', 'serperior'],
+    'tepig': ['tepig', 'pignite', 'emboar'],
+    'pignite': ['tepig', 'pignite', 'emboar'],
+    'emboar': ['tepig', 'pignite', 'emboar'],
+    'oshawott': ['oshawott', 'dewott', 'samurott'],
+    'dewott': ['oshawott', 'dewott', 'samurott'],
+    'samurott': ['oshawott', 'dewott', 'samurott'],
+    'chespin': ['chespin', 'quilladin', 'chesnaught'],
+    'quilladin': ['chespin', 'quilladin', 'chesnaught'],
+    'chesnaught': ['chespin', 'quilladin', 'chesnaught'],
+    'fennekin': ['fennekin', 'braixen', 'delphox'],
+    'braixen': ['fennekin', 'braixen', 'delphox'],
+    'delphox': ['fennekin', 'braixen', 'delphox'],
+    'froakie': ['froakie', 'frogadier', 'greninja'],
+    'frogadier': ['froakie', 'frogadier', 'greninja'],
+    'greninja': ['froakie', 'frogadier', 'greninja'],
+    'rowlet': ['rowlet', 'dartrix', 'decidueye'],
+    'dartrix': ['rowlet', 'dartrix', 'decidueye'],
+    'decidueye': ['rowlet', 'dartrix', 'decidueye'],
+    'litten': ['litten', 'torracat', 'incineroar'],
+    'torracat': ['litten', 'torracat', 'incineroar'],
+    'incineroar': ['litten', 'torracat', 'incineroar'],
+    'popplio': ['popplio', 'brionne', 'primarina'],
+    'brionne': ['popplio', 'brionne', 'primarina'],
+    'primarina': ['popplio', 'brionne', 'primarina'],
+    'grookey': ['grookey', 'thwackey', 'rillaboom'],
+    'thwackey': ['grookey', 'thwackey', 'rillaboom'],
+    'rillaboom': ['grookey', 'thwackey', 'rillaboom'],
+    'scorbunny': ['scorbunny', 'raboot', 'cinderace'],
+    'raboot': ['scorbunny', 'raboot', 'cinderace'],
+    'cinderace': ['scorbunny', 'raboot', 'cinderace'],
+    'sobble': ['sobble', 'drizzile', 'inteleon'],
+    'drizzile': ['sobble', 'drizzile', 'inteleon'],
+    'inteleon': ['sobble', 'drizzile', 'inteleon']
   };
-  return evoMap[engName] || null;
+  
+  if (fallbackMap[engName]) {
+    _evoChainCache[engName] = fallbackMap[engName];
+    return fallbackMap[engName];
+  }
+  
+  // API에서 비동기로 가져오기 (캐시에 없을 때)
+  fetchEvoChainFromAPI(engName);
+  
+  // 일단 기본값 반환 (API 완료 후 캐시 업데이트)
+  return [engName];
+}
+// ===== 진화 레벨 계산 =====
+function getEvolutionLevel(engName) {
+  const chain = getEvoChain(engName);
+  if (!chain) return 5;
+  
+  const index = chain.indexOf(engName);
+  if (index === -1 || index === chain.length - 1) return 0;
+  
+  // 1단계: 5, 2단계: 10, 3단계: 15...
+  return 5 + (index * 5);
 }
 
-// ===== 진화 맵 (Lv.5 → Lv.10 → Lv.15) =====
-const EVOLUTION_MAP = {
-  'bulbasaur': { next: 'ivysaur', level: 5 },
-  'ivysaur': { next: 'venusaur', level: 10 },
-  'charmander': { next: 'charmeleon', level: 5 },
-  'charmeleon': { next: 'charizard', level: 10 },
-  'squirtle': { next: 'wartortle', level: 5 },
-  'wartortle': { next: 'blastoise', level: 10 },
-  'caterpie': { next: 'metapod', level: 5 },
-  'metapod': { next: 'butterfree', level: 10 },
-  'weedle': { next: 'kakuna', level: 5 },
-  'kakuna': { next: 'beedrill', level: 10 },
-  'pidgey': { next: 'pidgeotto', level: 5 },
-  'pidgeotto': { next: 'pidgeot', level: 10 },
-  'pikachu': { next: 'raichu', level: 5 },
-  'eevee': { next: 'vaporeon', level: 5 },
-  'vaporeon': { next: null, level: 0 },
-  'jolteon': { next: null, level: 0 },
-  'flareon': { next: null, level: 0 },
-  'magikarp': { next: 'gyarados', level: 5 },
-  'gyarados': { next: null, level: 0 },
-  'chikorita': { next: 'bayleef', level: 5 },
-  'bayleef': { next: 'meganium', level: 10 },
-  'cyndaquil': { next: 'quilava', level: 5 },
-  'quilava': { next: 'typhlosion', level: 10 },
-  'totodile': { next: 'croconaw', level: 5 },
-  'croconaw': { next: 'feraligatr', level: 10 },
-  'treecko': { next: 'grovyle', level: 5 },
-  'grovyle': { next: 'sceptile', level: 10 },
-  'torchic': { next: 'combusken', level: 5 },
-  'combusken': { next: 'blaziken', level: 10 },
-  'mudkip': { next: 'marshtomp', level: 5 },
-  'marshtomp': { next: 'swampert', level: 10 },
-  'turtwig': { next: 'grotle', level: 5 },
-  'grotle': { next: 'torterra', level: 10 },
-  'chimchar': { next: 'monferno', level: 5 },
-  'monferno': { next: 'infernape', level: 10 },
-  'piplup': { next: 'prinplup', level: 5 },
-  'prinplup': { next: 'empoleon', level: 10 },
-  'snivy': { next: 'servine', level: 5 },
-  'servine': { next: 'serperior', level: 10 },
-  'tepig': { next: 'pignite', level: 5 },
-  'pignite': { next: 'emboar', level: 10 },
-  'oshawott': { next: 'dewott', level: 5 },
-  'dewott': { next: 'samurott', level: 10 },
-  'chespin': { next: 'quilladin', level: 5 },
-  'quilladin': { next: 'chesnaught', level: 10 },
-  'fennekin': { next: 'braixen', level: 5 },
-  'braixen': { next: 'delphox', level: 10 },
-  'froakie': { next: 'frogadier', level: 5 },
-  'frogadier': { next: 'greninja', level: 10 },
-  'rowlet': { next: 'dartrix', level: 5 },
-  'dartrix': { next: 'decidueye', level: 10 },
-  'litten': { next: 'torracat', level: 5 },
-  'torracat': { next: 'incineroar', level: 10 },
-  'popplio': { next: 'brionne', level: 5 },
-  'brionne': { next: 'primarina', level: 10 },
-  'grookey': { next: 'thwackey', level: 5 },
-  'thwackey': { next: 'rillaboom', level: 10 },
-  'scorbunny': { next: 'raboot', level: 5 },
-  'raboot': { next: 'cinderace', level: 10 },
-  'sobble': { next: 'drizzile', level: 5 },
-  'drizzile': { next: 'inteleon', level: 10 }
-};
+// ===== 진화 가능 여부 확인 =====
+function canEvolve(engName) {
+  const chain = getEvoChain(engName);
+  if (!chain) return false;
+  
+  const index = chain.indexOf(engName);
+  // 마지막 진화가 아니면 true
+  return index !== -1 && index < chain.length - 1;
+}
+
+// ===== 다음 진화 포켓몬 이름 가져오기 =====
+function getNextEvolution(engName) {
+  const chain = getEvoChain(engName);
+  if (!chain) return null;
+  
+  const index = chain.indexOf(engName);
+  if (index === -1 || index === chain.length - 1) return null;
+  
+  return chain[index + 1];
+}
+
+// ===== 진화 단계 가져오기 (1, 2, 3...) =====
+function getEvolutionStage(engName) {
+  const chain = getEvoChain(engName);
+  if (!chain) return 0;
+  
+  const index = chain.indexOf(engName);
+  if (index === -1) return 0;
+  
+  return index + 1; // 1부터 시작
+}
+// ===== API에서 진화 체인 가져오기 =====
+async function fetchEvoChainFromAPI(engName) {
+  try {
+    // 1. 포켓몬 species 정보 가져오기
+    const speciesRes = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${engName}`);
+    if (!speciesRes.ok) {
+      console.warn('⚠️ Species 정보 없음:', engName);
+      return [engName];
+    }
+    const speciesData = await speciesRes.json();
+    
+    // 2. 진화 체인 URL
+    const chainUrl = speciesData.evolution_chain.url;
+    const chainRes = await fetch(chainUrl);
+    const chainData = await chainRes.json();
+    
+    // 3. 진화 체인 추출
+    const chain = extractChainNames(chainData.chain);
+    
+    // 4. 캐시 저장 (체인에 있는 모든 포켓몬 저장)
+    if (chain.length > 0) {
+      for (const name of chain) {
+        _evoChainCache[name] = chain;
+      }
+      console.log('✅ 진화 체인 로드 완료:', chain.join(' → '));
+    }
+    
+    return chain;
+    
+  } catch (e) {
+    console.error('❌ 진화 체인 로드 실패:', engName, e);
+    return [engName];
+  }
+}
+
+// ===== 체인에서 이름 추출 =====
+function extractChainNames(chainLink) {
+  const names = [];
+  let current = chainLink;
+  
+  while (current) {
+    names.push(current.species.name);
+    if (current.evolves_to && current.evolves_to.length > 0) {
+      current = current.evolves_to[0];
+    } else {
+      break;
+    }
+  }
+  
+  return names;
+}
+
+// ===== 진화 맵 (자동 생성) =====
+// EVOLUTION_MAP은 더 이상 필요 없음! getEvoChain()으로 대체
 
 // ===== 🐣 키우기 =====
 function petCreature() {
@@ -3711,35 +3930,47 @@ function checkPetLevelUp() {
     }
     
     const currentId = state.pet.evolvedId || state.pet.baseId;
-    const evoInfo = EVOLUTION_MAP[currentId];
     
-    if (evoInfo && evoInfo.next && state.pet.level >= evoInfo.level) {
-      if (state.pet.evolvedId !== evoInfo.next) {
-        const nextPokemon = getPokemonByName(evoInfo.next);
-        if (nextPokemon) {
-          console.log('🎉 진화! ' + currentId + ' → ' + evoInfo.next + ' (Lv.' + evoInfo.level + ')');
-          
-          state.pet.evolvedId = evoInfo.next;
-          if (!state.pet.evolved) state.pet.evolved = true;
-          
-          evolved = true;
-          evoPokemon = nextPokemon;
-          evoMessage = '🎉 ' + nextPokemon.name + '(으)로 진화했어요!';
-          
-          SFX.evolution();
-          
-          const rarity = rollRarity();
-          if (!state.owned[nextPokemon.engName]) {
-            state.owned[nextPokemon.engName] = { count: 1, rarity: rarity };
-          } else {
-            state.owned[nextPokemon.engName].count += 1;
+    // ===== 진화 체인에서 다음 진화 찾기 =====
+    const evoChain = getEvoChain(currentId);
+    
+    if (evoChain && evoChain.length > 1) {
+      // 현재 포켓몬의 인덱스 찾기
+      const currentIndex = evoChain.indexOf(currentId);
+      
+      // 마지막 진화가 아니면
+      if (currentIndex !== -1 && currentIndex < evoChain.length - 1) {
+        const nextId = evoChain[currentIndex + 1];
+        const evoLevel = 5 + (currentIndex * 5); // 1단계:5, 2단계:10, 3단계:15
+        
+        // 레벨 조건 충족 시 진화
+        if (state.pet.level >= evoLevel && state.pet.evolvedId !== nextId) {
+          const nextPokemon = getPokemonByName(nextId);
+          if (nextPokemon) {
+            console.log('🎉 진화! ' + currentId + ' → ' + nextId + ' (Lv.' + evoLevel + ')');
+            
+            state.pet.evolvedId = nextId;
+            if (!state.pet.evolved) state.pet.evolved = true;
+            
+            evolved = true;
+            evoPokemon = nextPokemon;
+            evoMessage = '🎉 ' + nextPokemon.name + '(으)로 진화했어요!';
+            
+            SFX.evolution();
+            
+            const rarity = rollRarity();
+            if (!state.owned[nextPokemon.engName]) {
+              state.owned[nextPokemon.engName] = { count: 1, rarity: rarity };
+            } else {
+              state.owned[nextPokemon.engName].count += 1;
+            }
+            
+            showRewardPopup(nextPokemon, evoMessage, '진화 성공! 🌟');
+            
+            saveState();
+            renderDex();
+            renderPetTab();
           }
-          
-          showRewardPopup(nextPokemon, evoMessage, '진화 성공! 🌟');
-          
-          saveState();
-          renderDex();
-          renderPetTab();
         }
       }
     }
@@ -3778,24 +4009,40 @@ function renderPetTab() {
 }
 
 function renderStarterSelect() {
-  let candidates = [...EVOLVABLE_POKEMON_LIST];
+  let candidates = [];
   
-  candidates = candidates.filter(engName => {
-    const pokemon = getPokemonByName(engName);
-    return pokemon && pokemon.speciesUrl;
-  });
+  // ===== 진화 가능한 1단계 포켓몬만 필터링 =====
+  const allPokemon = POKEMON_LIST;
   
-  if (candidates.length === 0) {
-    candidates = ['bulbasaur', 'charmander', 'squirtle', 'pikachu', 'eevee'];
+  // EVOLVABLE_POKEMON_LIST 사용 (API에서 가져온 목록)
+  if (EVOLVABLE_POKEMON_LIST && EVOLVABLE_POKEMON_LIST.length > 0) {
+    candidates = EVOLVABLE_POKEMON_LIST.filter(engName => {
+      const pokemon = getPokemonByName(engName);
+      if (!pokemon) return false;
+      
+      // 진화 체인에서 1단계인지 확인
+      const chain = getEvoChain(engName);
+      // chain이 있고, 첫 번째가 자신이며, 길이가 2 이상이면 진화 가능한 1단계
+      return chain && chain.length >= 2 && chain[0] === engName;
+    });
   }
   
+  // 후보가 없으면 기본값
+  if (candidates.length === 0) {
+    console.log('⚠️ 진화 가능 포켓몬 없음, 기본값 사용');
+    candidates = ['bulbasaur', 'charmander', 'squirtle', 'pikachu', 'eevee', 'riolu', 'ralts', 'gible'];
+  }
+  
+  // 6종 랜덤 추천
   const shuffled = candidates.sort(() => Math.random() - 0.5);
-  const starters = shuffled.slice(0, 6);
+  const starters = shuffled.slice(0, 8);
+  
+  console.log('🌟 추천 포켓몬:', starters.map(id => getPokemonByName(id)?.name).join(', '));
   
   document.getElementById('petPanel').innerHTML = `
     <div style="text-align:center;font-family:var(--font-display);font-size:20px;margin-bottom:6px;">함께할 첫 포켓몬을 골라주세요</div>
     <div style="text-align:center;font-family:var(--font-mono);font-size:13px;color:#B7AFDE;margin-bottom:12px;">
-      진화 가능 ${candidates.length}종 중 6종 추천!
+      진화 가능 ${candidates.length}종 중 추천!
       <br><span style="font-size:11px;color:#6b6395;">진화: Lv.5 → Lv.10 → Lv.15 · 최대 Lv.50</span>
     </div>
     <div class="starter-grid" id="starterGrid">
@@ -3848,7 +4095,6 @@ function renderStarterSelect() {
     renderStarterSelect();
   });
 }
-
 function renderPetCare() {
   const c = petCreature();
   const p = state.pet;
@@ -4340,20 +4586,37 @@ function renderBattleSetup() {
       const p = getPokemonByName(eng);
       return p ? p.name : '?';
     }).join(' · ');
+    // ⬇️⬇️⬇️ 횟수 변수 추가 ⬇️⬇️⬇️
+    const aiChances = state.battleChances || 0;
+    const pvpChances = state.pvpChances || 0;
     
     body.innerHTML = `
       <div style="text-align:center;padding:12px 0;">
         <div style="font-family:var(--font-display);font-size:20px;color:var(--sun-2);">⚔️ ${teamNames2}</div>
+        // ⬇️⬇️⬇️ 횟수 표시줄 추가 ⬇️⬇️⬇️
+        <div style="font-family:var(--font-mono);font-size:13px;color:#B7AFDE;margin:6px 0;">
+          🤖 AI 배틀: <b>${aiChances}</b>회 ｜ 🌐 PVP 배틀: <b>${pvpChances}</b>회
+          <br><span style="font-size:11px;color:#6b6395;">※ 생활미션 완료 시 +1회 (누적)</span>
+        </div>
         <div style="display:flex;gap:10px;justify-content:center;margin-top:12px;flex-wrap:wrap;">
           <button class="btn" onclick="clearTeam()" style="font-size:16px;padding:10px 20px;min-height:44px;">🔄 팀 초기화</button>
           <button class="btn" onclick="autoFillTeam()" style="font-size:16px;padding:10px 20px;min-height:44px;">🤖 자동 구성</button>
+          // ⬇️⬇️⬇️ 버튼에 횟수 표시 및 비활성화 추가 ⬇️⬇️⬇️
           ${battleMode === 'pvp' ? 
-            `<button class="btn" onclick="renderPvpIntro()" style="font-size:16px;padding:10px 20px;min-height:44px;">🌐 실시간 배틀</button>` :
-            `<button class="btn" onclick="startAiBattle()" style="font-size:16px;padding:10px 20px;min-height:44px;">🤖 AI 배틀 시작</button>`
+            `<button class="btn" onclick="renderPvpIntro()" style="font-size:16px;padding:10px 20px;min-height:44px;${pvpChances <= 0 ? 'opacity:0.4;cursor:not-allowed;' : ''}" ${pvpChances <= 0 ? 'disabled' : ''}>
+              🌐 실시간 배틀 (${pvpChances}회)
+            </button>` :
+            `<button class="btn" onclick="startAiBattle()" style="font-size:16px;padding:10px 20px;min-height:44px;${aiChances <= 0 ? 'opacity:0.4;cursor:not-allowed;' : ''}" ${aiChances <= 0 ? 'disabled' : ''}>
+              🤖 AI 배틀 (${aiChances}회)
+            </button>`
           }
         </div>
+        // ⬇️⬇️⬇️ 횟수 부족 메시지 추가 ⬇️⬇️⬇️
+        ${(battleMode === 'ai' && aiChances <= 0) || (battleMode === 'pvp' && pvpChances <= 0) ? 
+          `<div style="font-size:13px;color:var(--bad);margin-top:8px;">⚠️ 생활미션을 완료하면 배틀 횟수가 지급됩니다!</div>` : ''}
       </div>
     `;
+  }
   } else {
     body.innerHTML = `
       <div class="empty-note" style="font-size:16px;padding:20px;">
@@ -4543,6 +4806,11 @@ function setBattleMode(mode) {
 
 // ===== AI 배틀 시작 =====
 function startAiBattle() {
+  const aiChances = state.battleChances || 0;
+  if (aiChances <= 0) {
+    toast('⚠️ AI 배틀 횟수가 부족합니다! 생활미션을 완료해주세요.');
+    return;
+  }
   const playerTeam = state.team.map(engName => {
     const c = getPokemonByName(engName);
     return c ? { ...c, curHp: c.hp } : null;
@@ -4552,7 +4820,9 @@ function startAiBattle() {
     toast('⚠️ 3장의 카드를 모두 선택해주세요!');
     return;
   }
-  
+    state.battleChances = (state.battleChances || 0) - 1;
+  saveState();
+  renderBattleSetup();
   aiBattle = { 
     player: playerTeam, 
     enemy: makeEnemyTeam(), 
@@ -4794,9 +5064,20 @@ function showDefeatEffect() {
 
 // ===== Firebase PVP 배틀 =====
 function renderPvpIntro() {
+    const pvpChances = state.pvpChances || 0;
+  
+  if (pvpChances <= 0) {
+    toast('⚠️ PVP 배틀 횟수가 부족합니다! 생활미션을 완료해주세요.');
+    renderBattleSetup();
+    return;
   document.getElementById('battleBody').innerHTML = `
     <div class="room-box">
       <div style="font-family:var(--font-mono);font-size:13px;color:#B7AFDE;">Firebase로 친구와 실시간 배틀!</div>
+           // ⬇️⬇️⬇️ 횟수 표시 추가 ⬇️⬇️⬇️
+      <div style="font-family:var(--font-mono);font-size:12px;color:var(--sun-2);margin:4px 0;">
+        🌐 PVP 배틀 잔여 횟수: <b>${pvpChances}</b>회
+      </div>
+      // ⬆️⬆️⬆️ 여기까지 추가 ⬆️⬆️⬆️
       <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;justify-content:center;">
         <button class="btn block" id="createRoomBtn" style="flex:1;min-width:100px;font-size:16px;padding:14px;">🚀 방 만들기</button>
       </div>
@@ -4807,8 +5088,26 @@ function renderPvpIntro() {
     </div>`;
   document.getElementById('createRoomBtn').addEventListener('click', createBattleRoom);
   document.getElementById('joinRoomBtn').addEventListener('click', function() {
+      // ⬇️⬇️⬇️ 횟수 차감 추가 ⬇️⬇️⬇️
+    if (state.pvpChances <= 0) {
+      toast('⚠️ PVP 배틀 횟수가 부족합니다!');
+      return;
+    }
+    state.pvpChances = (state.pvpChances || 0) - 1;
+    saveState();
+    renderBattleSetup();
+    // ⬆️⬆️⬆️ 여기까지 추가 ⬆️⬆️⬆️
     const code = document.getElementById('joinCodeInput').value.trim();
     if (code.length !== 4) { setPvpFeedback('4자리 코드를 입력해주세요', true); return; }
+     // ⬇️⬇️⬇️ 횟수 차감 추가 ⬇️⬇️⬇️
+    if (state.pvpChances <= 0) {
+      toast('⚠️ PVP 배틀 횟수가 부족합니다!');
+      return;
+    }
+    state.pvpChances = (state.pvpChances || 0) - 1;
+    saveState();
+    renderBattleSetup();
+    // ⬆️⬆️⬆️ 여기까지 추가 ⬆️⬆️⬆️
     joinBattleRoom(code);
   });
 }
