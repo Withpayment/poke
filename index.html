@@ -4580,60 +4580,55 @@ function renderBattleSetup() {
     slots.appendChild(div);
   }
   
-  // ===== 배틀 본문 =====
-  if (state.team.length === 3) {
-    const teamNames2 = state.team.map(eng => {
-      const p = getPokemonByName(eng);
-      return p ? p.name : '?';
-    }).join(' · ');
-    // ⬇️⬇️⬇️ 횟수 변수 추가 ⬇️⬇️⬇️
-    const aiChances = state.battleChances || 0;
-    const pvpChances = state.pvpChances || 0;
-    
-    body.innerHTML = `
-      <div style="text-align:center;padding:12px 0;">
-        <div style="font-family:var(--font-display);font-size:20px;color:var(--sun-2);">⚔️ ${teamNames2}</div>
-        // ⬇️⬇️⬇️ 횟수 표시줄 추가 ⬇️⬇️⬇️
-        <div style="font-family:var(--font-mono);font-size:13px;color:#B7AFDE;margin:6px 0;">
-          🤖 AI 배틀: <b>${aiChances}</b>회 ｜ 🌐 PVP 배틀: <b>${pvpChances}</b>회
-          <br><span style="font-size:11px;color:#6b6395;">※ 생활미션 완료 시 +1회 (누적)</span>
-        </div>
-        <div style="display:flex;gap:10px;justify-content:center;margin-top:12px;flex-wrap:wrap;">
-          <button class="btn" onclick="clearTeam()" style="font-size:16px;padding:10px 20px;min-height:44px;">🔄 팀 초기화</button>
-          <button class="btn" onclick="autoFillTeam()" style="font-size:16px;padding:10px 20px;min-height:44px;">🤖 자동 구성</button>
-          // ⬇️⬇️⬇️ 버튼에 횟수 표시 및 비활성화 추가 ⬇️⬇️⬇️
-          ${battleMode === 'pvp' ? 
-            `<button class="btn" onclick="renderPvpIntro()" style="font-size:16px;padding:10px 20px;min-height:44px;${pvpChances <= 0 ? 'opacity:0.4;cursor:not-allowed;' : ''}" ${pvpChances <= 0 ? 'disabled' : ''}>
-              🌐 실시간 배틀 (${pvpChances}회)
-            </button>` :
-            `<button class="btn" onclick="startAiBattle()" style="font-size:16px;padding:10px 20px;min-height:44px;${aiChances <= 0 ? 'opacity:0.4;cursor:not-allowed;' : ''}" ${aiChances <= 0 ? 'disabled' : ''}>
-              🤖 AI 배틀 (${aiChances}회)
-            </button>`
-          }
-        </div>
-        // ⬇️⬇️⬇️ 횟수 부족 메시지 추가 ⬇️⬇️⬇️
-        ${(battleMode === 'ai' && aiChances <= 0) || (battleMode === 'pvp' && pvpChances <= 0) ? 
-          `<div style="font-size:13px;color:var(--bad);margin-top:8px;">⚠️ 생활미션을 완료하면 배틀 횟수가 지급됩니다!</div>` : ''}
-      </div>
-    `;
-  }
-  } else {
-    body.innerHTML = `
-      <div class="empty-note" style="font-size:16px;padding:20px;">
-        🃏 ${3 - state.team.length}장의 카드를 더 선택해주세요<br>
-        <span style="font-size:12px;color:#6b6395;">슬롯을 클릭하면 카드를 선택할 수 있어요</span>
-      </div>
-    `;
-  }
+// ===== 배틀 본문 =====
+if (state.team.length === 3) {
+  const teamNames2 = state.team.map(eng => {
+    const p = getPokemonByName(eng);
+    return p ? p.name : '?';
+  }).join(' · ');
   
-  // ===== 배틀 모드 토글 =====
-  body.innerHTML += `
-    <div class="mode-toggle" style="margin-top:12px;">
-      <button data-mode="pvp" class="${battleMode === 'pvp' ? 'active' : ''}" onclick="setBattleMode('pvp')">🌐 실시간 배틀</button>
-      <button data-mode="ai" class="${battleMode === 'ai' ? 'active' : ''}" onclick="setBattleMode('ai')">🤖 연습 배틀</button>
+  const aiChances = state.battleChances || 0;
+  const pvpChances = state.pvpChances || 0;
+  
+  body.innerHTML = `
+    <div style="text-align:center;padding:12px 0;">
+      <div style="font-family:var(--font-display);font-size:20px;color:var(--sun-2);">⚔️ ${teamNames2}</div>
+      <div style="font-family:var(--font-mono);font-size:13px;color:#B7AFDE;margin:6px 0;">
+        🤖 AI 배틀: <b>${aiChances}</b>회 ｜ 🌐 PVP 배틀: <b>${pvpChances}</b>회
+        <br><span style="font-size:11px;color:#6b6395;">※ 생활미션 완료 시 +1회 (누적)</span>
+      </div>
+      <div style="display:flex;gap:10px;justify-content:center;margin-top:12px;flex-wrap:wrap;">
+        <button class="btn" onclick="clearTeam()" style="font-size:16px;padding:10px 20px;min-height:44px;">🔄 팀 초기화</button>
+        <button class="btn" onclick="autoFillTeam()" style="font-size:16px;padding:10px 20px;min-height:44px;">🤖 자동 구성</button>
+        ${battleMode === 'pvp' ? 
+          `<button class="btn" onclick="renderPvpIntro()" style="font-size:16px;padding:10px 20px;min-height:44px;${pvpChances <= 0 ? 'opacity:0.4;cursor:not-allowed;' : ''}" ${pvpChances <= 0 ? 'disabled' : ''}>
+            🌐 실시간 배틀 (${pvpChances}회)
+          </button>` :
+          `<button class="btn" onclick="startAiBattle()" style="font-size:16px;padding:10px 20px;min-height:44px;${aiChances <= 0 ? 'opacity:0.4;cursor:not-allowed;' : ''}" ${aiChances <= 0 ? 'disabled' : ''}>
+            🤖 AI 배틀 (${aiChances}회)
+          </button>`
+        }
+      </div>
+      ${(battleMode === 'ai' && aiChances <= 0) || (battleMode === 'pvp' && pvpChances <= 0) ? 
+        `<div style="font-size:13px;color:var(--bad);margin-top:8px;">⚠️ 생활미션을 완료하면 배틀 횟수가 지급됩니다!</div>` : ''}
+    </div>
+  `;
+} else {
+  body.innerHTML = `
+    <div class="empty-note" style="font-size:16px;padding:20px;">
+      🃏 ${3 - state.team.length}장의 카드를 더 선택해주세요<br>
+      <span style="font-size:12px;color:#6b6395;">슬롯을 클릭하면 카드를 선택할 수 있어요</span>
     </div>
   `;
 }
+
+// ===== 배틀 모드 토글 =====
+body.innerHTML += `
+  <div class="mode-toggle" style="margin-top:12px;">
+    <button data-mode="pvp" class="${battleMode === 'pvp' ? 'active' : ''}" onclick="setBattleMode('pvp')">🌐 실시간 배틀</button>
+    <button data-mode="ai" class="${battleMode === 'ai' ? 'active' : ''}" onclick="setBattleMode('ai')">🤖 연습 배틀</button>
+  </div>
+`;
 
 // ===== 배틀 카드 선택창 (레이드 스타일: 속성 선택 → 포켓몬 선택) =====
 function openBattlePicker(slotIndex) {
