@@ -6135,27 +6135,27 @@ async function initGame() {
   await loadAllPokemon();
   EVOLVABLE_POKEMON_LIST = await getAllEvolvablePokemon();
   
-  if (!hasSavedData) {
-    console.log('🆕 첫 실행 - 새 상태 생성');
-    state.owned = {};
-    state.wins = 0;
-    state.missionsWon = 0;
-    state.team = [];
-    state.dailyMissions = {};
-    state.customMissions = [];
-    state.pet = null;
-    state.quizStats = { total: 0, correct: 0 };
-    state.quizDoneToday = null;
-    state.playerAge = null;
-    state.mathQuiz = { today: null, questions: [], currentIndex: 0, results: [], completed: false };
-    state.mathStats = { total: 0, correct: 0 };
-    state.raid = { boss: null, hp: 0, maxHp: 0, completed: false, today: null, rewardCollected: false, attackChance: 0 };
-    state.raidSelectedType = null;
-    state.raidSelectedCard: null,
-    battleChances: 0,
-    pvpChances: 0
-    saveState();
-  }
+if (!hasSavedData) {
+  console.log('🆕 첫 실행 - 새 상태 생성');
+  state.owned = {};
+  state.wins = 0;
+  state.missionsWon = 0;
+  state.team = [];
+  state.dailyMissions = {};
+  state.customMissions = [];
+  state.pet = null;
+  state.quizStats = { total: 0, correct: 0 };
+  state.quizDoneToday = null;
+  state.playerAge = null;
+  state.mathQuiz = { today: null, questions: [], currentIndex: 0, results: [], completed: false };
+  state.mathStats = { total: 0, correct: 0 };
+  state.raid = { boss: null, hp: 0, maxHp: 0, completed: false, today: null, rewardCollected: false, attackChance: 0 };
+  state.raidSelectedType = null;
+  state.raidSelectedCard = null;  // ← ":"가 아니라 "="
+  state.battleChances = 0;        // ← ":"가 아니라 "="
+  state.pvpChances = 0;           // ← ":"가 아니라 "="
+  saveState();
+}
   
   document.getElementById('loadingStatus').textContent = 
     '✅ ' + POKEMON_LIST.length + '마리 | 진화: ' + EVOLVABLE_POKEMON_LIST.length + '종 | 보유: ' + Object.keys(state.owned).length + '마리';
