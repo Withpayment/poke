@@ -3966,13 +3966,20 @@ setInterval(function() {
   }
 }, 60000);
 // ===== 합성 탭 렌더링 =====
+// ===== 합성 탭 렌더링 =====
 function renderCraftTab() {
   const container = document.getElementById('craftContent');
   
-  // 보유한 카드 목록
-  const ownedCards = Object.keys(state.owned).filter(key => state.owned[key].count > 0);
+  // ⭐ 합성 가능한 카드만 필터링 (count >= 2)
+  const craftableCards = Object.keys(state.owned).filter(key => {
+    const info = state.owned[key];
+    return info && info.count >= 2;
+  });
   
-  if (ownedCards.length === 0) {
+  // 전체 보유 카드 수 (등급별 집계용)
+  const allOwnedCards = Object.keys(state.owned).filter(key => state.owned[key].count > 0);
+  
+  if (allOwnedCards.length === 0) {
     container.innerHTML = `
       <div style="text-align:center;padding:30px 16px;color:#8d84b0;">
         <div style="font-size:48px;margin-bottom:8px;">😅</div>
@@ -3983,21 +3990,47 @@ function renderCraftTab() {
     return;
   }
   
-  // 등급별 카드 수 계산
+  // 등급별 카드 수 계산 (전체 보유 기준)
   const rarityCounts = {};
   RARITIES.forEach(r => rarityCounts[r.id] = 0);
-  ownedCards.forEach(key => {
+  allOwnedCards.forEach(key => {
     const info = state.owned[key];
     if (rarityCounts[info.rarity] !== undefined) {
       rarityCounts[info.rarity] += info.count;
     }
   });
   
+  // 합성 가능한 카드가 없을 때
+  if (craftableCards.length === 0) {
+    container.innerHTML = `
+      <div style="text-align:center;padding:20px 16px;">
+        <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:16px;">
+          ${RARITIES.map(r => `
+            <span style="font-size:13px;color:${r.color};">${r.emoji} ${r.label}: <b>${rarityCounts[r.id] || 0}</b>장</span>
+          `).join('')}
+        </div>
+        <div style="font-size:48px;margin-bottom:8px;">📭</div>
+        <div style="font-size:17px;font-family:var(--font-display);color:#B7AFDE;">합성 가능한 카드가 없어요</div>
+        <div style="font-size:13px;color:#6b6395;margin-top:4px;">
+          같은 카드를 <b style="color:var(--sun-2);">2장 이상</b> 모으면 합성할 수 있어요!
+        </div>
+        <div style="margin-top:12px;padding:12px;background:rgba(255,201,60,.06);border-radius:10px;border:2px solid rgba(255,201,60,.15);">
+          <div style="font-size:13px;color:#B7AFDE;">
+            💡 <span style="color:var(--sun-2);">도감</span>에서 카드를 열고 
+            <span style="color:var(--sun-2);">"합성하기"</span> 버튼을 눌러주세요!
+          </div>
+        </div>
+      </div>
+    `;
+    return;
+  }
+  
+  // 합성 가능한 카드 목록 렌더링
   container.innerHTML = `
-    <div style="text-align:center;padding:8px 0;">
-      <div style="font-size:14px;color:#B7AFDE;margin-bottom:12px;">
-        📌 같은 카드 2장을 합성하면 상위 등급으로 업그레이드!
-        <br><span style="font-size:12px;color:#6b6395;">스페셜 등급은 원하는 포켓몬으로 변경 가능</span>
+    <div style="text-align:center;padding:4px 0;">
+      <div style="font-size:14px;color:#B7AFDE;margin-bottom:8px;">
+        🔮 <b style="color:var(--sun-2);">${craftableCards.length}</b>종의 카드가 합성 가능해요!
+        <br><span style="font-size:12px;color:#6b6395;">같은 카드 2장 → 상위 등급 업그레이드</span>
       </div>
       
       <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:12px;">
@@ -4006,34 +4039,60 @@ function renderCraftTab() {
         `).join('')}
       </div>
       
-      <div style="font-size:13px;color:#B7AFDE;margin-bottom:8px;">📋 내 카드 목록</div>
-      <div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;max-height:200px;overflow-y:auto;padding:8px;background:rgba(255,255,255,.03);border-radius:10px;">
-        ${ownedCards.map(key => {
+      <div style="font-size:13px;color:#B7AFDE;margin-bottom:6px;">✅ 합성 가능 카드 (2장 이상 보유)</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-height:300px;overflow-y:auto;padding:8px;background:rgba(255,255,255,.03);border-radius:10px;">
+        ${craftableCards.map(key => {
           const p = getPokemonByName(key);
           const info = state.owned[key];
           const rInfo = getRarityInfo(info.rarity);
+          const rarityIndex = RARITIES.findIndex(r => r.id === info.rarity);
+          const canUpgrade = rarityIndex < RARITIES.length - 1;
+          const isSpecial = info.rarity === 'special';
+          
           return `
-            <div style="padding:6px 12px;border-radius:10px;border:2px solid ${rInfo.color};background:rgba(255,255,255,.04);display:flex;align-items:center;gap:6px;font-size:13px;">
-              ${pokemonImage(p, '24px')}
-              <span style="font-family:var(--font-display);">${p?.name}</span>
-              <span style="font-size:11px;color:${rInfo.color};">${rInfo.emoji} ×${info.count}</span>
-              ${info.count >= 2 ? '<span style="font-size:11px;color:var(--good);">✅ 합성 가능</span>' : ''}
+            <div class="craft-card-item" 
+                 data-eng="${key}"
+                 onclick="openCardDetailFromCraft('${key}')"
+                 style="padding:8px 14px;border-radius:12px;border:2px solid ${rInfo.color};background:rgba(255,255,255,.04);display:flex;align-items:center;gap:8px;cursor:pointer;transition:all .2s;"
+                 onmouseover="this.style.transform='scale(1.02)';this.style.boxShadow='0 4px 12px rgba(0,0,0,.3)';"
+                 onmouseout="this.style.transform='scale(1)';this.style.boxShadow='none';">
+              ${pokemonImage(p, '28px')}
+              <div style="text-align:left;">
+                <div style="font-family:var(--font-display);font-size:14px;color:var(--paper);">${p?.name}</div>
+                <div style="font-size:11px;color:${rInfo.color};">${rInfo.emoji} ${rInfo.label} ×${info.count}</div>
+              </div>
+              <div style="font-size:11px;padding:2px 10px;border-radius:10px;background:${isSpecial ? 'var(--special)' : 'var(--good)'};color:#fff;font-weight:600;white-space:nowrap;">
+                ${isSpecial ? '⭐ 특수합성' : `⬆️ ${canUpgrade ? RARITIES[rarityIndex + 1].label : '최고'}`}
+              </div>
             </div>
           `;
         }).join('')}
       </div>
       
-      <div style="margin-top:12px;padding:12px;background:rgba(255,201,60,.06);border-radius:10px;border:2px solid rgba(255,201,60,.15);">
-        <div style="font-size:14px;color:#B7AFDE;">
-          💡 <span style="color:var(--sun-2);">도감</span>에서 카드를 열고 
-          <span style="color:var(--sun-2);">"합성하기"</span> 버튼을 눌러주세요!
-        </div>
-        <div style="font-size:12px;color:#6b6395;margin-top:4px;">
-          ⚡ 같은 카드 2장 이상 보유 시 합성 버튼이 활성화됩니다
+      <div style="margin-top:12px;padding:10px;background:rgba(255,201,60,.06);border-radius:10px;border:2px solid rgba(255,201,60,.15);">
+        <div style="font-size:13px;color:#B7AFDE;">
+          💡 카드를 클릭하면 <span style="color:var(--sun-2);">도감 상세</span>에서 합성할 수 있어요!
         </div>
       </div>
     </div>
   `;
+}
+
+// 합성 탭에서 카드 클릭 시 도감 상세 열기
+function openCardDetailFromCraft(engName) {
+  const pokemon = getPokemonByName(engName);
+  if (pokemon) {
+    // 탭을 도감으로 전환
+    document.querySelectorAll('nav.tabbar button').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('main section').forEach(s => s.classList.remove('active'));
+    document.querySelector('[data-tab="tab-dex"]')?.classList.add('active');
+    document.getElementById('tab-dex')?.classList.add('active');
+    
+    // 카드 상세 열기
+    setTimeout(() => {
+      openCardDetail(pokemon);
+    }, 300);
+  }
 }
 
 // ===== 초기화 =====
