@@ -1285,6 +1285,96 @@
     50% { border-color: var(--bad); box-shadow: 0 0 40px rgba(228,97,75,0.3); }
   }
   
+  /* 합성 스타일 */
+  .craft-area { padding: 8px 0; }
+  .craft-slot-group {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    margin: 12px 0;
+  }
+  .craft-slot {
+    width: 120px;
+    height: 160px;
+    background: rgba(255,255,255,.04);
+    border: 3px dashed rgba(255,201,60,.15);
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all .25s ease;
+    padding: 8px;
+    position: relative;
+  }
+  .craft-slot.filled {
+    border-style: solid;
+    border-color: var(--sun);
+    background: rgba(255,201,60,.08);
+  }
+  .craft-slot .slot-label { font-size: 13px; color: #6b6395; }
+  .craft-slot .slot-remove {
+    position: absolute;
+    top: 4px;
+    right: 6px;
+    background: rgba(0,0,0,.5);
+    border: none;
+    color: #fff;
+    font-size: 14px;
+    cursor: pointer;
+    padding: 0 6px;
+    border-radius: 50%;
+    line-height: 1.4;
+  }
+  .craft-arrow { font-size: 32px; color: var(--sun); font-weight: 700; }
+  .craft-result {
+    width: 120px;
+    height: 160px;
+    background: rgba(255,201,60,.06);
+    border: 3px solid rgba(255,201,60,.3);
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+  }
+  .craft-result .result-label { font-size: 12px; color: #B7AFDE; margin-bottom: 4px; }
+  .craft-info {
+    text-align: center;
+    padding: 12px;
+    background: rgba(255,255,255,.04);
+    border-radius: 10px;
+    margin: 8px 0;
+    font-size: 14px;
+    color: #B7AFDE;
+  }
+  .craft-info .highlight { color: var(--sun-2); font-weight: 700; }
+  .craft-pokemon-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    max-height: 200px;
+    overflow-y: auto;
+    padding: 4px;
+  }
+  .craft-pokemon-item {
+    border: 2px solid rgba(255,255,255,.06);
+    border-radius: 8px;
+    padding: 6px 4px;
+    text-align: center;
+    cursor: pointer;
+    transition: all .2s;
+    background: rgba(255,255,255,.02);
+  }
+  .craft-pokemon-item:active { transform: scale(.95); }
+  .craft-pokemon-item.selected { border-color: var(--sun); background: rgba(255,201,60,.12); }
+  .craft-pokemon-item .cp-art { font-size: 28px; }
+  .craft-pokemon-item .cp-name { font-size: 10px; font-family: var(--font-display); }
+  
   @media (max-width: 400px) {
     .grid { gap: 6px; }
     .card.mini { padding: 6px; }
@@ -1327,8 +1417,9 @@
     <div class="pill">🧮 수학 <b id="mathCount">0</b></div>
     <div class="pill">⚔️ 레이드 <b id="raidCount">0</b></div>
   </div>
-<div class="battle-picker-overlay" id="battlePicker" style="display:none;">
-  <div class="battle-picker-box">
+
+  <div class="battle-picker-overlay" id="battlePicker" style="display:none;">
+    <div class="battle-picker-box">
       <div class="picker-header">
         <span class="picker-title">🎯 카드 선택</span>
         <button class="picker-close" onclick="closeBattlePicker()">✕</button>
@@ -1368,7 +1459,7 @@
       </div>
     </div>
 
-    <section id="tab-mission">
+    <section id="tab-mission" class="active">
       <h2 class="section-title">🎯 오늘의 미션</h2>
       <div class="mode-toggle">
         <button data-mmode="quiz" class="active">🧠 퀴즈미션</button>
@@ -1426,12 +1517,13 @@
         <div id="tradeContent"></div>
       </div>
     </section>
+
     <section id="tab-craft">
-  <h2 class="section-title">🔮 카드 합성</h2>
-  <div class="panel" id="craftPanel">
-    <div id="craftContent"></div>
-  </div>
-</section>
+      <h2 class="section-title">🔮 카드 합성</h2>
+      <div class="panel" id="craftPanel">
+        <div id="craftContent"></div>
+      </div>
+    </section>
   </main>
 
   <div class="mission-edit-overlay" id="missionEditOverlay">
@@ -1461,14 +1553,14 @@
     </div>
   </div>
 
-<nav class="tabbar">
-  <button data-tab="tab-mission" class="active"><span class="ic">🎯</span>미션</button>
-  <button data-tab="tab-dex"><span class="ic">📖</span>도감</button>
-  <button data-tab="tab-pet"><span class="ic">🐣</span>키우기</button>
-  <button data-tab="tab-battle"><span class="ic">⚔️</span>배틀</button>
-  <button data-tab="tab-trade"><span class="ic">🔄</span>교환</button>
-  <button data-tab="tab-craft"><span class="ic">🔮</span>합성</button>  <!-- ⭐ 추가! -->
-</nav>
+  <nav class="tabbar">
+    <button data-tab="tab-mission" class="active"><span class="ic">🎯</span>미션</button>
+    <button data-tab="tab-dex"><span class="ic">📖</span>도감</button>
+    <button data-tab="tab-pet"><span class="ic">🐣</span>키우기</button>
+    <button data-tab="tab-battle"><span class="ic">⚔️</span>배틀</button>
+    <button data-tab="tab-trade"><span class="ic">🔄</span>교환</button>
+    <button data-tab="tab-craft"><span class="ic">🔮</span>합성</button>
+  </nav>
 </div>
 
 <div class="modal-overlay" id="cardModal">
@@ -1710,36 +1802,7 @@ function getEvoChain(engName) {
     return fallbackMap[engName];
   }
   
-  fetchEvoChainFromAPI(engName);
   return [engName];
-}
-
-async function fetchEvoChainFromAPI(engName) {
-  try {
-    const speciesRes = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${engName}`);
-    if (!speciesRes.ok) return [engName];
-    const speciesData = await speciesRes.json();
-    const chainUrl = speciesData.evolution_chain.url;
-    const chainRes = await fetch(chainUrl);
-    const chainData = await chainRes.json();
-    const chain = extractChainNames(chainData.chain);
-    if (chain.length > 0) {
-      for (const name of chain) { _evoChainCache[name] = chain; }
-      console.log('✅ 진화 체인 로드 완료:', chain.join(' → '));
-    }
-    return chain;
-  } catch(e) { console.error('진화 체인 로드 실패:', engName, e); return [engName]; }
-}
-
-function extractChainNames(chainLink) {
-  const names = [];
-  let current = chainLink;
-  while (current) {
-    names.push(current.species.name);
-    if (current.evolves_to && current.evolves_to.length > 0) { current = current.evolves_to[0]; }
-    else { break; }
-  }
-  return names;
 }
 
 // ===== loadAllPokemon =====
@@ -1855,7 +1918,13 @@ async function getAllEvolvablePokemon() {
 function getPokemonById(id) { return POKEMON_LIST.find(p => p.id === id || p.engName === id); }
 function getPokemonByName(name) { return POKEMON_LIST.find(p => p.engName === name || p.name === name); }
 function clamp(n, lo, hi) { return Math.max(lo, Math.min(hi, n)); }
-function todayKey() { return new Date().toISOString().slice(0,10); }
+function todayKey() { 
+  const now = new Date();
+  const kstOffset = 9 * 60;
+  const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+  const kstTime = new Date(utc + (kstOffset * 60000));
+  return kstTime.toISOString().slice(0,10);
+}
 
 function getTypeColor(type) {
   const colors = {
@@ -2029,6 +2098,18 @@ function resetGame() {
 document.getElementById('resetHiddenBtn').addEventListener('click', resetGame);
 
 // ===== 탭 전환 =====
+document.querySelectorAll('nav.tabbar button').forEach(btn => {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('nav.tabbar button').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('main section').forEach(s => s.classList.remove('active'));
+    this.classList.add('active');
+    document.getElementById(this.dataset.tab).classList.add('active');
+    if (this.dataset.tab === 'tab-battle') renderBattleSetup();
+    if (this.dataset.tab === 'tab-pet') renderPetTab();
+    if (this.dataset.tab === 'tab-trade') renderTradeTab();
+    if (this.dataset.tab === 'tab-craft') renderCraftTab();
+  });
+});
 
 // ===== 미션 시스템 =====
 document.querySelectorAll('#tab-mission .mode-toggle button').forEach(btn => {
@@ -2963,6 +3044,7 @@ function renderDex() {
 
 // ===== 카드 상세 모달 =====
 let modalCryAudio = null;
+
 async function openCardDetail(pokemon) {
   const modal = document.getElementById('cardModal');
   const body = document.getElementById('modalBody');
@@ -3006,38 +3088,39 @@ async function openCardDetail(pokemon) {
     evoHTML = `<div class="modal-section"><h4>🔄 진화 과정</h4><div class="evo-chain">${evoChain.map((evo, idx) => { const isCurrent = evo.name === pokemon.name; return `${idx > 0 ? '<span class="evo-arrow">→</span>' : ''}<div class="evo-item" style="${isCurrent ? 'border:3px solid var(--sun);background:rgba(255,201,60,.15);' : ''}">${evo.image ? `<img src="${evo.image}" alt="${evo.name}">` : `<div style="width:56px;height:56px;background:rgba(255,255,255,.1);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;margin:0 auto;">❓</div>`}<div class="evo-name">${evo.name} ${isCurrent ? '⭐' : ''}</div>${evo.level ? `<div class="evo-level">Lv.${evo.level}</div>` : ''}</div>`; }).join('')}</div></div>`;
   }
   
+  // 합성 버튼 HTML (onclick 직접 사용!)
   let craftButtonHTML = '';
   if (canCraft) {
-if (canUpgrade) {
-  const nextRarity = RARITIES[rarityIndex + 1];
-  craftButtonHTML = `
-    <div style="margin-top:12px;padding:12px;background:rgba(255,201,60,.08);border-radius:12px;border:2px solid rgba(255,201,60,.2);">
-      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
-        <div style="font-size:14px;color:#B7AFDE;">
-          📦 ${rInfo.label} 카드 <b style="color:var(--paper);">×${count}</b> 보유<br>
-          <span style="font-size:12px;color:var(--sun-2);">2장 합성 → ${nextRarity.label} 등급 업그레이드!</span>
+    if (canUpgrade) {
+      const nextRarity = RARITIES[rarityIndex + 1];
+      craftButtonHTML = `
+        <div style="margin-top:12px;padding:12px;background:rgba(255,201,60,.08);border-radius:12px;border:2px solid rgba(255,201,60,.2);">
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+            <div style="font-size:14px;color:#B7AFDE;">
+              📦 ${rInfo.label} 카드 <b style="color:var(--paper);">×${count}</b> 보유<br>
+              <span style="font-size:12px;color:var(--sun-2);">2장 합성 → ${nextRarity.label} 등급 업그레이드!</span>
+            </div>
+            <button class="btn small" onclick="window.craftFromDetail('${pokemon.engName}')" style="font-size:14px;padding:8px 18px;min-height:36px;">
+              🔮 합성하기 (×2)
+            </button>
+          </div>
         </div>
-        <button class="btn small" onclick="window.craftFromDetailDirectly('${pokemon.engName}')" style="font-size:14px;padding:8px 18px;min-height:36px;">
-          🔮 합성하기 (×2)
-        </button>
-      </div>
-    </div>
-  `;
-} else if (canSpecialCraft) {
-  craftButtonHTML = `
-    <div style="margin-top:12px;padding:12px;background:rgba(255,107,53,.08);border-radius:12px;border:2px solid rgba(255,107,53,.2);">
-      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
-        <div style="font-size:14px;color:#B7AFDE;">
-          ⭐ 스페셜 카드 <b style="color:var(--paper);">×${count}</b> 보유<br>
-          <span style="font-size:12px;color:var(--special);">2장 합성 → 원하는 포켓몬으로 변경!</span>
+      `;
+    } else if (canSpecialCraft) {
+      craftButtonHTML = `
+        <div style="margin-top:12px;padding:12px;background:rgba(255,107,53,.08);border-radius:12px;border:2px solid rgba(255,107,53,.2);">
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+            <div style="font-size:14px;color:#B7AFDE;">
+              ⭐ 스페셜 카드 <b style="color:var(--paper);">×${count}</b> 보유<br>
+              <span style="font-size:12px;color:var(--special);">2장 합성 → 원하는 포켓몬으로 변경!</span>
+            </div>
+            <button class="btn small" onclick="window.craftSpecialFromDetail('${pokemon.engName}')" style="font-size:14px;padding:8px 18px;min-height:36px;background:var(--special);box-shadow:0 4px 0 #C94A1F;color:#fff;">
+              🔮 특수 합성 (×2)
+            </button>
+          </div>
         </div>
-        <button class="btn small" onclick="window.craftSpecialFromDetailDirectly('${pokemon.engName}')" style="font-size:14px;padding:8px 18px;min-height:36px;background:var(--special);box-shadow:0 4px 0 #C94A1F;color:#fff;">
-          🔮 특수 합성 (×2)
-        </button>
-      </div>
-    </div>
-  `;
-}
+      `;
+    }
   } else {
     if (ownedData && ownedData.count === 1) {
       craftButtonHTML = `
@@ -3067,33 +3150,6 @@ if (canUpgrade) {
   
   modal.classList.add('open');
   
-  // ⭐ 합성 버튼 이벤트 (data-eng 속성 사용)
-  document.querySelectorAll('.craft-btn').forEach(btn => {
-    btn.addEventListener('click', function(e) {
-      e.stopPropagation();
-      const engName = this.dataset.eng;
-      console.log('🔥 합성 버튼 클릭! 포켓몬:', engName);
-      if (engName) {
-        craftFromDetail(engName);
-      } else {
-        console.error('❌ 포켓몬 이름이 없습니다!');
-      }
-    });
-  });
-  
-  document.querySelectorAll('.special-craft-btn').forEach(btn => {
-    btn.addEventListener('click', function(e) {
-      e.stopPropagation();
-      const engName = this.dataset.eng;
-      console.log('⭐ 스페셜 합성 버튼 클릭! 포켓몬:', engName);
-      if (engName) {
-        craftSpecialFromDetail(engName);
-      } else {
-        console.error('❌ 포켓몬 이름이 없습니다!');
-      }
-    });
-  });
-  
   if (pokemon.cryUrl) {
     const audio = new Audio(pokemon.cryUrl);
     audio.play().catch(()=>{});
@@ -3103,6 +3159,7 @@ if (canUpgrade) {
   document.getElementById('closeModalBtn').addEventListener('click', closeModal);
   document.getElementById('modalClose').addEventListener('click', closeModal);
 }
+
 function closeModal() {
   if (window.speechSynthesis) window.speechSynthesis.cancel();
   if (modalCryAudio) { modalCryAudio.pause(); modalCryAudio = null; }
@@ -3141,79 +3198,30 @@ let battleMode = 'pvp';
 let battlePickerStep = 'type';
 let selectedSlotIndex = 0;
 
-// 배틀 모드 탭 전환
-document.querySelectorAll('#tab-battle .mode-toggle button').forEach(btn => {
-  btn.addEventListener('click', function() {
-    document.querySelectorAll('#tab-battle .mode-toggle button').forEach(b => b.classList.remove('active'));
-    this.classList.add('active');
-    battleMode = this.dataset.mode;
-    renderBattleSetup();
-  });
-});
-
 function renderBattleSetup() {
   const slots = document.getElementById('teamSlots');
   const body = document.getElementById('battleBody');
   
-  // slots 영역 초기화
   slots.innerHTML = '';
-  slots.style.cssText = `
-    display: flex;
-    gap: 12px;
-    margin: 12px 0;
-    flex-wrap: wrap;
-    justify-content: center;
-    padding: 8px;
-    background: rgba(255,255,255,.03);
-    border-radius: 12px;
-    border: 1px solid rgba(255,201,60,.1);
-  `;
+  slots.style.cssText = 'display:flex;gap:12px;margin:12px 0;flex-wrap:wrap;justify-content:center;padding:8px;background:rgba(255,255,255,.03);border-radius:12px;border:1px solid rgba(255,201,60,.1);';
   
-  // 팀 상태 헤더
   const header = document.createElement('div');
   header.style.cssText = 'width:100%;text-align:center;font-family:var(--font-mono);font-size:14px;color:#B7AFDE;padding:4px 0;';
-  header.innerHTML = `
-    📋 팀 <strong style="color:var(--paper);">${state.team.length}/3</strong>
-    ${state.team.length === 3 ? '<span style="color:var(--good);margin-left:8px;">✅ 완성!</span>' : ''}
-    ${state.team.length > 0 ? `<span style="margin-left:8px;font-size:12px;color:#6b6395;">${state.team.map(eng => { const p = getPokemonByName(eng); return p ? p.name : '?'; }).join(' · ')}</span>` : ''}
-  `;
+  header.innerHTML = `📋 팀 <strong style="color:var(--paper);">${state.team.length}/3</strong>${state.team.length === 3 ? '<span style="color:var(--good);margin-left:8px;">✅ 완성!</span>' : ''}${state.team.length > 0 ? `<span style="margin-left:8px;font-size:12px;color:#6b6395;">${state.team.map(eng => { const p = getPokemonByName(eng); return p ? p.name : '?'; }).join(' · ')}</span>` : ''}`;
   slots.appendChild(header);
   
-  // 3개의 슬롯
   for (let i = 0; i < 3; i++) {
     const engName = state.team[i];
     const c = engName ? getPokemonByName(engName) : null;
     const div = document.createElement('div');
     div.className = 'battle-slot';
-    div.style.cssText = `
-      width: 90px;
-      height: 110px;
-      background: ${c ? 'rgba(255,201,60,.08)' : 'rgba(255,255,255,.04)'};
-      border: ${c ? '3px solid var(--sun)' : '3px dashed rgba(255,201,60,.15)'};
-      border-radius: 14px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: all .25s ease;
-      position: relative;
-      padding: 6px;
-    `;
+    div.style.cssText = `width:90px;height:110px;background:${c ? 'rgba(255,201,60,.08)' : 'rgba(255,255,255,.04)'};border:${c ? '3px solid var(--sun)' : '3px dashed rgba(255,201,60,.15)'};border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:all .25s ease;position:relative;padding:6px;`;
     
     if (c) {
       const typeColor = getTypeColor(c.type);
-      div.innerHTML = `
-        <button class="slot-remove" data-remove="${i}" style="position:absolute;top:2px;right:4px;background:rgba(0,0,0,.5);border:none;color:#fff;font-size:14px;cursor:pointer;padding:0 6px;border-radius:50%;line-height:1.4;">✕</button>
-        <div style="width:44px;height:44px;display:flex;align-items:center;justify-content:center;">${pokemonImage(c, '36px')}</div>
-        <div style="font-family:var(--font-display);font-size:12px;color:var(--paper);margin-top:1px;text-align:center;line-height:1.2;">${c.name}</div>
-        <span style="background:${typeColor};font-size:8px;padding:1px 8px;border-radius:10px;color:#fff;font-weight:600;margin-top:1px;">${getTypeLabel(c.type)}</span>
-      `;
+      div.innerHTML = `<button class="slot-remove" data-remove="${i}" style="position:absolute;top:2px;right:4px;background:rgba(0,0,0,.5);border:none;color:#fff;font-size:14px;cursor:pointer;padding:0 6px;border-radius:50%;line-height:1.4;">✕</button><div style="width:44px;height:44px;display:flex;align-items:center;justify-content:center;">${pokemonImage(c, '36px')}</div><div style="font-family:var(--font-display);font-size:12px;color:var(--paper);margin-top:1px;text-align:center;line-height:1.2;">${c.name}</div><span style="background:${typeColor};font-size:8px;padding:1px 8px;border-radius:10px;color:#fff;font-weight:600;margin-top:1px;">${getTypeLabel(c.type)}</span>`;
     } else {
-      div.innerHTML = `
-        <span style="font-size:24px;opacity:0.3;">+</span>
-        <span style="font-size:11px;color:#6b6395;margin-top:2px;">${i+1}번째</span>
-      `;
+      div.innerHTML = `<span style="font-size:24px;opacity:0.3;">+</span><span style="font-size:11px;color:#6b6395;margin-top:2px;">${i+1}번째</span>`;
     }
     
     div.addEventListener('click', function(e) {
@@ -3230,48 +3238,19 @@ function renderBattleSetup() {
     slots.appendChild(div);
   }
   
-  // 배틀 본문
   if (state.team.length === 3) {
     const teamNames2 = state.team.map(eng => { const p = getPokemonByName(eng); return p ? p.name : '?'; }).join(' · ');
     const aiChances = state.battleChances || 0;
     const pvpChances = state.pvpChances || 0;
-    body.innerHTML = `
-      <div style="text-align:center;padding:16px 0;">
-        <div style="font-family:var(--font-display);font-size:22px;color:var(--sun-2);margin-bottom:4px;">⚔️ ${teamNames2}</div>
-        <div style="font-family:var(--font-mono);font-size:13px;color:#B7AFDE;margin:6px 0;">
-          🤖 AI 배틀: <b style="color:${aiChances > 0 ? 'var(--good)' : '#8d84b0'};">${aiChances}</b>회 &nbsp;|&nbsp; 🌐 PVP 배틀: <b style="color:${pvpChances > 0 ? 'var(--good)' : '#8d84b0'};">${pvpChances}</b>회
-        </div>
-        <div style="font-size:11px;color:#6b6395;margin-bottom:12px;">※ 생활미션 완료 시 +1회 (누적)</div>
-        <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
-          <button class="btn small" onclick="clearTeam()" style="font-size:15px;padding:8px 18px;min-height:40px;">🔄 팀 초기화</button>
-          <button class="btn small" onclick="autoFillTeam()" style="font-size:15px;padding:8px 18px;min-height:40px;">🤖 자동 구성</button>
-          ${battleMode === 'pvp' 
-            ? `<button class="btn" onclick="renderPvpIntro()" style="font-size:15px;padding:10px 22px;min-height:48px;${pvpChances <= 0 ? 'opacity:0.4;cursor:not-allowed;' : ''}" ${pvpChances <= 0 ? 'disabled' : ''}>🌐 실시간 배틀 (${pvpChances}회)</button>` 
-            : `<button class="btn" onclick="startAiBattle()" style="font-size:15px;padding:10px 22px;min-height:48px;${aiChances <= 0 ? 'opacity:0.4;cursor:not-allowed;' : ''}" ${aiChances <= 0 ? 'disabled' : ''}>🤖 AI 배틀 (${aiChances}회)</button>`
-          }
-        </div>
-        ${(battleMode === 'ai' && aiChances <= 0) || (battleMode === 'pvp' && pvpChances <= 0) 
-          ? `<div style="font-size:13px;color:var(--bad);margin-top:10px;">⚠️ 생활미션을 완료하면 배틀 횟수가 지급됩니다!</div>` 
-          : ''}
-      </div>
-    `;
+    body.innerHTML = `<div style="text-align:center;padding:16px 0;"><div style="font-family:var(--font-display);font-size:22px;color:var(--sun-2);margin-bottom:4px;">⚔️ ${teamNames2}</div><div style="font-family:var(--font-mono);font-size:13px;color:#B7AFDE;margin:6px 0;">🤖 AI 배틀: <b style="color:${aiChances > 0 ? 'var(--good)' : '#8d84b0'};">${aiChances}</b>회 &nbsp;|&nbsp; 🌐 PVP 배틀: <b style="color:${pvpChances > 0 ? 'var(--good)' : '#8d84b0'};">${pvpChances}</b>회</div><div style="font-size:11px;color:#6b6395;margin-bottom:12px;">※ 생활미션 완료 시 +1회 (누적)</div><div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;"><button class="btn small" onclick="clearTeam()" style="font-size:15px;padding:8px 18px;min-height:40px;">🔄 팀 초기화</button><button class="btn small" onclick="autoFillTeam()" style="font-size:15px;padding:8px 18px;min-height:40px;">🤖 자동 구성</button>${battleMode === 'pvp' ? `<button class="btn" onclick="renderPvpIntro()" style="font-size:15px;padding:10px 22px;min-height:48px;${pvpChances <= 0 ? 'opacity:0.4;cursor:not-allowed;' : ''}" ${pvpChances <= 0 ? 'disabled' : ''}>🌐 실시간 배틀 (${pvpChances}회)</button>` : `<button class="btn" onclick="startAiBattle()" style="font-size:15px;padding:10px 22px;min-height:48px;${aiChances <= 0 ? 'opacity:0.4;cursor:not-allowed;' : ''}" ${aiChances <= 0 ? 'disabled' : ''}>🤖 AI 배틀 (${aiChances}회)</button>`}</div>${(battleMode === 'ai' && aiChances <= 0) || (battleMode === 'pvp' && pvpChances <= 0) ? `<div style="font-size:13px;color:var(--bad);margin-top:10px;">⚠️ 생활미션을 완료하면 배틀 횟수가 지급됩니다!</div>` : ''}</div>`;
   } else {
-    body.innerHTML = `
-      <div style="text-align:center;padding:30px 16px;color:#8d84b0;border:2px dashed rgba(255,201,60,.15);border-radius:14px;margin-top:4px;">
-        <div style="font-size:36px;margin-bottom:8px;">🃏</div>
-        <div style="font-size:17px;font-family:var(--font-display);">${3 - state.team.length}장의 카드를 더 선택해주세요</div>
-        <div style="font-size:13px;color:#6b6395;margin-top:4px;">슬롯을 클릭하면 카드를 선택할 수 있어요</div>
-      </div>
-    `;
+    body.innerHTML = `<div style="text-align:center;padding:30px 16px;color:#8d84b0;border:2px dashed rgba(255,201,60,.15);border-radius:14px;margin-top:4px;"><div style="font-size:36px;margin-bottom:8px;">🃏</div><div style="font-size:17px;font-family:var(--font-display);">${3 - state.team.length}장의 카드를 더 선택해주세요</div><div style="font-size:13px;color:#6b6395;margin-top:4px;">슬롯을 클릭하면 카드를 선택할 수 있어요</div></div>`;
   }
-  
-  // 하단 모드 토글 (중복 제거를 위해 이미 위에 있으므로 여기는 생략)
 }
 
-// ===== 배틀 카드 선택창 =====
 function openBattlePicker(slotIndex) {
   const overlay = document.getElementById('battlePicker');
-  overlay.style.display = 'flex';  // 여기!
+  overlay.style.display = 'flex';
   overlay.classList.add('open');
   window._battlePickerSlot = slotIndex;
   battlePickerStep = 'type';
@@ -3292,21 +3271,7 @@ function renderBattlePickerStep(slotIndex) {
     POKEMON_LIST.filter(c => state.owned[c.engName]).forEach(c => { c.types.forEach(t => ownedTypes.add(t)); });
     const availableTypes = allTypes.filter(t => ownedTypes.has(t));
     
-    grid.innerHTML = `
-      <div style="text-align:center;color:#B7AFDE;font-size:13px;margin-bottom:8px;">📋 보유한 카드가 있는 속성을 선택하세요</div>
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;">
-        ${availableTypes.map(type => `
-          <button class="type-select-btn" data-type="${type}" style="padding:10px 2px;border-radius:10px;border:2px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);color:var(--paper);cursor:pointer;text-align:center;transition:all .2s;font-size:13px;font-weight:600;" onmouseover="this.style.borderColor='var(--sun)'" onmouseout="this.style.borderColor='rgba(255,255,255,.08)'">
-            <span style="font-size:28px;display:block;">${typeEmojis[type] || '❓'}</span>
-            ${typeLabels[type] || type}
-          </button>
-        `).join('')}
-      </div>
-      ${availableTypes.length === 0 ? '<div style="text-align:center;color:#8d84b0;padding:20px;">보유한 카드가 없어요! 미션을 완료해주세요.</div>' : ''}
-      <div style="text-align:center;margin-top:12px;">
-        <button class="btn small ghost" onclick="closeBattlePicker()" style="font-size:14px;padding:8px 24px;min-height:36px;">취소</button>
-      </div>
-    `;
+    grid.innerHTML = `<div style="text-align:center;color:#B7AFDE;font-size:13px;margin-bottom:8px;">📋 보유한 카드가 있는 속성을 선택하세요</div><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;">${availableTypes.map(type => `<button class="type-select-btn" data-type="${type}" style="padding:10px 2px;border-radius:10px;border:2px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);color:var(--paper);cursor:pointer;text-align:center;transition:all .2s;font-size:13px;font-weight:600;" onmouseover="this.style.borderColor='var(--sun)'" onmouseout="this.style.borderColor='rgba(255,255,255,.08)'"><span style="font-size:28px;display:block;">${typeEmojis[type] || '❓'}</span>${typeLabels[type] || type}</button>`).join('')}</div>${availableTypes.length === 0 ? '<div style="text-align:center;color:#8d84b0;padding:20px;">보유한 카드가 없어요! 미션을 완료해주세요.</div>' : ''}<div style="text-align:center;margin-top:12px;"><button class="btn small ghost" onclick="closeBattlePicker()" style="font-size:14px;padding:8px 24px;min-height:36px;">취소</button></div>`;
     
     grid.querySelectorAll('.type-select-btn').forEach(btn => {
       btn.addEventListener('click', function() {
@@ -3321,35 +3286,7 @@ function renderBattlePickerStep(slotIndex) {
     let filtered = POKEMON_LIST.filter(c => state.owned[c.engName] && c.types.includes(selectedType));
     filtered.sort((a, b) => (b.atk || 0) - (a.atk || 0));
     
-    grid.innerHTML = `
-      <div style="display:flex;gap:6px;align-items:center;margin-bottom:8px;">
-        <button class="btn small ghost" onclick="goBackToTypeSelect()" style="font-size:12px;padding:4px 14px;min-height:30px;">← 뒤로</button>
-        <span style="font-size:12px;color:#B7AFDE;">${filtered.length}마리</span>
-        <span style="font-size:11px;color:#6b6395;margin-left:auto;">⚔️ 공격력 순</span>
-      </div>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;max-height:260px;overflow-y:auto;padding:2px;">
-        ${filtered.map(c => { 
-          const isInTeam = state.team.includes(c.engName); 
-          const isSelected = state.team[slotIndex] === c.engName; 
-          const disabled = isInTeam && !isSelected; 
-          const typeColor = getTypeColor(c.type); 
-          const ownedData = state.owned[c.engName]; 
-          const rarityInfo = getRarityInfo(ownedData?.rarity || 'common'); 
-          return `
-            <div class="pick-card ${disabled ? 'disabled' : ''} ${isSelected ? 'selected' : ''}" 
-                 data-eng="${c.engName}" 
-                 style="${isSelected ? 'border-color:var(--sun);background:rgba(255,201,60,.12);' : ''}${disabled ? 'opacity:0.3;pointer-events:none;' : ''}
-                       border:2px solid rgba(255,255,255,.08);border-radius:10px;padding:8px 4px;text-align:center;cursor:pointer;transition:all .2s;">
-              <div style="width:36px;height:36px;margin:0 auto;display:flex;align-items:center;justify-content:center;">${pokemonImage(c, '32px')}</div>
-              <div style="font-size:12px;font-weight:600;color:var(--paper);line-height:1.2;">${c.name}</div>
-              <span style="background:${typeColor};font-size:8px;padding:1px 8px;border-radius:10px;color:#fff;display:inline-block;margin-top:1px;">${getTypeLabel(c.type)}</span>
-              <div style="font-size:8px;color:#B7AFDE;margin-top:2px;">⚔️${c.atk} ❤️${c.hp} ${rarityInfo.emoji}</div>
-              ${isInTeam ? '<div style="font-size:7px;color:var(--bad);">⚠️ 이미 선택됨</div>' : ''}
-            </div>
-          `;
-        }).join('')}
-      </div>
-    `;
+    grid.innerHTML = `<div style="display:flex;gap:6px;align-items:center;margin-bottom:8px;"><button class="btn small ghost" onclick="goBackToTypeSelect()" style="font-size:12px;padding:4px 14px;min-height:30px;">← 뒤로</button><span style="font-size:12px;color:#B7AFDE;">${filtered.length}마리</span><span style="font-size:11px;color:#6b6395;margin-left:auto;">⚔️ 공격력 순</span></div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;max-height:260px;overflow-y:auto;padding:2px;">${filtered.map(c => { const isInTeam = state.team.includes(c.engName); const isSelected = state.team[slotIndex] === c.engName; const disabled = isInTeam && !isSelected; const typeColor = getTypeColor(c.type); const ownedData = state.owned[c.engName]; const rarityInfo = getRarityInfo(ownedData?.rarity || 'common'); return `<div class="pick-card ${disabled ? 'disabled' : ''} ${isSelected ? 'selected' : ''}" data-eng="${c.engName}" style="${isSelected ? 'border-color:var(--sun);background:rgba(255,201,60,.12);' : ''}${disabled ? 'opacity:0.3;pointer-events:none;' : ''}border:2px solid rgba(255,255,255,.08);border-radius:10px;padding:8px 4px;text-align:center;cursor:pointer;transition:all .2s;"><div style="width:36px;height:36px;margin:0 auto;display:flex;align-items:center;justify-content:center;">${pokemonImage(c, '32px')}</div><div style="font-size:12px;font-weight:600;color:var(--paper);line-height:1.2;">${c.name}</div><span style="background:${typeColor};font-size:8px;padding:1px 8px;border-radius:10px;color:#fff;display:inline-block;margin-top:1px;">${getTypeLabel(c.type)}</span><div style="font-size:8px;color:#B7AFDE;margin-top:2px;">⚔️${c.atk} ❤️${c.hp} ${rarityInfo.emoji}</div>${isInTeam ? '<div style="font-size:7px;color:var(--bad);">⚠️ 이미 선택됨</div>' : ''}</div>`; }).join('')}</div>`;
     grid.querySelectorAll('.pick-card:not(.disabled)').forEach(el => {
       el.addEventListener('click', function() {
         const engName = this.dataset.eng;
@@ -3382,20 +3319,14 @@ function goBackToTypeSelect() {
 
 function closeBattlePicker() {
   const overlay = document.getElementById('battlePicker');
-  if (overlay) {
-    overlay.classList.remove('open');
-    overlay.style.display = 'none';  // 강제 숨김 추가
-  }
+  overlay.style.display = 'none';
+  overlay.classList.remove('open');
   battlePickerStep = 'type';
-  // 선택 상태 초기화
   window._battleSelectedType = null;
   window._battlePickerSlot = null;
 }
-function clearTeam() { 
-  state.team = []; 
-  saveState(); 
-  renderBattleSetup(); 
-}
+
+function clearTeam() { state.team = []; saveState(); renderBattleSetup(); }
 
 function autoFillTeam() {
   const owned = POKEMON_LIST.filter(c => state.owned[c.engName] && !state.team.includes(c.engName));
@@ -3406,7 +3337,6 @@ function autoFillTeam() {
   toast('🤖 자동으로 팀을 구성했어요!');
 }
 
-// ===== 토스트 메시지 =====
 function toast(msg) {
   const existing = document.querySelector('.toast-msg');
   if (existing) existing.remove();
@@ -3415,17 +3345,10 @@ function toast(msg) {
   el.style.cssText = 'position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.85);color:#fff;padding:12px 28px;border-radius:14px;font-family:var(--font-display);font-size:18px;z-index:9999;animation:popin .3s ease;border:2px solid var(--sun);';
   el.textContent = msg;
   document.body.appendChild(el);
-  setTimeout(() => { 
-    el.style.opacity = '0'; 
-    el.style.transition = 'opacity .3s ease'; 
-    setTimeout(() => el.remove(), 400); 
-  }, 2500);
+  setTimeout(() => { el.style.opacity = '0'; el.style.transition = 'opacity .3s ease'; setTimeout(() => el.remove(), 400); }, 2500);
 }
 
-function setBattleMode(mode) { 
-  battleMode = mode; 
-  renderBattleSetup(); 
-}
+function setBattleMode(mode) { battleMode = mode; renderBattleSetup(); }
 
 // ===== AI 배틀 =====
 let aiBattle = null;
@@ -3524,7 +3447,6 @@ function endAiBattle(playerWon) {
   updateStatline(); saveState();
 }
 
-// ===== 공격 효과 함수들 =====
 function showDamageNumber(targetElement, damage) {
   if (!targetElement) return;
   const rect = targetElement.getBoundingClientRect();
@@ -3776,32 +3698,21 @@ function setupTradeListener(code) {
 }
 
 function handleTradeComplete(room) {
-  if (room.processed) { 
-    updateTradeStatus('✅ 교환이 완료되었습니다! 🎉', 'success'); 
-    document.getElementById('sendTradeBtn').style.display = 'none'; 
-    document.getElementById('confirmTradeBtn').style.display = 'none'; 
-    return; 
-  }
+  if (room.processed) { updateTradeStatus('✅ 교환이 완료되었습니다! 🎉', 'success'); document.getElementById('sendTradeBtn').style.display = 'none'; document.getElementById('confirmTradeBtn').style.display = 'none'; return; }
   if (!myTradeRoom) return;
-  
   const mySide = myTradeRoom.side;
   const oppSide = mySide === 'host' ? 'guest' : 'host';
   const myCard = room[mySide]?.card;
   const oppCard = room[oppSide]?.card;
   const oppRarity = room[oppSide]?.rarity || 'common';
-  
   if (!myCard || !oppCard) return;
-  
   try {
-    // ⭐ 내 카드 1장만 차감 (count가 2이상이면 1장 남음!)
     if (state.owned[myCard] && state.owned[myCard].count > 0) {
       state.owned[myCard].count -= 1;
       if (state.owned[myCard].count <= 0) {
         delete state.owned[myCard];
       }
     }
-    
-    // 상대방 카드 추가
     if (!state.owned[oppCard]) {
       state.owned[oppCard] = { count: 1, rarity: oppRarity };
     } else {
@@ -3811,29 +3722,17 @@ function handleTradeComplete(room) {
         state.owned[oppCard].rarity = oppRarity;
       }
     }
-    
     saveState();
     db.ref('trades/' + myTradeRoom.code).update({ processed: true });
-    
     const receivedPokemon = getPokemonByName(oppCard);
     const rInfo = getRarityInfo(oppRarity);
     updateTradeStatus(`✅ 교환 완료! ${receivedPokemon ? receivedPokemon.name : oppCard} (${rInfo.label}) 카드를 받았어요! 🎉`, 'success');
     document.getElementById('sendTradeBtn').style.display = 'none';
     document.getElementById('confirmTradeBtn').style.display = 'none';
-    renderDex(); 
-    updateStatline(); 
-    SFX.cardReward();
-    
-    if (receivedPokemon) {
-      showRewardPopup(receivedPokemon, '🔄 교환 완료!', `${rInfo.label} 등급 카드를 받았어요!`);
-    }
-    
+    renderDex(); updateStatline(); SFX.cardReward();
+    if (receivedPokemon) showRewardPopup(receivedPokemon, '🔄 교환 완료!', `${rInfo.label} 등급 카드를 받았어요!`);
     setTimeout(() => leaveTradeRoom(), 5000);
-    
-  } catch(e) { 
-    console.error('❌ 교환 실행 오류:', e); 
-    alert('❌ 교환 중 오류가 발생했습니다.'); 
-  }
+  } catch(e) { console.error('❌ 교환 실행 오류:', e); alert('❌ 교환 중 오류가 발생했습니다.'); }
 }
 
 function handleTradeUpdate(room) {
@@ -4015,121 +3914,9 @@ setInterval(function() {
     resetDailyContent();
   }
 }, 60000);
-// ===== 합성 탭 렌더링 =====
-// ===== 합성 탭 렌더링 =====
-// ===== 합성 탭 렌더링 =====
-function renderCraftTab() {
-  const container = document.getElementById('craftContent');
-  if (!container) return;
-  
-  // 합성 가능한 카드만 필터링 (count >= 2)
-  const craftableCards = Object.keys(state.owned).filter(key => {
-    const info = state.owned[key];
-    return info && info.count >= 2;
-  });
-  
-  const allOwnedCards = Object.keys(state.owned).filter(key => state.owned[key].count > 0);
-  
-  if (allOwnedCards.length === 0) {
-    container.innerHTML = `
-      <div style="text-align:center;padding:30px 16px;color:#8d84b0;">
-        <div style="font-size:48px;margin-bottom:8px;">😅</div>
-        <div style="font-size:18px;">보유한 카드가 없어요!</div>
-        <div style="font-size:13px;color:#6b6395;margin-top:4px;">미션을 완료해서 카드를 먼저 모아주세요!</div>
-      </div>
-    `;
-    return;
-  }
-  
-  // 등급별 카드 수 계산
-  const rarityCounts = {};
-  RARITIES.forEach(r => rarityCounts[r.id] = 0);
-  allOwnedCards.forEach(key => {
-    const info = state.owned[key];
-    if (rarityCounts[info.rarity] !== undefined) {
-      rarityCounts[info.rarity] += info.count;
-    }
-  });
-  
-  if (craftableCards.length === 0) {
-    container.innerHTML = `
-      <div style="text-align:center;padding:20px 16px;">
-        <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:16px;">
-          ${RARITIES.map(r => `
-            <span style="font-size:13px;color:${r.color};">${r.emoji} ${r.label}: <b>${rarityCounts[r.id] || 0}</b>장</span>
-          `).join('')}
-        </div>
-        <div style="font-size:48px;margin-bottom:8px;">📭</div>
-        <div style="font-size:17px;font-family:var(--font-display);color:#B7AFDE;">합성 가능한 카드가 없어요</div>
-        <div style="font-size:13px;color:#6b6395;margin-top:4px;">
-          같은 카드를 <b style="color:var(--sun-2);">2장 이상</b> 모으면 합성할 수 있어요!
-        </div>
-        <div style="margin-top:12px;padding:12px;background:rgba(255,201,60,.06);border-radius:10px;border:2px solid rgba(255,201,60,.15);">
-          <div style="font-size:13px;color:#B7AFDE;">
-            💡 <span style="color:var(--sun-2);">도감</span>에서 카드를 열고 
-            <span style="color:var(--sun-2);">"합성하기"</span> 버튼을 눌러주세요!
-          </div>
-        </div>
-      </div>
-    `;
-    return;
-  }
-  
-  container.innerHTML = `
-    <div style="text-align:center;padding:4px 0;">
-      <div style="font-size:14px;color:#B7AFDE;margin-bottom:8px;">
-        🔮 <b style="color:var(--sun-2);">${craftableCards.length}</b>종의 카드가 합성 가능해요!
-        <br><span style="font-size:12px;color:#6b6395;">같은 카드 2장 → 상위 등급 업그레이드</span>
-      </div>
-      
-      <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:12px;">
-        ${RARITIES.map(r => `
-          <span style="font-size:13px;color:${r.color};">${r.emoji} ${r.label}: <b>${rarityCounts[r.id] || 0}</b>장</span>
-        `).join('')}
-      </div>
-      
-      <div style="font-size:13px;color:#B7AFDE;margin-bottom:6px;">✅ 합성 가능 카드 (2장 이상 보유)</div>
-      <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-height:300px;overflow-y:auto;padding:8px;background:rgba(255,255,255,.03);border-radius:10px;">
-        ${craftableCards.map(key => {
-          const p = getPokemonByName(key);
-          const info = state.owned[key];
-          const rInfo = getRarityInfo(info.rarity);
-          const rarityIndex = RARITIES.findIndex(r => r.id === info.rarity);
-          const canUpgrade = rarityIndex < RARITIES.length - 1;
-          const isSpecial = info.rarity === 'special';
-          
-          return `
-            <div class="craft-card-item" 
-     data-eng="${key}"
-     onclick="window.openCardDetailFromCraft('${key}')"  // ⭐ window. 추가!
-     style="padding:8px 14px;border-radius:12px;border:2px solid ${rInfo.color};background:rgba(255,255,255,.04);display:flex;align-items:center;gap:8px;cursor:pointer;transition:all .2s;"
-     onmouseover="this.style.transform='scale(1.02)';this.style.boxShadow='0 4px 12px rgba(0,0,0,.3)';"
-     onmouseout="this.style.transform='scale(1)';this.style.boxShadow='none';">
-  ${pokemonImage(p, '28px')}
-  <div style="text-align:left;">
-    <div style="font-family:var(--font-display);font-size:14px;color:var(--paper);">${p?.name}</div>
-    <div style="font-size:11px;color:${rInfo.color};">${rInfo.emoji} ${rInfo.label} ×${info.count}</div>
-  </div>
-  <div style="font-size:11px;padding:2px 10px;border-radius:10px;background:${isSpecial ? 'var(--special)' : 'var(--good)'};color:#fff;font-weight:600;white-space:nowrap;">
-    ${isSpecial ? '⭐ 특수합성' : `⬆️ ${canUpgrade ? RARITIES[rarityIndex + 1].label : '최고'}`}
-  </div>
-</div>
-          `;
-        }).join('')}
-      </div>
-      
-      <div style="margin-top:12px;padding:10px;background:rgba(255,201,60,.06);border-radius:10px;border:2px solid rgba(255,201,60,.15);">
-        <div style="font-size:13px;color:#B7AFDE;">
-          💡 카드를 클릭하면 <span style="color:var(--sun-2);">도감 상세</span>에서 합성할 수 있어요!
-        </div>
-      </div>
-    </div>
-  `;
-}
 
-// 합성 탭에서 카드 클릭 시 도감 상세 열기
 // ============================================================
-// 🚨 합성 함수 완전 새로 작성 (디버깅용)
+// 🚀 합성 시스템 (window에 등록)
 // ============================================================
 
 window.craftFromDetail = function(engName) {
@@ -4137,18 +3924,8 @@ window.craftFromDetail = function(engName) {
     alert('🔮 합성 시도: ' + engName);
     
     try {
-        // ⭐ window.RARITIES 사용 (전역에서 직접 참조)
-        const RARITIES = window.RARITIES || [
-            { id: 'common', label: '일반', weight: 60, color: '#A6A0BE', emoji: '⬜', bonus: { hp: 0, atk: 0, def: 0, spd: 0 } },
-            { id: 'rare', label: '레어', weight: 25, color: '#4CAF7D', emoji: '🟩', bonus: { hp: 3, atk: 2, def: 2, spd: 1 } },
-            { id: 'super-rare', label: '슈퍼레어', weight: 10, color: '#3E9FDC', emoji: '🟦', bonus: { hp: 5, atk: 4, def: 4, spd: 3 } },
-            { id: 'ultra-rare', label: '울트라레어', weight: 4, color: '#9B59B6', emoji: '🟪', bonus: { hp: 8, atk: 6, def: 6, spd: 5 } },
-            { id: 'special', label: '스페셜', weight: 1, color: '#FF6B35', emoji: '🌟', bonus: { hp: 12, atk: 10, def: 10, spd: 8 } }
-        ];
-        
         const info = state.owned[engName];
         console.log('📦 카드 정보:', info);
-        alert('📦 보유 수량: ' + info.count + '장, 등급: ' + info.rarity);
         
         if (!info) {
             alert('⚠️ 카드 정보가 없습니다!');
@@ -4162,7 +3939,6 @@ window.craftFromDetail = function(engName) {
         
         const currentRarity = info.rarity;
         const rarityIndex = RARITIES.findIndex(r => r.id === currentRarity);
-        console.log('📦 등급 인덱스:', rarityIndex);
         
         if (rarityIndex === -1) {
             alert('⚠️ 알 수 없는 등급: ' + currentRarity);
@@ -4175,27 +3951,17 @@ window.craftFromDetail = function(engName) {
         }
         
         const nextRarity = RARITIES[rarityIndex + 1];
-        console.log('📦 다음 등급:', nextRarity);
-        
-        // ⭐ getRarityInfo도 window에서 가져오기
-        const getRarityInfo = window.getRarityInfo || function(id) {
-            return RARITIES.find(r => r.id === id) || RARITIES[0];
-        };
-        
         const pokemon = getPokemonByName(engName);
+        
         if (!pokemon) {
             alert('⚠️ 포켓몬을 찾을 수 없음!');
             return;
         }
         
-        alert('🔮 확인 창 표시 예정: ' + pokemon.name);
-        
         if (!confirm(`🔮 ${pokemon.name} (${getRarityInfo(currentRarity).label}) 2장을 합성할까요?\n→ ${getRarityInfo(nextRarity.id).label} 등급으로 업그레이드!`)) {
-            alert('❌ 사용자 취소');
+            console.log('❌ 사용자 취소');
             return;
         }
-        
-        alert('✅ 합성 진행 시작!');
         
         // 합성 실행
         state.owned[engName].count -= 2;
@@ -4225,216 +3991,233 @@ window.craftFromDetail = function(engName) {
         
     } catch(e) {
         console.error('❌ 합성 오류:', e);
-        alert('❌ 오류 발생: ' + e.message + '\n' + e.stack);
+        alert('❌ 오류 발생: ' + e.message);
     }
 };
-// ===== 스페셜 합성 (원하는 포켓몬으로 변경) =====
-function craftSpecialFromDetail(engName) {
-  console.log('⭐ 스페셜 합성 시도:', engName);
-  
-  const info = state.owned[engName];
-  if (!info) {
-    toast('⚠️ 카드 정보를 찾을 수 없어요!');
-    return;
-  }
-  
-  if (info.count < 2) {
-    toast('⚠️ 2장 이상 필요합니다! (현재 ' + info.count + '장)');
-    return;
-  }
-  
-  if (info.rarity !== 'special') {
-    toast('⚠️ 스페셜 등급 카드만 가능합니다!');
-    return;
-  }
-  
-  const currentPokemon = getPokemonByName(engName);
-  if (!currentPokemon) {
-    toast('⚠️ 포켓몬 정보를 찾을 수 없어요!');
-    return;
-  }
-  
-  showSpecialCraftPicker(engName);
-}
 
-// ===== 스페셜 합성용 포켓몬 선택기 =====
-function showSpecialCraftPicker(sourceEngName) {
-  closeModal();
+window.craftSpecialFromDetail = function(engName) {
+    console.log('⭐ 스페셜 합성 시도:', engName);
+    alert('⭐ 스페셜 합성 시도: ' + engName);
+    
+    const info = state.owned[engName];
+    if (!info) {
+        alert('⚠️ 카드 정보가 없습니다!');
+        return;
+    }
+    
+    if (info.count < 2) {
+        alert('⚠️ 2장 이상 필요합니다! (현재 ' + info.count + '장)');
+        return;
+    }
+    
+    if (info.rarity !== 'special') {
+        alert('⚠️ 스페셜 등급 카드만 가능합니다!');
+        return;
+    }
+    
+    showSpecialCraftPicker(engName);
+};
+
+window.showSpecialCraftPicker = function(sourceEngName) {
+    closeModal();
+    
+    const overlay = document.createElement('div');
+    overlay.id = 'specialCraftOverlay';
+    overlay.style.cssText = `position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.9);backdrop-filter:blur(8px);z-index:2000;display:flex;align-items:center;justify-content:center;padding:20px;animation:fadein .25s ease;`;
+    
+    const sourcePokemon = getPokemonByName(sourceEngName);
+    
+    overlay.innerHTML = `
+        <div style="max-width:480px;width:100%;max-height:90vh;background:linear-gradient(160deg, var(--ink-2), #1A1840);border:3px solid var(--special);border-radius:24px;padding:24px;overflow-y:auto;animation:popin .35s cubic-bezier(.34,1.56,.64,1);">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                <div style="font-family:var(--font-display);font-size:22px;color:var(--special);">⭐ 스페셜 합성</div>
+                <button onclick="this.closest('#specialCraftOverlay').remove()" style="background:none;border:none;color:#B7AFDE;font-size:28px;cursor:pointer;">✕</button>
+            </div>
+            <div style="font-size:14px;color:#B7AFDE;text-align:center;margin-bottom:12px;">
+                ${sourcePokemon?.name || '???'} (스페셜) 2장 →<br>
+                <span style="color:var(--sun-2);">원하는 포켓몬 스페셜 카드로 변경!</span>
+            </div>
+            <div style="font-size:13px;color:#6b6395;text-align:center;margin-bottom:12px;">🔍 원하는 포켓몬을 선택하세요</div>
+            <input id="specialCraftSearch" placeholder="포켓몬 이름 검색..." style="width:100%;padding:12px 16px;border-radius:12px;border:3px solid rgba(255,107,53,.2);background:rgba(255,255,255,.05);color:var(--paper);font-size:16px;margin-bottom:10px;box-sizing:border-box;">
+            <div id="specialCraftGrid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;max-height:300px;overflow-y:auto;padding:4px;">
+                ${POKEMON_LIST.map(p => `
+                    <div class="craft-pokemon-item" data-eng="${p.engName}" onclick="window.doSpecialCraft('${sourceEngName}','${p.engName}')" style="border:2px solid rgba(255,255,255,.06);border-radius:8px;padding:6px 4px;text-align:center;cursor:pointer;transition:all .2s;background:rgba(255,255,255,.02);">
+                        <div style="font-size:24px;">${pokemonImage(p, '28px')}</div>
+                        <div style="font-size:10px;font-family:var(--font-display);color:var(--paper);">${p.name}</div>
+                    </div>
+                `).join('')}
+            </div>
+            <div style="text-align:center;margin-top:12px;">
+                <button class="btn ghost small" onclick="this.closest('#specialCraftOverlay').remove()" style="font-size:14px;padding:8px 24px;">취소</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(overlay);
+    
+    document.getElementById('specialCraftSearch')?.addEventListener('input', function() {
+        const query = this.value.toLowerCase();
+        const items = document.querySelectorAll('#specialCraftGrid .craft-pokemon-item');
+        items.forEach(item => {
+            const name = item.dataset.eng.toLowerCase();
+            item.style.display = name.includes(query) ? '' : 'none';
+        });
+    });
+};
+
+window.doSpecialCraft = function(sourceEngName, targetEngName) {
+    console.log('⭐ 스페셜 합성 실행:', sourceEngName, '→', targetEngName);
+    
+    const sourceInfo = state.owned[sourceEngName];
+    if (!sourceInfo || sourceInfo.count < 2) {
+        alert('⚠️ 카드가 부족합니다!');
+        return;
+    }
+    if (sourceInfo.rarity !== 'special') {
+        alert('⚠️ 스페셜 등급이 아닙니다!');
+        return;
+    }
+    
+    const sourcePokemon = getPokemonByName(sourceEngName);
+    const targetPokemon = getPokemonByName(targetEngName);
+    
+    if (!sourcePokemon || !targetPokemon) {
+        alert('⚠️ 포켓몬 정보를 찾을 수 없어요!');
+        return;
+    }
+    
+    if (sourceEngName === targetEngName) {
+        alert('⚠️ 같은 포켓몬으로는 변경할 수 없어요!');
+        return;
+    }
+    
+    if (!confirm(`⭐ ${sourcePokemon.name} (스페셜) 2장 → ${targetPokemon.name} (스페셜) 으로 변경할까요?`)) {
+        return;
+    }
+    
+    try {
+        state.owned[sourceEngName].count -= 2;
+        if (state.owned[sourceEngName].count <= 0) {
+            delete state.owned[sourceEngName];
+        }
+        
+        if (!state.owned[targetEngName]) {
+            state.owned[targetEngName] = { count: 1, rarity: 'special' };
+        } else {
+            state.owned[targetEngName].count += 1;
+            state.owned[targetEngName].rarity = 'special';
+        }
+        
+        saveState();
+        SFX.evolution();
+        
+        document.getElementById('specialCraftOverlay')?.remove();
+        
+        renderDex();
+        updateStatline();
+        
+        alert(`🎉 ${targetPokemon.name} (스페셜) 획득!`);
+        showRewardPopup(targetPokemon, '⭐ 스페셜 합성 완료!', `${targetPokemon.name} (스페셜) 으로 변경!`);
+        
+    } catch(e) {
+        console.error('❌ 스페셜 합성 오류:', e);
+        alert('⚠️ 합성 중 오류가 발생했습니다: ' + e.message);
+    }
+};
+
+// ===== 합성 탭 렌더링 =====
+function renderCraftTab() {
+  const container = document.getElementById('craftContent');
+  if (!container) return;
   
-  const overlay = document.createElement('div');
-  overlay.id = 'specialCraftOverlay';
-  overlay.style.cssText = `
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,.9);
-    backdrop-filter: blur(8px);
-    z-index: 2000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-    animation: fadein .25s ease;
-  `;
+  const craftableCards = Object.keys(state.owned).filter(key => {
+    const info = state.owned[key];
+    return info && info.count >= 2;
+  });
   
-  const sourcePokemon = getPokemonByName(sourceEngName);
+  const allOwnedCards = Object.keys(state.owned).filter(key => state.owned[key].count > 0);
   
-  overlay.innerHTML = `
-    <div style="max-width:480px;width:100%;max-height:90vh;background:linear-gradient(160deg, var(--ink-2), #1A1840);border:3px solid var(--special);border-radius:24px;padding:24px;overflow-y:auto;animation:popin .35s cubic-bezier(.34,1.56,.64,1);">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-        <div style="font-family:var(--font-display);font-size:22px;color:var(--special);">⭐ 스페셜 합성</div>
-        <button onclick="this.closest('#specialCraftOverlay').remove()" style="background:none;border:none;color:#B7AFDE;font-size:28px;cursor:pointer;">✕</button>
+  if (allOwnedCards.length === 0) {
+    container.innerHTML = `<div style="text-align:center;padding:30px 16px;color:#8d84b0;"><div style="font-size:48px;margin-bottom:8px;">😅</div><div style="font-size:18px;">보유한 카드가 없어요!</div><div style="font-size:13px;color:#6b6395;margin-top:4px;">미션을 완료해서 카드를 먼저 모아주세요!</div></div>`;
+    return;
+  }
+  
+  const rarityCounts = {};
+  RARITIES.forEach(r => rarityCounts[r.id] = 0);
+  allOwnedCards.forEach(key => {
+    const info = state.owned[key];
+    if (rarityCounts[info.rarity] !== undefined) {
+      rarityCounts[info.rarity] += info.count;
+    }
+  });
+  
+  if (craftableCards.length === 0) {
+    container.innerHTML = `
+      <div style="text-align:center;padding:20px 16px;">
+        <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:16px;">
+          ${RARITIES.map(r => `<span style="font-size:13px;color:${r.color};">${r.emoji} ${r.label}: <b>${rarityCounts[r.id] || 0}</b>장</span>`).join('')}
+        </div>
+        <div style="font-size:48px;margin-bottom:8px;">📭</div>
+        <div style="font-size:17px;font-family:var(--font-display);color:#B7AFDE;">합성 가능한 카드가 없어요</div>
+        <div style="font-size:13px;color:#6b6395;margin-top:4px;">같은 카드를 <b style="color:var(--sun-2);">2장 이상</b> 모으면 합성할 수 있어요!</div>
+        <div style="margin-top:12px;padding:12px;background:rgba(255,201,60,.06);border-radius:10px;border:2px solid rgba(255,201,60,.15);">
+          <div style="font-size:13px;color:#B7AFDE;">💡 <span style="color:var(--sun-2);">도감</span>에서 카드를 열고 <span style="color:var(--sun-2);">"합성하기"</span> 버튼을 눌러주세요!</div>
+        </div>
       </div>
-      <div style="font-size:14px;color:#B7AFDE;text-align:center;margin-bottom:12px;">
-        ${sourcePokemon?.name || '???'} (스페셜) 2장 →<br>
-        <span style="color:var(--sun-2);">원하는 포켓몬 스페셜 카드로 변경!</span>
+    `;
+    return;
+  }
+  
+  container.innerHTML = `
+    <div style="text-align:center;padding:4px 0;">
+      <div style="font-size:14px;color:#B7AFDE;margin-bottom:8px;">🔮 <b style="color:var(--sun-2);">${craftableCards.length}</b>종의 카드가 합성 가능해요!<br><span style="font-size:12px;color:#6b6395;">같은 카드 2장 → 상위 등급 업그레이드</span></div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:12px;">
+        ${RARITIES.map(r => `<span style="font-size:13px;color:${r.color};">${r.emoji} ${r.label}: <b>${rarityCounts[r.id] || 0}</b>장</span>`).join('')}
       </div>
-      <div style="font-size:13px;color:#6b6395;text-align:center;margin-bottom:12px;">
-        🔍 원하는 포켓몬을 선택하세요
+      <div style="font-size:13px;color:#B7AFDE;margin-bottom:6px;">✅ 합성 가능 카드 (2장 이상 보유)</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-height:300px;overflow-y:auto;padding:8px;background:rgba(255,255,255,.03);border-radius:10px;">
+        ${craftableCards.map(key => {
+          const p = getPokemonByName(key);
+          const info = state.owned[key];
+          const rInfo = getRarityInfo(info.rarity);
+          const rarityIndex = RARITIES.findIndex(r => r.id === info.rarity);
+          const canUpgrade = rarityIndex < RARITIES.length - 1;
+          const isSpecial = info.rarity === 'special';
+          return `
+            <div class="craft-card-item" data-eng="${key}" onclick="window.openCardDetailFromCraft('${key}')" style="padding:8px 14px;border-radius:12px;border:2px solid ${rInfo.color};background:rgba(255,255,255,.04);display:flex;align-items:center;gap:8px;cursor:pointer;transition:all .2s;" onmouseover="this.style.transform='scale(1.02)';this.style.boxShadow='0 4px 12px rgba(0,0,0,.3)';" onmouseout="this.style.transform='scale(1)';this.style.boxShadow='none';">
+              ${pokemonImage(p, '28px')}
+              <div style="text-align:left;">
+                <div style="font-family:var(--font-display);font-size:14px;color:var(--paper);">${p?.name}</div>
+                <div style="font-size:11px;color:${rInfo.color};">${rInfo.emoji} ${rInfo.label} ×${info.count}</div>
+              </div>
+              <div style="font-size:11px;padding:2px 10px;border-radius:10px;background:${isSpecial ? 'var(--special)' : 'var(--good)'};color:#fff;font-weight:600;white-space:nowrap;">
+                ${isSpecial ? '⭐ 특수합성' : `⬆️ ${canUpgrade ? RARITIES[rarityIndex + 1].label : '최고'}`}
+              </div>
+            </div>
+          `;
+        }).join('')}
       </div>
-      <input id="specialCraftSearch" placeholder="포켓몬 이름 검색..." style="width:100%;padding:12px 16px;border-radius:12px;border:3px solid rgba(255,107,53,.2);background:rgba(255,255,255,.05);color:var(--paper);font-size:16px;margin-bottom:10px;box-sizing:border-box;">
-      <div id="specialCraftGrid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;max-height:300px;overflow-y:auto;padding:4px;">
-        ${POKEMON_LIST.map(p => `
-          <div class="craft-pokemon-item" data-eng="${p.engName}" onclick="doSpecialCraft('${sourceEngName}','${p.engName}')" style="border:2px solid rgba(255,255,255,.06);border-radius:8px;padding:6px 4px;text-align:center;cursor:pointer;transition:all .2s;background:rgba(255,255,255,.02);">
-            <div style="font-size:24px;">${pokemonImage(p, '28px')}</div>
-            <div style="font-size:10px;font-family:var(--font-display);color:var(--paper);">${p.name}</div>
-          </div>
-        `).join('')}
-      </div>
-      <div style="text-align:center;margin-top:12px;">
-        <button class="btn ghost small" onclick="this.closest('#specialCraftOverlay').remove()" style="font-size:14px;padding:8px 24px;">취소</button>
+      <div style="margin-top:12px;padding:10px;background:rgba(255,201,60,.06);border-radius:10px;border:2px solid rgba(255,201,60,.15);">
+        <div style="font-size:13px;color:#B7AFDE;">💡 카드를 클릭하면 <span style="color:var(--sun-2);">도감 상세</span>에서 합성할 수 있어요!</div>
       </div>
     </div>
   `;
-  
-  document.body.appendChild(overlay);
-  
-  document.getElementById('specialCraftSearch')?.addEventListener('input', function() {
-    const query = this.value.toLowerCase();
-    const items = document.querySelectorAll('#specialCraftGrid .craft-pokemon-item');
-    items.forEach(item => {
-      const name = item.dataset.eng.toLowerCase();
-      item.style.display = name.includes(query) ? '' : 'none';
-    });
-  });
 }
 
-// ===== 스페셜 합성 실행 =====
-function doSpecialCraft(sourceEngName, targetEngName) {
-  console.log('⭐ 스페셜 합성 실행:', sourceEngName, '→', targetEngName);
-  
-  const sourceInfo = state.owned[sourceEngName];
-  if (!sourceInfo || sourceInfo.count < 2) {
-    toast('⚠️ 카드가 부족합니다!');
-    return;
-  }
-  if (sourceInfo.rarity !== 'special') {
-    toast('⚠️ 스페셜 등급이 아닙니다!');
-    return;
-  }
-  
-  const sourcePokemon = getPokemonByName(sourceEngName);
-  const targetPokemon = getPokemonByName(targetEngName);
-  
-  if (!sourcePokemon || !targetPokemon) {
-    toast('⚠️ 포켓몬 정보를 찾을 수 없어요!');
-    return;
-  }
-  
-  if (sourceEngName === targetEngName) {
-    toast('⚠️ 같은 포켓몬으로는 변경할 수 없어요!');
-    return;
-  }
-  
-  if (!confirm(`⭐ ${sourcePokemon.name} (스페셜) 2장 → ${targetPokemon.name} (스페셜) 으로 변경할까요?`)) {
-    return;
-  }
-  
-  try {
-    state.owned[sourceEngName].count -= 2;
-    if (state.owned[sourceEngName].count <= 0) {
-      delete state.owned[sourceEngName];
-    }
-    
-    if (!state.owned[targetEngName]) {
-      state.owned[targetEngName] = { count: 1, rarity: 'special' };
-    } else {
-      state.owned[targetEngName].count += 1;
-      state.owned[targetEngName].rarity = 'special';
-    }
-    
-    saveState();
-    SFX.evolution();
-    
-    document.getElementById('specialCraftOverlay')?.remove();
-    
-    renderDex();
-    updateStatline();
-    
-    toast(`🎉 ${targetPokemon.name} (스페셜) 획득!`);
-    showRewardPopup(targetPokemon, '⭐ 스페셜 합성 완료!', `${targetPokemon.name} (스페셜) 으로 변경!`);
-    
-    console.log('✅ 스페셜 합성 완료!');
-    
-  } catch(e) {
-    console.error('❌ 스페셜 합성 오류:', e);
-    toast('⚠️ 합성 중 오류가 발생했습니다: ' + e.message);
-  }
-}
-
-// ===== 전역 등록 (onclick이 안 잡힐 경우를 대비) =====
-window.craftFromDetail = craftFromDetail;
-window.craftSpecialFromDetail = craftSpecialFromDetail;
-window.doSpecialCraft = doSpecialCraft;
-window.showSpecialCraftPicker = showSpecialCraftPicker;
-window.toast = toast;
-// ===== 합성 탭에서 카드 클릭 시 도감으로 이동 =====
-function openCardDetailFromCraft(engName) {
+window.openCardDetailFromCraft = function(engName) {
   console.log('🔮 openCardDetailFromCraft 호출됨:', engName);
   const pokemon = getPokemonByName(engName);
   if (pokemon) {
-    // 탭을 도감으로 전환
     document.querySelectorAll('nav.tabbar button').forEach(b => b.classList.remove('active'));
     document.querySelectorAll('main section').forEach(s => s.classList.remove('active'));
     document.querySelector('[data-tab="tab-dex"]')?.classList.add('active');
     document.getElementById('tab-dex')?.classList.add('active');
-    
-    // 카드 상세 열기
     setTimeout(() => {
       openCardDetail(pokemon);
     }, 300);
-  } else {
-    console.error('❌ 포켓몬을 찾을 수 없음:', engName);
   }
-}
-
-// ⭐ window에 등록 (onclick에서 찾을 수 있도록)
-window.openCardDetailFromCraft = openCardDetailFromCraft;
-// ============================================================
-// ⭐ 직접 호출용 합성 함수 (onclick에서 사용)
-// ============================================================
-
-window.craftFromDetailDirectly = function(engName) {
-    console.log('🔮🔮🔮 직접 호출된 합성 함수! 포켓몬:', engName);
-    alert('🔥 직접 호출 성공! 포켓몬: ' + engName);
-    
-    // 기존 craftFromDetail 함수 호출
-    if (typeof window.craftFromDetail === 'function') {
-        window.craftFromDetail(engName);
-    } else {
-        alert('❌ craftFromDetail 함수가 없습니다!');
-    }
 };
 
-window.craftSpecialFromDetailDirectly = function(engName) {
-    console.log('⭐⭐ 직접 호출된 스페셜 합성 함수! 포켓몬:', engName);
-    alert('⭐ 직접 호출 성공! 포켓몬: ' + engName);
-    
-    if (typeof window.craftSpecialFromDetail === 'function') {
-        window.craftSpecialFromDetail(engName);
-    } else {
-        alert('❌ craftSpecialFromDetail 함수가 없습니다!');
-    }
-};
 // ===== 초기화 =====
 async function initGame() {
   document.getElementById('loadingScreen').style.display = 'block';
@@ -4466,8 +4249,7 @@ async function initGame() {
     saveState();
   }
   
-  document.getElementById('loadingStatus').textContent = 
-    '✅ ' + POKEMON_LIST.length + '마리 | 진화: ' + EVOLVABLE_POKEMON_LIST.length + '종 | 보유: ' + Object.keys(state.owned).length + '마리';
+  document.getElementById('loadingStatus').textContent = '✅ ' + POKEMON_LIST.length + '마리 | 진화: ' + EVOLVABLE_POKEMON_LIST.length + '종 | 보유: ' + Object.keys(state.owned).length + '마리';
   
   document.getElementById('loadingScreen').style.display = 'none';
   
@@ -4493,22 +4275,9 @@ function renderAll() {
   renderTradeTab();
   renderRaidMission();
   renderMathQuiz();
-}
-// ===== 카드 합성 시스템 (도감에서) =====
-function craftFromDetail(engName) {
+  renderCraftTab();
 }
 
-// 스페셜 합성 (원하는 포켓몬으로 변경)
-function craftSpecialFromDetail(engName) {
-}
-
-// 스페셜 합성용 포켓몬 선택기
-function showSpecialCraftPicker(sourceEngName) {
-}
-
-// 스페셜 합성 실행
-function doSpecialCraft(sourceEngName, targetEngName) {
-}
 initGame();
 </script>
 </body>
