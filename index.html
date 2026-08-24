@@ -4140,135 +4140,81 @@ function renderCraftTab() {
 }
 
 // 합성 탭에서 카드 클릭 시 도감 상세 열기
-function openCardDetailFromCraft(engName) {
-  const pokemon = getPokemonByName(engName);
-  if (pokemon) {
-    document.querySelectorAll('nav.tabbar button').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('main section').forEach(s => s.classList.remove('active'));
-    document.querySelector('[data-tab="tab-dex"]')?.classList.add('active');
-    document.getElementById('tab-dex')?.classList.add('active');
-    setTimeout(() => {
-      openCardDetail(pokemon);
-    }, 300);
-  }
-}
+// ============================================================
+// 🚨 합성 함수 완전 새로 작성 (디버깅용)
+// ============================================================
 
-// 합성 탭에서 카드 클릭 시 도감 상세 열기
-function openCardDetailFromCraft(engName) {
-  const pokemon = getPokemonByName(engName);
-  if (pokemon) {
-    // 탭을 도감으로 전환
-    document.querySelectorAll('nav.tabbar button').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('main section').forEach(s => s.classList.remove('active'));
-    document.querySelector('[data-tab="tab-dex"]')?.classList.add('active');
-    document.getElementById('tab-dex')?.classList.add('active');
-    
-    // 카드 상세 열기
-    setTimeout(() => {
-      openCardDetail(pokemon);
-    }, 300);
-  }
-}
 function craftFromDetail(engName) {
-  try {
-    console.log('🔮 1. 합성 시도 시작:', engName);
-    
-    // 1. 카드 정보 확인
-    const info = state.owned[engName];
-    console.log('🔮 2. 카드 정보:', info);
-    
-    if (!info) {
-      console.log('🔮 3. ❌ 카드 정보 없음!');
-      toast('⚠️ 카드 정보를 찾을 수 없어요!');
-      return;
+    // 1. 무조건 알림창 띄우기 (함수가 실행됐는지 확인)
+    alert('🔥 합성 함수 실행됨! 포켓몬: ' + engName);
+    console.log('🔥 합성 함수 실행됨! 포켓몬:', engName);
+
+    try {
+        // 2. 카드 정보 가져오기
+        const info = state.owned[engName];
+        console.log('📦 카드 정보:', info);
+
+        if (!info) {
+            alert('⚠️ 카드 정보가 없습니다!');
+            return;
+        }
+
+        if (info.count < 2) {
+            alert('⚠️ 2장 이상 필요합니다! (현재 ' + info.count + '장)');
+            return;
+        }
+
+        // 3. 등급 확인
+        const currentRarity = info.rarity;
+        const rarityIndex = RARITIES.findIndex(r => r.id === currentRarity);
+        
+        if (rarityIndex === -1) {
+            alert('⚠️ 알 수 없는 등급입니다: ' + currentRarity);
+            return;
+        }
+
+        if (rarityIndex >= RARITIES.length - 1) {
+            alert('⚠️ 최고 등급입니다! 스페셜 합성을 이용하세요.');
+            return;
+        }
+
+        const nextRarity = RARITIES[rarityIndex + 1];
+        const pokemon = getPokemonByName(engName);
+
+        if (!pokemon) {
+            alert('⚠️ 포켓몬 정보를 찾을 수 없어요!');
+            return;
+        }
+
+        // 4. 사용자 확인
+        if (!confirm(`🔮 ${pokemon.name} (${getRarityInfo(currentRarity).label}) 2장을 합성할까요?\n→ ${getRarityInfo(nextRarity.id).label} 등급으로 업그레이드!`)) {
+            return;
+        }
+
+        // 5. 합성 실행
+        state.owned[engName].count -= 2;
+        if (state.owned[engName].count <= 0) {
+            delete state.owned[engName];
+        }
+
+        if (!state.owned[engName]) {
+            state.owned[engName] = { count: 1, rarity: nextRarity.id };
+        } else {
+            state.owned[engName].count += 1;
+            state.owned[engName].rarity = nextRarity.id;
+        }
+
+        saveState();
+        closeModal();
+        renderDex();
+        updateStatline();
+
+        alert('✅ 합성 완료! ' + pokemon.name + ' → ' + getRarityInfo(nextRarity.id).label + ' 등급!');
+
+    } catch (e) {
+        console.error('❌ 합성 오류:', e);
+        alert('❌ 합성 중 오류 발생: ' + e.message);
     }
-    
-    console.log('🔮 4. 현재 보유 수량:', info.count, '등급:', info.rarity);
-    
-    if (info.count < 2) {
-      console.log('🔮 5. ❌ 2장 미만!');
-      toast('⚠️ 2장 이상 필요합니다! (현재 ' + info.count + '장)');
-      return;
-    }
-    
-    // 2. 등급 확인
-    const currentRarity = info.rarity;
-    console.log('🔮 6. RARITIES 확인:', RARITIES);
-    const rarityIndex = RARITIES.findIndex(r => r.id === currentRarity);
-    console.log('🔮 7. 현재 등급 인덱스:', rarityIndex, '총 등급 수:', RARITIES.length);
-    
-    if (rarityIndex >= RARITIES.length - 1) {
-      console.log('🔮 8. ❌ 최고 등급!');
-      toast('⚠️ 최고 등급입니다! 스페셜 합성을 이용하세요.');
-      return;
-    }
-    
-    const nextRarity = RARITIES[rarityIndex + 1];
-    console.log('🔮 9. 다음 등급:', nextRarity);
-    
-    // 3. 포켓몬 정보 확인
-    const pokemon = getPokemonByName(engName);
-    console.log('🔮 10. 포켓몬 정보:', pokemon);
-    
-    if (!pokemon) {
-      console.log('🔮 11. ❌ 포켓몬 없음!');
-      toast('⚠️ 포켓몬 정보를 찾을 수 없어요!');
-      return;
-    }
-    
-    // 4. 사용자 확인
-    console.log('🔮 12. 확인 창 표시');
-    if (!confirm(`🔮 ${pokemon.name} (${getRarityInfo(currentRarity).label}) 2장을 합성할까요?\n→ ${getRarityInfo(nextRarity.id).label} 등급으로 업그레이드!`)) {
-      console.log('🔮 13. ❌ 사용자 취소');
-      return;
-    }
-    
-    console.log('🔮 14. ✅ 합성 진행 시작!');
-    
-    // 카드 2장 소모
-    state.owned[engName].count -= 2;
-    console.log('🔮 15. 카드 차감 후 count:', state.owned[engName].count);
-    
-    if (state.owned[engName].count <= 0) {
-      delete state.owned[engName];
-      console.log('🔮 16. 카드 삭제됨 (0장)');
-    }
-    
-    // 상위 등급 카드 획득
-    if (!state.owned[engName]) {
-      state.owned[engName] = { count: 1, rarity: nextRarity.id };
-      console.log('🔮 17. 새 카드 생성:', state.owned[engName]);
-    } else {
-      state.owned[engName].count += 1;
-      const currentRarityIdx = RARITIES.findIndex(r => r.id === state.owned[engName].rarity);
-      const newRarityIdx = RARITIES.findIndex(r => r.id === nextRarity.id);
-      if (newRarityIdx > currentRarityIdx) {
-        state.owned[engName].rarity = nextRarity.id;
-      }
-      console.log('🔮 18. 기존 카드 업데이트:', state.owned[engName]);
-    }
-    
-    saveState();
-    console.log('🔮 19. 저장 완료!');
-    
-    SFX.evolution();
-    closeModal();
-    renderDex();
-    updateStatline();
-    
-    const upgradedPokemon = getPokemonByName(engName);
-    toast(`🎉 ${pokemon.name} → ${getRarityInfo(nextRarity.id).label} 등급 업그레이드!`);
-    console.log('🔮 20. ✅ 합성 완료!');
-    
-    if (upgradedPokemon) {
-      showRewardPopup(upgradedPokemon, '🔮 합성 성공!', `${getRarityInfo(nextRarity.id).label} 등급으로 업그레이드!`);
-    }
-    
-  } catch(e) {
-    console.error('🔮 ❌❌❌ 합성 오류 발생!:', e);
-    console.error('🔮 오류 스택:', e.stack);
-    toast('⚠️ 합성 중 오류가 발생했습니다: ' + e.message);
-  }
 }
 // ===== 스페셜 합성 (원하는 포켓몬으로 변경) =====
 function craftSpecialFromDetail(engName) {
