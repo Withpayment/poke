@@ -2984,7 +2984,6 @@ async function openCardDetail(pokemon) {
   const count = ownedData ? ownedData.count : 0;
   const bonus = getRarityBonus(rarity);
   
-  // 합성 가능 여부 확인
   const canCraft = ownedData && ownedData.count >= 2;
   const rarityIndex = RARITIES.findIndex(r => r.id === rarity);
   const canUpgrade = canCraft && rarityIndex < RARITIES.length - 1;
@@ -3019,7 +3018,6 @@ async function openCardDetail(pokemon) {
     evoHTML = `<div class="modal-section"><h4>🔄 진화 과정</h4><div class="evo-chain">${evoChain.map((evo, idx) => { const isCurrent = evo.name === pokemon.name; return `${idx > 0 ? '<span class="evo-arrow">→</span>' : ''}<div class="evo-item" style="${isCurrent ? 'border:3px solid var(--sun);background:rgba(255,201,60,.15);' : ''}">${evo.image ? `<img src="${evo.image}" alt="${evo.name}">` : `<div style="width:56px;height:56px;background:rgba(255,255,255,.1);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;margin:0 auto;">❓</div>`}<div class="evo-name">${evo.name} ${isCurrent ? '⭐' : ''}</div>${evo.level ? `<div class="evo-level">Lv.${evo.level}</div>` : ''}</div>`; }).join('')}</div></div>`;
   }
   
-  // 합성 버튼 HTML
   let craftButtonHTML = '';
   if (canCraft) {
     if (canUpgrade) {
@@ -3031,7 +3029,7 @@ async function openCardDetail(pokemon) {
               📦 ${rInfo.label} 카드 <b style="color:var(--paper);">×${count}</b> 보유<br>
               <span style="font-size:12px;color:var(--sun-2);">2장 합성 → ${nextRarity.label} 등급 업그레이드!</span>
             </div>
-            <button class="btn small" id="craftBtn_${pokemon.engName}" style="font-size:14px;padding:8px 18px;min-height:36px;">
+            <button class="btn small craft-btn" data-eng="${pokemon.engName}" style="font-size:14px;padding:8px 18px;min-height:36px;">
               🔮 합성하기 (×2)
             </button>
           </div>
@@ -3045,7 +3043,7 @@ async function openCardDetail(pokemon) {
               ⭐ 스페셜 카드 <b style="color:var(--paper);">×${count}</b> 보유<br>
               <span style="font-size:12px;color:var(--special);">2장 합성 → 원하는 포켓몬으로 변경!</span>
             </div>
-            <button class="btn small" id="specialCraftBtn_${pokemon.engName}" style="font-size:14px;padding:8px 18px;min-height:36px;background:var(--special);box-shadow:0 4px 0 #C94A1F;color:#fff;">
+            <button class="btn small special-craft-btn" data-eng="${pokemon.engName}" style="font-size:14px;padding:8px 18px;min-height:36px;background:var(--special);box-shadow:0 4px 0 #C94A1F;color:#fff;">
               🔮 특수 합성 (×2)
             </button>
           </div>
@@ -3081,24 +3079,32 @@ async function openCardDetail(pokemon) {
   
   modal.classList.add('open');
   
-  // ⭐ 합성 버튼 이벤트 (addEventListener로 연결!)
-  const craftBtn = document.getElementById('craftBtn_' + pokemon.engName);
-  if (craftBtn) {
-    craftBtn.addEventListener('click', function(e) {
+  // ⭐ 합성 버튼 이벤트 (data-eng 속성 사용)
+  document.querySelectorAll('.craft-btn').forEach(btn => {
+    btn.addEventListener('click', function(e) {
       e.stopPropagation();
-      console.log('🔥 합성 버튼 클릭! (addEventListener)');
-      craftFromDetail(pokemon.engName);
+      const engName = this.dataset.eng;
+      console.log('🔥 합성 버튼 클릭! 포켓몬:', engName);
+      if (engName) {
+        craftFromDetail(engName);
+      } else {
+        console.error('❌ 포켓몬 이름이 없습니다!');
+      }
     });
-  }
+  });
   
-  const specialBtn = document.getElementById('specialCraftBtn_' + pokemon.engName);
-  if (specialBtn) {
-    specialBtn.addEventListener('click', function(e) {
+  document.querySelectorAll('.special-craft-btn').forEach(btn => {
+    btn.addEventListener('click', function(e) {
       e.stopPropagation();
-      console.log('⭐ 스페셜 합성 버튼 클릭! (addEventListener)');
-      craftSpecialFromDetail(pokemon.engName);
+      const engName = this.dataset.eng;
+      console.log('⭐ 스페셜 합성 버튼 클릭! 포켓몬:', engName);
+      if (engName) {
+        craftSpecialFromDetail(engName);
+      } else {
+        console.error('❌ 포켓몬 이름이 없습니다!');
+      }
     });
-  }
+  });
   
   if (pokemon.cryUrl) {
     const audio = new Audio(pokemon.cryUrl);
