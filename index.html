@@ -3238,16 +3238,49 @@ function renderBattleSetup() {
     slots.appendChild(div);
   }
   
+  // ⭐⭐⭐ 배틀 본문 - AI/실시간 버튼 생성 (중요!) ⭐⭐⭐
   if (state.team.length === 3) {
     const teamNames2 = state.team.map(eng => { const p = getPokemonByName(eng); return p ? p.name : '?'; }).join(' · ');
     const aiChances = state.battleChances || 0;
     const pvpChances = state.pvpChances || 0;
-    body.innerHTML = `<div style="text-align:center;padding:16px 0;"><div style="font-family:var(--font-display);font-size:22px;color:var(--sun-2);margin-bottom:4px;">⚔️ ${teamNames2}</div><div style="font-family:var(--font-mono);font-size:13px;color:#B7AFDE;margin:6px 0;">🤖 AI 배틀: <b style="color:${aiChances > 0 ? 'var(--good)' : '#8d84b0'};">${aiChances}</b>회 &nbsp;|&nbsp; 🌐 PVP 배틀: <b style="color:${pvpChances > 0 ? 'var(--good)' : '#8d84b0'};">${pvpChances}</b>회</div><div style="font-size:11px;color:#6b6395;margin-bottom:12px;">※ 생활미션 완료 시 +1회 (누적)</div><div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;"><button class="btn small" onclick="clearTeam()" style="font-size:15px;padding:8px 18px;min-height:40px;">🔄 팀 초기화</button><button class="btn small" onclick="autoFillTeam()" style="font-size:15px;padding:8px 18px;min-height:40px;">🤖 자동 구성</button>${battleMode === 'pvp' ? `<button class="btn" onclick="renderPvpIntro()" style="font-size:15px;padding:10px 22px;min-height:48px;${pvpChances <= 0 ? 'opacity:0.4;cursor:not-allowed;' : ''}" ${pvpChances <= 0 ? 'disabled' : ''}>🌐 실시간 배틀 (${pvpChances}회)</button>` : `<button class="btn" onclick="startAiBattle()" style="font-size:15px;padding:10px 22px;min-height:48px;${aiChances <= 0 ? 'opacity:0.4;cursor:not-allowed;' : ''}" ${aiChances <= 0 ? 'disabled' : ''}>🤖 AI 배틀 (${aiChances}회)</button>`}</div>${(battleMode === 'ai' && aiChances <= 0) || (battleMode === 'pvp' && pvpChances <= 0) ? `<div style="font-size:13px;color:var(--bad);margin-top:10px;">⚠️ 생활미션을 완료하면 배틀 횟수가 지급됩니다!</div>` : ''}</div>`;
+    
+    console.log('📊 배틀 모드:', battleMode, 'AI횟수:', aiChances, 'PVP횟수:', pvpChances);
+    
+    body.innerHTML = `
+      <div style="text-align:center;padding:16px 0;">
+        <div style="font-family:var(--font-display);font-size:22px;color:var(--sun-2);margin-bottom:4px;">⚔️ ${teamNames2}</div>
+        <div style="font-family:var(--font-mono);font-size:13px;color:#B7AFDE;margin:6px 0;">
+          🤖 AI 배틀: <b style="color:${aiChances > 0 ? 'var(--good)' : '#8d84b0'};">${aiChances}</b>회 &nbsp;|&nbsp; 🌐 PVP 배틀: <b style="color:${pvpChances > 0 ? 'var(--good)' : '#8d84b0'};">${pvpChances}</b>회
+        </div>
+        <div style="font-size:11px;color:#6b6395;margin-bottom:12px;">※ 생활미션 완료 시 +1회 (누적)</div>
+        <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+          <button class="btn small" onclick="clearTeam()" style="font-size:15px;padding:8px 18px;min-height:40px;">🔄 팀 초기화</button>
+          <button class="btn small" onclick="autoFillTeam()" style="font-size:15px;padding:8px 18px;min-height:40px;">🤖 자동 구성</button>
+          ${battleMode === 'pvp' 
+            ? `<button class="btn" onclick="renderPvpIntro()" style="font-size:15px;padding:10px 22px;min-height:48px;${pvpChances <= 0 ? 'opacity:0.4;cursor:not-allowed;' : ''}" ${pvpChances <= 0 ? 'disabled' : ''}>🌐 실시간 배틀 (${pvpChances}회)</button>` 
+            : `<button class="btn" id="aiBattleBtn" onclick="startAiBattle()" style="font-size:15px;padding:10px 22px;min-height:48px;${aiChances <= 0 ? 'opacity:0.4;cursor:not-allowed;' : ''}" ${aiChances <= 0 ? 'disabled' : ''}>🤖 AI 배틀 (${aiChances}회)</button>`
+          }
+        </div>
+        ${(battleMode === 'ai' && aiChances <= 0) || (battleMode === 'pvp' && pvpChances <= 0) 
+          ? `<div style="font-size:13px;color:var(--bad);margin-top:10px;">⚠️ 생활미션을 완료하면 배틀 횟수가 지급됩니다!</div>` 
+          : ''}
+      </div>
+    `;
+    
+    // ⭐ 버튼이 제대로 생성되었는지 확인
+    const aiBtn = document.getElementById('aiBattleBtn');
+    console.log('🔘 AI 버튼 생성됨:', aiBtn);
+    
   } else {
-    body.innerHTML = `<div style="text-align:center;padding:30px 16px;color:#8d84b0;border:2px dashed rgba(255,201,60,.15);border-radius:14px;margin-top:4px;"><div style="font-size:36px;margin-bottom:8px;">🃏</div><div style="font-size:17px;font-family:var(--font-display);">${3 - state.team.length}장의 카드를 더 선택해주세요</div><div style="font-size:13px;color:#6b6395;margin-top:4px;">슬롯을 클릭하면 카드를 선택할 수 있어요</div></div>`;
+    body.innerHTML = `
+      <div style="text-align:center;padding:30px 16px;color:#8d84b0;border:2px dashed rgba(255,201,60,.15);border-radius:14px;margin-top:4px;">
+        <div style="font-size:36px;margin-bottom:8px;">🃏</div>
+        <div style="font-size:17px;font-family:var(--font-display);">${3 - state.team.length}장의 카드를 더 선택해주세요</div>
+        <div style="font-size:13px;color:#6b6395;margin-top:4px;">슬롯을 클릭하면 카드를 선택할 수 있어요</div>
+      </div>
+    `;
   }
 }
-
 function openBattlePicker(slotIndex) {
   const overlay = document.getElementById('battlePicker');
   overlay.style.display = 'flex';
