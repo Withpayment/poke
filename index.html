@@ -2029,18 +2029,6 @@ function resetGame() {
 document.getElementById('resetHiddenBtn').addEventListener('click', resetGame);
 
 // ===== 탭 전환 =====
-document.querySelectorAll('nav.tabbar button').forEach(btn => {
-  btn.addEventListener('click', function() {
-    document.querySelectorAll('nav.tabbar button').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('main section').forEach(s => s.classList.remove('active'));
-    this.classList.add('active');
-    document.getElementById(this.dataset.tab).classList.add('active');
-    if (this.dataset.tab === 'tab-battle') renderBattleSetup();
-    if (this.dataset.tab === 'tab-pet') renderPetTab();
-    if (this.dataset.tab === 'tab-trade') renderTradeTab();
-    if (this.dataset.tab === 'tab-craft') renderCraftTab();  // ⭐ 추가!
-  });
-});
 
 // ===== 미션 시스템 =====
 document.querySelectorAll('#tab-mission .mode-toggle button').forEach(btn => {
@@ -3020,36 +3008,36 @@ async function openCardDetail(pokemon) {
   
   let craftButtonHTML = '';
   if (canCraft) {
-    if (canUpgrade) {
-      const nextRarity = RARITIES[rarityIndex + 1];
-      craftButtonHTML = `
-        <div style="margin-top:12px;padding:12px;background:rgba(255,201,60,.08);border-radius:12px;border:2px solid rgba(255,201,60,.2);">
-          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
-            <div style="font-size:14px;color:#B7AFDE;">
-              📦 ${rInfo.label} 카드 <b style="color:var(--paper);">×${count}</b> 보유<br>
-              <span style="font-size:12px;color:var(--sun-2);">2장 합성 → ${nextRarity.label} 등급 업그레이드!</span>
-            </div>
-            <button class="btn small craft-btn" data-eng="${pokemon.engName}" style="font-size:14px;padding:8px 18px;min-height:36px;">
-              🔮 합성하기 (×2)
-            </button>
-          </div>
+if (canUpgrade) {
+  const nextRarity = RARITIES[rarityIndex + 1];
+  craftButtonHTML = `
+    <div style="margin-top:12px;padding:12px;background:rgba(255,201,60,.08);border-radius:12px;border:2px solid rgba(255,201,60,.2);">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+        <div style="font-size:14px;color:#B7AFDE;">
+          📦 ${rInfo.label} 카드 <b style="color:var(--paper);">×${count}</b> 보유<br>
+          <span style="font-size:12px;color:var(--sun-2);">2장 합성 → ${nextRarity.label} 등급 업그레이드!</span>
         </div>
-      `;
-    } else if (canSpecialCraft) {
-      craftButtonHTML = `
-        <div style="margin-top:12px;padding:12px;background:rgba(255,107,53,.08);border-radius:12px;border:2px solid rgba(255,107,53,.2);">
-          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
-            <div style="font-size:14px;color:#B7AFDE;">
-              ⭐ 스페셜 카드 <b style="color:var(--paper);">×${count}</b> 보유<br>
-              <span style="font-size:12px;color:var(--special);">2장 합성 → 원하는 포켓몬으로 변경!</span>
-            </div>
-            <button class="btn small special-craft-btn" data-eng="${pokemon.engName}" style="font-size:14px;padding:8px 18px;min-height:36px;background:var(--special);box-shadow:0 4px 0 #C94A1F;color:#fff;">
-              🔮 특수 합성 (×2)
-            </button>
-          </div>
+        <button class="btn small" onclick="window.craftFromDetailDirectly('${pokemon.engName}')" style="font-size:14px;padding:8px 18px;min-height:36px;">
+          🔮 합성하기 (×2)
+        </button>
+      </div>
+    </div>
+  `;
+} else if (canSpecialCraft) {
+  craftButtonHTML = `
+    <div style="margin-top:12px;padding:12px;background:rgba(255,107,53,.08);border-radius:12px;border:2px solid rgba(255,107,53,.2);">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+        <div style="font-size:14px;color:#B7AFDE;">
+          ⭐ 스페셜 카드 <b style="color:var(--paper);">×${count}</b> 보유<br>
+          <span style="font-size:12px;color:var(--special);">2장 합성 → 원하는 포켓몬으로 변경!</span>
         </div>
-      `;
-    }
+        <button class="btn small" onclick="window.craftSpecialFromDetailDirectly('${pokemon.engName}')" style="font-size:14px;padding:8px 18px;min-height:36px;background:var(--special);box-shadow:0 4px 0 #C94A1F;color:#fff;">
+          🔮 특수 합성 (×2)
+        </button>
+      </div>
+    </div>
+  `;
+}
   } else {
     if (ownedData && ownedData.count === 1) {
       craftButtonHTML = `
@@ -4421,6 +4409,32 @@ function openCardDetailFromCraft(engName) {
 
 // ⭐ window에 등록 (onclick에서 찾을 수 있도록)
 window.openCardDetailFromCraft = openCardDetailFromCraft;
+// ============================================================
+// ⭐ 직접 호출용 합성 함수 (onclick에서 사용)
+// ============================================================
+
+window.craftFromDetailDirectly = function(engName) {
+    console.log('🔮🔮🔮 직접 호출된 합성 함수! 포켓몬:', engName);
+    alert('🔥 직접 호출 성공! 포켓몬: ' + engName);
+    
+    // 기존 craftFromDetail 함수 호출
+    if (typeof window.craftFromDetail === 'function') {
+        window.craftFromDetail(engName);
+    } else {
+        alert('❌ craftFromDetail 함수가 없습니다!');
+    }
+};
+
+window.craftSpecialFromDetailDirectly = function(engName) {
+    console.log('⭐⭐ 직접 호출된 스페셜 합성 함수! 포켓몬:', engName);
+    alert('⭐ 직접 호출 성공! 포켓몬: ' + engName);
+    
+    if (typeof window.craftSpecialFromDetail === 'function') {
+        window.craftSpecialFromDetail(engName);
+    } else {
+        alert('❌ craftSpecialFromDetail 함수가 없습니다!');
+    }
+};
 // ===== 초기화 =====
 async function initGame() {
   document.getElementById('loadingScreen').style.display = 'block';
