@@ -4112,20 +4112,20 @@ function renderCraftTab() {
           
           return `
             <div class="craft-card-item" 
-                 data-eng="${key}"
-                 onclick="openCardDetailFromCraft('${key}')"
-                 style="padding:8px 14px;border-radius:12px;border:2px solid ${rInfo.color};background:rgba(255,255,255,.04);display:flex;align-items:center;gap:8px;cursor:pointer;transition:all .2s;"
-                 onmouseover="this.style.transform='scale(1.02)';this.style.boxShadow='0 4px 12px rgba(0,0,0,.3)';"
-                 onmouseout="this.style.transform='scale(1)';this.style.boxShadow='none';">
-              ${pokemonImage(p, '28px')}
-              <div style="text-align:left;">
-                <div style="font-family:var(--font-display);font-size:14px;color:var(--paper);">${p?.name}</div>
-                <div style="font-size:11px;color:${rInfo.color};">${rInfo.emoji} ${rInfo.label} ×${info.count}</div>
-              </div>
-              <div style="font-size:11px;padding:2px 10px;border-radius:10px;background:${isSpecial ? 'var(--special)' : 'var(--good)'};color:#fff;font-weight:600;white-space:nowrap;">
-                ${isSpecial ? '⭐ 특수합성' : `⬆️ ${canUpgrade ? RARITIES[rarityIndex + 1].label : '최고'}`}
-              </div>
-            </div>
+     data-eng="${key}"
+     onclick="window.openCardDetailFromCraft('${key}')"  // ⭐ window. 추가!
+     style="padding:8px 14px;border-radius:12px;border:2px solid ${rInfo.color};background:rgba(255,255,255,.04);display:flex;align-items:center;gap:8px;cursor:pointer;transition:all .2s;"
+     onmouseover="this.style.transform='scale(1.02)';this.style.boxShadow='0 4px 12px rgba(0,0,0,.3)';"
+     onmouseout="this.style.transform='scale(1)';this.style.boxShadow='none';">
+  ${pokemonImage(p, '28px')}
+  <div style="text-align:left;">
+    <div style="font-family:var(--font-display);font-size:14px;color:var(--paper);">${p?.name}</div>
+    <div style="font-size:11px;color:${rInfo.color};">${rInfo.emoji} ${rInfo.label} ×${info.count}</div>
+  </div>
+  <div style="font-size:11px;padding:2px 10px;border-radius:10px;background:${isSpecial ? 'var(--special)' : 'var(--good)'};color:#fff;font-weight:600;white-space:nowrap;">
+    ${isSpecial ? '⭐ 특수합성' : `⬆️ ${canUpgrade ? RARITIES[rarityIndex + 1].label : '최고'}`}
+  </div>
+</div>
           `;
         }).join('')}
       </div>
@@ -4375,6 +4375,28 @@ window.craftSpecialFromDetail = craftSpecialFromDetail;
 window.doSpecialCraft = doSpecialCraft;
 window.showSpecialCraftPicker = showSpecialCraftPicker;
 window.toast = toast;
+// ===== 합성 탭에서 카드 클릭 시 도감으로 이동 =====
+function openCardDetailFromCraft(engName) {
+  console.log('🔮 openCardDetailFromCraft 호출됨:', engName);
+  const pokemon = getPokemonByName(engName);
+  if (pokemon) {
+    // 탭을 도감으로 전환
+    document.querySelectorAll('nav.tabbar button').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('main section').forEach(s => s.classList.remove('active'));
+    document.querySelector('[data-tab="tab-dex"]')?.classList.add('active');
+    document.getElementById('tab-dex')?.classList.add('active');
+    
+    // 카드 상세 열기
+    setTimeout(() => {
+      openCardDetail(pokemon);
+    }, 300);
+  } else {
+    console.error('❌ 포켓몬을 찾을 수 없음:', engName);
+  }
+}
+
+// ⭐ window에 등록 (onclick에서 찾을 수 있도록)
+window.openCardDetailFromCraft = openCardDetailFromCraft;
 // ===== 초기화 =====
 async function initGame() {
   document.getElementById('loadingScreen').style.display = 'block';
