@@ -3197,7 +3197,19 @@ function showRewardPopup(pokemon, title, subtitle) {
 let battleMode = 'pvp';
 let battlePickerStep = 'type';
 let selectedSlotIndex = 0;
-
+// ===== 배틀 모드 토글 (탭 내부 버튼) =====
+document.querySelectorAll('#tab-battle .mode-toggle button').forEach(btn => {
+  btn.addEventListener('click', function() {
+    console.log('🔘 배틀 모드 버튼 클릭!', this.dataset.mode);
+    
+    document.querySelectorAll('#tab-battle .mode-toggle button').forEach(b => b.classList.remove('active'));
+    this.classList.add('active');
+    battleMode = this.dataset.mode;
+    console.log('🔄 battleMode 변경됨:', battleMode);
+    
+    renderBattleSetup();
+  });
+});
 function renderBattleSetup() {
   const slots = document.getElementById('teamSlots');
   const body = document.getElementById('battleBody');
