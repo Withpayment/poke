@@ -3354,18 +3354,51 @@ function setBattleMode(mode) { battleMode = mode; renderBattleSetup(); }
 let aiBattle = null;
 
 function startAiBattle() {
+  console.log('🤖🤖🤖 AI 배틀 시작 버튼 클릭!');
+  
   const aiChances = state.battleChances || 0;
-  if (aiChances <= 0) { toast('⚠️ AI 배틀 횟수가 부족합니다! 생활미션을 완료해주세요.'); return; }
-  const playerTeam = state.team.map(engName => { const c = getPokemonByName(engName); return c ? { ...c, curHp: c.hp } : null; }).filter(Boolean);
-  if (playerTeam.length < 3) { toast('⚠️ 3장의 카드를 모두 선택해주세요!'); return; }
-  state.battleChances = (state.battleChances || 0) - 1;
+  console.log('📊 현재 AI 배틀 횟수:', aiChances);
+  
+  // 횟수 체크 (21이니까 당연히 통과)
+  if (aiChances <= 0) { 
+    toast('⚠️ AI 배틀 횟수가 부족합니다!'); 
+    return; 
+  }
+  
+  // 팀 확인
+  const playerTeam = state.team.map(engName => { 
+    const c = getPokemonByName(engName); 
+    return c ? { ...c, curHp: c.hp } : null; 
+  }).filter(Boolean);
+  
+  console.log('👥 플레이어 팀:', playerTeam.map(p => p.name));
+  
+  if (playerTeam.length < 3) { 
+    toast('⚠️ 3장의 카드를 모두 선택해주세요!'); 
+    return; 
+  }
+  
+  // ⭐ 배틀 횟수 차감
+  state.battleChances = state.battleChances - 1;
+  console.log('✅ 차감 후 횟수:', state.battleChances);
   saveState();
-  renderBattleSetup();
-  aiBattle = { player: playerTeam, enemy: makeEnemyTeam(), pActive: 0, eActive: 0, log: [], over: false };
+  
+  // AI 팀 생성
+  const enemyTeam = makeEnemyTeam();
+  console.log('👾 AI 팀:', enemyTeam.map(p => p.name));
+  
+  aiBattle = { 
+    player: playerTeam, 
+    enemy: enemyTeam, 
+    pActive: 0, 
+    eActive: 0, 
+    log: [], 
+    over: false 
+  };
+  
   addAiLog('⚔️ 상대 트레이너가 나타났다!', 'sys');
   renderAiArena();
 }
-
 function makeEnemyTeam() {
   const pool = POKEMON_LIST.filter(c => state.owned[c.engName]);
   const team = [];
