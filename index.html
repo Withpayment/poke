@@ -2461,45 +2461,73 @@ const sortedMissions = [...allMissions].sort((a, b) => {
     <div class="reveal-wrap" id="lifeReveal"></div>
   `;
   
-  document.querySelectorAll('[data-life]').forEach(btn => {
-    btn.addEventListener('click', function() {
-      const key = todayKey();
-      if (!state.dailyMissions[key]) state.dailyMissions[key] = {};
-      if (state.dailyMissions[key][this.dataset.life]) return;
-      state.dailyMissions[key][this.dataset.life] = true;
+document.querySelectorAll('[data-life]').forEach(btn => {
+  btn.addEventListener('click', function() {
+    const key = todayKey();
+    if (!state.dailyMissions[key]) state.dailyMissions[key] = {};
+    if (state.dailyMissions[key][this.dataset.life]) return;
+    state.dailyMissions[key][this.dataset.life] = true;
+    
+    // ⭐ 커스텀 미션인지 확인하고 카드 획득 수량 가져오기
+    const missionId = this.dataset.life;
+    let cardRewardCount = 1; // 기본 1장
+    
+    // 커스텀 미션 찾기
+    const customMission = (state.customMissions || []).find(m => m.id === missionId);
+    if (customMission && customMission.cardReward) {
+      cardRewardCount = customMission.cardReward;
+    }
+    
+    // ⭐ 카드 획득 (수량만큼)
+    let rewards = [];
+    for (let i = 0; i < cardRewardCount; i++) {
       const reward = grantCardReward();
-      if (state.raid && state.raid.boss && !state.raid.completed) {
-        state.raid.attackChance = (state.raid.attackChance || 0) + 1;
-      }
-      state.battleChances = (state.battleChances || 0) + 1;
-      state.pvpChances = (state.pvpChances || 0) + 1;
-      saveState();
-      if (state.pet) {
-        const expBonus = Math.round(petExpThreshold() * 0.1);
-        state.pet.exp += expBonus;
-        const result = checkPetLevelUp();
-        if (result.evolved) { state.pet.justEvolved = true; saveState(); renderPetTab(); }
-        saveState(); renderPetTab();
-      }
-      renderLifeMissions();
-      const reveal = document.getElementById('lifeReveal');
-      if (reward) {
-        const rInfo = getRarityInfo(reward.rarity);
-        reveal.innerHTML = `<div style="text-align:center;width:100%;margin-top:12px;">
-          <div style="font-family:var(--font-display);font-size:18px;color:var(--sun-2);margin-bottom:8px;">🎁 미션 완료! 카드 획득!</div>
-          <div class="card pop-in rarity-${reward.rarity}" style="width:160px;margin:0 auto;">
-            <div class="art">${pokemonImage(reward.target)}</div>
-            <div class="name">${reward.target.name}</div>
-            <span class="type-tag" style="background:${getTypeColor(reward.target.type)}">${getTypeLabel(reward.target.type)}</span>
-            <span class="rarity-badge" style="background:${rInfo.color}">${rInfo.emoji} ${rInfo.label}</span>
+      if (reward) rewards.push(reward);
+    }
+    
+    // 기존 보너스 (레이드, 배틀, 키우기)
+    if (state.raid && state.raid.boss && !state.raid.completed) {
+      state.raid.attackChance = (state.raid.attackChance || 0) + 1;
+    }
+    state.battleChances = (state.battleChances || 0) + 1;
+    state.pvpChances = (state.pvpChances || 0) + 1;
+    saveState();
+    
+    if (state.pet) {
+      const expBonus = Math.round(petExpThreshold() * 0.1);
+      state.pet.exp += expBonus;
+      const result = checkPetLevelUp();
+      if (result.evolved) { state.pet.justEvolved = true; saveState(); renderPetTab(); }
+      saveState(); renderPetTab();
+    }
+    
+    renderLifeMissions();
+    const reveal = document.getElementById('lifeReveal');
+    
+    // ⭐ 획득한 카드 표시
+    if (rewards.length > 0) {
+      let cardHTML = rewards.map(r => {
+        const rInfo = getRarityInfo(r.rarity);
+        return `<div class="card pop-in rarity-${r.rarity}" style="width:120px;margin:4px auto;display:inline-block;">
+          <div class="art">${pokemonImage(r.target)}</div>
+          <div class="name" style="font-size:12px;">${r.target.name}</div>
+          <span class="rarity-badge" style="background:${rInfo.color};font-size:8px;">${rInfo.emoji} ${rInfo.label}</span>
+        </div>`;
+      }).join('');
+      
+      reveal.innerHTML = `
+        <div style="text-align:center;width:100%;margin-top:12px;padding:12px;background:rgba(255,201,60,.08);border-radius:12px;border:2px solid var(--sun);">
+          <div style="font-family:var(--font-display);font-size:18px;color:var(--sun-2);margin-bottom:8px;">
+            🎁 미션 완료! ${cardRewardCount}장의 카드 획득!
           </div>
-          <div style="font-family:var(--font-mono);font-size:12px;color:#B7AFDE;margin-top:6px;">${reward.isNew ? '✦ 새 포켓몬!' : '✦ 중복 획득!'}</div>
+          <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:6px;">${cardHTML}</div>
           ${state.pet ? `<div style="font-family:var(--font-mono);font-size:12px;color:var(--sun-2);margin-top:4px;">✨ 키우는 포켓몬 경험치 +10%!</div>` : ''}
           ${state.raid?.boss ? `<div style="font-family:var(--font-mono);font-size:12px;color:var(--good);margin-top:4px;">⚔️ 레이드 공격 기회 +1!</div>` : ''}
-        </div>`;
-      }
-    });
+        </div>
+      `;
+    }
   });
+});
   
 document.getElementById('addCustomMission').addEventListener('click', function() {
   const input = document.getElementById('customMissionInput');
