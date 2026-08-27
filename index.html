@@ -1836,13 +1836,29 @@ async function loadAllPokemon() {
             const name = speciesData.names.find(n => n.language.name === 'ko');
             if (name) koreanName = name.name;
           } catch(e) {}
+          
+          // ⭐⭐⭐ 수정 부분 1: 이미지 처리 ⭐⭐⭐
+          let imageUrl = detail.sprites.other['official-artwork']?.front_default || detail.sprites.front_default;
+          
+          // 코라이돈, 미라이돈 이미지 강제 지정
+          if (detail.name === 'koraidon') {
+            imageUrl = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1007.png';
+          } else if (detail.name === 'miraidon') {
+            imageUrl = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1008.png';
+          }
+          
+          if (!imageUrl) {
+            imageUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${detail.id}.png`;
+          }
+          // ⭐⭐⭐ 수정 끝 ⭐⭐⭐
+          
           return {
             id: detail.id, name: koreanName, engName: detail.name,
             type: detail.types[0].type.name,
             types: detail.types.map(t => t.type.name),
             hp: detail.stats[0].base_stat, atk: detail.stats[1].base_stat,
             def: detail.stats[2].base_stat, spd: detail.stats[5].base_stat,
-            image: detail.sprites.other['official-artwork']?.front_default || detail.sprites.front_default,
+            image: imageUrl,  // ⭐ imageUrl 사용
             speciesUrl: detail.species.url,
             cryUrl: detail.cries?.latest || detail.cries?.legacy || null
           };
@@ -1853,6 +1869,18 @@ async function loadAllPokemon() {
       document.getElementById('loadingStatus').textContent = 'PokeAPI 로딩 중... ' + allPokemon.length + '/' + allUrls.length;
     }
     allPokemon.sort((a, b) => a.id - b.id);
+    
+    // ⭐⭐⭐ 수정 부분 2: 중복 제거 ⭐⭐⭐
+    const uniqueMap = new Map();
+    allPokemon.forEach(p => {
+      if (!uniqueMap.has(p.engName)) {
+        uniqueMap.set(p.engName, p);
+      }
+    });
+    allPokemon = Array.from(uniqueMap.values());
+    allPokemon.sort((a, b) => a.id - b.id);
+    // ⭐⭐⭐ 수정 끝 ⭐⭐⭐
+    
     POKEMON_LIST = allPokemon;
     localStorage.setItem(CACHE_KEY, JSON.stringify(POKEMON_LIST));
     localStorage.setItem(CACHE_TIME_KEY, String(Date.now()));
