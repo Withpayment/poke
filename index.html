@@ -3016,20 +3016,45 @@ function renderDex() {
   if (ownershipFilter === 'owned') list = list.filter(c => state.owned[c.engName]);
   else if (ownershipFilter === 'missing') list = list.filter(c => !state.owned[c.engName]);
   if (activeRarity !== 'all') list = list.filter(c => { const ownedData = state.owned[c.engName]; return ownedData && ownedData.rarity === activeRarity; });
-  grid.innerHTML = list.map(c => {
-    const ownedData = state.owned[c.engName];
-    const has = !!ownedData;
-    const rarity = has ? ownedData.rarity : 'common';
-    const count = has ? ownedData.count : 0;
-    const rInfo = getRarityInfo(rarity);
-    return `<div class="card mini ${has ? 'rarity-' + rarity : 'locked'}" data-eng="${c.engName}">
-      <div class="art">${pokemonImage(c)}</div>
-      <div class="name">${has ? c.name : '???'}</div>
-      <span class="type-tag" style="background:${getTypeColor(c.type)}">${has ? getTypeLabel(c.type) : '???'}</span>
-      <div class="statrow"><span>HP<b>${has ? c.hp : '-'}</b></span><span>ATK<b>${has ? c.atk : '-'}</b></span><span>DEF<b>${has ? c.def : '-'}</b></span><span>SPD<b>${has ? c.spd : '-'}</b></span></div>
-      ${has ? `<span class="rarity-badge" style="background:${rInfo.color};">${rInfo.emoji} ${rInfo.label} ×${count}</span>` : ''}
-    </div>`;
-  }).join('');
+grid.innerHTML = list.map(c => {
+  const ownedData = state.owned[c.engName];
+  const has = !!ownedData;
+  const rarity = has ? ownedData.rarity : 'common';
+  const count = has ? ownedData.count : 0;
+  const rInfo = getRarityInfo(rarity);
+  
+  // ⭐ 키우는 포켓몬인지 확인
+  const isPet = state.pet && (state.pet.baseId === c.engName || state.pet.evolvedId === c.engName);
+  const petLevel = isPet ? state.pet.level : 0;
+  
+  // ⭐ 실제 능력치 계산 (키우기 보너스 적용)
+  let displayHp = c.hp;
+  let displayAtk = c.atk;
+  let displayDef = c.def;
+  let displaySpd = c.spd;
+  
+  if (isPet && state.pet) {
+    const levelBonus = getPetLevelBonus(state.pet);
+    displayHp = c.hp + levelBonus.hp;
+    displayAtk = c.atk + levelBonus.atk;
+    displayDef = c.def + levelBonus.def;
+    displaySpd = c.spd + levelBonus.spd;
+  }
+  
+  return `<div class="card mini ${has ? 'rarity-' + rarity : 'locked'} ${isPet ? 'pet-card' : ''}" data-eng="${c.engName}" style="${isPet ? 'border-color:var(--special);box-shadow:0 0 20px rgba(255,107,53,.3);' : ''}">
+    <div class="art">${pokemonImage(c)}</div>
+    <div class="name">${has ? c.name : '???'} ${isPet ? '⭐' : ''}</div>
+    <span class="type-tag" style="background:${getTypeColor(c.type)}">${has ? getTypeLabel(c.type) : '???'}</span>
+    <div class="statrow">
+      <span>HP<b>${has ? displayHp : '-'}</b></span>
+      <span>ATK<b>${has ? displayAtk : '-'}</b></span>
+      <span>DEF<b>${has ? displayDef : '-'}</b></span>
+      <span>SPD<b>${has ? displaySpd : '-'}</b></span>
+    </div>
+    ${has ? `<span class="rarity-badge" style="background:${rInfo.color};">${rInfo.emoji} ${rInfo.label} ×${count}</span>` : ''}
+    ${isPet ? `<span style="position:absolute;bottom:4px;left:4px;font-size:10px;background:rgba(255,107,53,.8);color:#fff;padding:1px 8px;border-radius:8px;">🐣 Lv.${petLevel}</span>` : ''}
+  </div>`;
+}).join('');
   grid.querySelectorAll('.card:not(.locked)').forEach(el => {
     el.addEventListener('click', function() {
       const engName = this.dataset.eng;
@@ -3229,10 +3254,26 @@ function renderBattleSetup() {
     div.className = 'battle-slot';
     div.style.cssText = `width:90px;height:110px;background:${c ? 'rgba(255,201,60,.08)' : 'rgba(255,255,255,.04)'};border:${c ? '3px solid var(--sun)' : '3px dashed rgba(255,201,60,.15)'};border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:all .25s ease;position:relative;padding:6px;`;
     
-    if (c) {
-      const typeColor = getTypeColor(c.type);
-      div.innerHTML = `<button class="slot-remove" data-remove="${i}" style="position:absolute;top:2px;right:4px;background:rgba(0,0,0,.5);border:none;color:#fff;font-size:14px;cursor:pointer;padding:0 6px;border-radius:50%;line-height:1.4;">✕</button><div style="width:44px;height:44px;display:flex;align-items:center;justify-content:center;">${pokemonImage(c, '36px')}</div><div style="font-family:var(--font-display);font-size:12px;color:var(--paper);margin-top:1px;text-align:center;line-height:1.2;">${c.name}</div><span style="background:${typeColor};font-size:8px;padding:1px 8px;border-radius:10px;color:#fff;font-weight:600;margin-top:1px;">${getTypeLabel(c.type)}</span>`;
-    } else {
+if (c) {
+  // ⭐ 키우는 포켓몬인지 확인
+  let displayAtk = c.atk;
+  let displayHp = c.hp;
+  
+  if (state.pet && (state.pet.baseId === c.engName || state.pet.evolvedId === c.engName)) {
+    const levelBonus = getPetLevelBonus(state.pet);
+    displayAtk = c.atk + levelBonus.atk;
+    displayHp = c.hp + levelBonus.hp;
+  }
+  
+  const typeColor = getTypeColor(c.type);
+  div.innerHTML = `
+    <button class="slot-remove" data-remove="${i}" style="position:absolute;top:2px;right:4px;background:rgba(0,0,0,.5);border:none;color:#fff;font-size:14px;cursor:pointer;padding:0 6px;border-radius:50%;line-height:1.4;">✕</button>
+    <div style="width:44px;height:44px;display:flex;align-items:center;justify-content:center;">${pokemonImage(c, '36px')}</div>
+    <div style="font-family:var(--font-display);font-size:12px;color:var(--paper);margin-top:1px;text-align:center;line-height:1.2;">${c.name}</div>
+    <span style="background:${typeColor};font-size:8px;padding:1px 8px;border-radius:10px;color:#fff;font-weight:600;margin-top:1px;">${getTypeLabel(c.type)}</span>
+    <div style="font-size:7px;color:#B7AFDE;margin-top:1px;">⚔️${displayAtk} ❤️${displayHp}</div>
+  `;
+} else {
       div.innerHTML = `<span style="font-size:24px;opacity:0.3;">+</span><span style="font-size:11px;color:#6b6395;margin-top:2px;">${i+1}번째</span>`;
     }
     
@@ -3413,7 +3454,23 @@ function startAiBattle() {
   // 팀 확인
   const playerTeam = state.team.map(engName => { 
     const c = getPokemonByName(engName); 
-    return c ? { ...c, curHp: c.hp } : null; 
+    if (!c) return null;
+    
+    // 키우는 포켓몬인지 확인하고 능력치 강화
+    let finalHp = c.hp;
+    let finalAtk = c.atk;
+    let finalDef = c.def;
+    let finalSpd = c.spd;
+    
+    if (state.pet && (state.pet.baseId === engName || state.pet.evolvedId === engName)) {
+      const levelBonus = getPetLevelBonus(state.pet);
+      finalHp = c.hp + levelBonus.hp;
+      finalAtk = c.atk + levelBonus.atk;
+      finalDef = c.def + levelBonus.def;
+      finalSpd = c.spd + levelBonus.spd;
+    }
+    
+    return { ...c, hp: finalHp, atk: finalAtk, def: finalDef, spd: finalSpd, curHp: finalHp }; 
   }).filter(Boolean);
   
   console.log('👥 플레이어 팀:', playerTeam.map(p => p.name));
@@ -3643,37 +3700,73 @@ async function doBattleAttack() {
   const code = myBattleRoom.code;
   const mySide = myBattleRoom.side;
   const oppSide = mySide === 'host' ? 'guest' : 'host';
+  
   try {
     const snapshot = await db.ref('battles/' + code).once('value');
     const room = snapshot.val();
     if (!room || room.status === 'finished') return;
     if (room.turn !== mySide) return;
+    
     const me = room[mySide];
     const opp = room[oppSide];
     if (!me || !opp) return;
+    
     const myPokemon = me[0];
     const oppPokemon = opp[0];
+    
     const playerArt = document.querySelector('.fighter:first-child .art-wrap');
     if (playerArt) { playerArt.classList.add('attacking'); setTimeout(() => playerArt.classList.remove('attacking'), 500); }
     SFX.attack();
+    
     const mult = getEffMult(myPokemon.type, oppPokemon.type);
     const rarityBonus = getRarityDamageBonus(state.owned[myPokemon.engName]?.rarity);
-    const dmg = Math.max(3, Math.round(myPokemon.atk * mult - oppPokemon.def * 0.35) + rarityBonus);
+    
+    // ⭐⭐⭐ 여기 수정! ⭐⭐⭐
+    let myAtk = myPokemon.atk;
+    let myDef = myPokemon.def;
+    
+    if (state.pet && (state.pet.baseId === myPokemon.engName || state.pet.evolvedId === myPokemon.engName)) {
+      const levelBonus = getPetLevelBonus(state.pet);
+      myAtk = myPokemon.atk + levelBonus.atk;
+      myDef = myPokemon.def + levelBonus.def;
+    }
+    
+    const dmg = Math.max(3, Math.round(myAtk * mult - oppPokemon.def * 0.35) + rarityBonus);
+    
     oppPokemon.curHp = Math.max(0, oppPokemon.curHp - dmg);
+    
     const enemyArt = document.querySelector('.fighter:last-child .art-wrap');
     if (enemyArt) { enemyArt.classList.add('hit-effect'); setTimeout(() => enemyArt.classList.remove('hit-effect'), 500); showDamageNumber(enemyArt, dmg); }
+    
     let logMsg = myPokemon.name + '의 공격! ' + oppPokemon.name + '에게 ' + dmg + ' 피해';
     if (mult > 1) logMsg += ' (효과 굉장!)';
     else if (mult < 1) logMsg += ' (효과 별로...)';
+    
     let nextTurn = oppSide;
     if (oppPokemon.curHp <= 0) {
       logMsg += ' → ' + oppPokemon.name + ' 쓰러짐!';
       const nextIdx = opp.findIndex((p, i) => i > 0 && p.curHp > 0);
-      if (nextIdx === -1) { SFX.victory(); showVictoryEffect(); await db.ref('battles/' + code).update({ status: 'finished', winner: mySide, log: [logMsg, ...(room.log || [])] }); return; }
-      else { const nextPokemon = opp[nextIdx]; opp[0] = nextPokemon; opp.splice(nextIdx, 1); logMsg += ' → 상대가 ' + nextPokemon.name + '을(를) 내보냈다!'; nextTurn = oppSide; }
-    } else { nextTurn = oppSide; }
+      if (nextIdx === -1) { 
+        SFX.victory(); showVictoryEffect(); 
+        await db.ref('battles/' + code).update({ status: 'finished', winner: mySide, log: [logMsg, ...(room.log || [])] }); 
+        return; 
+      } else { 
+        const nextPokemon = opp[nextIdx]; 
+        opp[0] = nextPokemon; 
+        opp.splice(nextIdx, 1); 
+        logMsg += ' → 상대가 ' + nextPokemon.name + '을(를) 내보냈다!'; 
+        nextTurn = oppSide; 
+      }
+    } else { 
+      nextTurn = oppSide; 
+    }
+    
     await db.ref('battles/' + code).update({ [mySide]: me, [oppSide]: opp, turn: nextTurn, log: [logMsg, ...(room.log || [])] });
-  } catch(e) { console.error('공격 실패:', e); setPvpFeedback('공격 중 오류가 발생했어요', true); }
+    
+  } catch(e) { 
+    console.error('공격 실패:', e); 
+    setPvpFeedback('공격 중 오류가 발생했어요', true); 
+  }
 }
 
 function leaveBattleRoom() {
