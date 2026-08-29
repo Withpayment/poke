@@ -4215,24 +4215,51 @@ function closeModal() {
 // ===== 메가진화 실행 =====
 function performMegaEvolution(engName) {
   const megaEvo = MEGA_EVOLUTIONS[engName];
-  if (!megaEvo) { alert('메가진화할 수 없는 포켓몬입니다!'); return; }
-  if (!useEvolutionStone('mega')) { alert('메가진화의돌이 부족합니다!'); return; }
+  if (!megaEvo) { 
+    alert('메가진화할 수 없는 포켓몬입니다!'); 
+    return; 
+  }
+  
+  // 🔥 진화의돌 체크
+  if (!useEvolutionStone('mega')) { 
+    alert('메가진화의돌이 부족합니다! 레이드를 클리어해주세요.'); 
+    return; 
+  }
   
   const sourcePokemon = getPokemonByName(engName);
-  if (!sourcePokemon) { alert('포켓몬을 찾을 수 없어요!'); return; }
+  if (!sourcePokemon) { 
+    alert('포켓몬을 찾을 수 없어요!'); 
+    return; 
+  }
   
-  // ⭐⭐⭐ 기존 카드가 있는지 확인 ⭐⭐⭐
+  // ⭐⭐⭐ 기존 카드 확인 ⭐⭐⭐
   if (!state.owned[engName] || state.owned[engName].count < 1) {
     alert('진화할 카드가 없어요!');
     return;
   }
   
-  // 메가 이미지 가져오기
-  let megaImage = MEGA_IMAGE_MAP[megaEvo.id];
+  console.log('🔍 메가진화 시작:', engName);
+  console.log('📦 기존 카드:', state.owned[engName]);
+  
+  // ⭐⭐⭐ 1. 메가 이미지 가져오기 ⭐⭐⭐
+  let megaImage = null;
+  
+  // MEGA_IMAGE_MAP에서 찾기
+  if (MEGA_IMAGE_MAP && MEGA_IMAGE_MAP[megaEvo.id]) {
+    megaImage = MEGA_IMAGE_MAP[megaEvo.id];
+  }
+  // 메가-charizard는 X/Y 처리
+  if (!megaImage && megaEvo.id === 'mega-charizard') {
+    megaImage = MEGA_IMAGE_MAP['mega-charizard-x'] || MEGA_IMAGE_MAP['mega-charizard-y'];
+  }
+  // 없으면 원본 이미지 사용
   if (!megaImage) {
     megaImage = sourcePokemon.image || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${sourcePokemon.id}.png`;
   }
   
+  console.log('🖼️ 메가 이미지:', megaImage);
+  
+  // ⭐⭐⭐ 2. 메가 포켓몬 객체 생성/확인 ⭐⭐⭐
   let megaPokemon = getPokemonByName(megaEvo.id);
   if (!megaPokemon) {
     megaPokemon = {
@@ -4250,8 +4277,10 @@ function performMegaEvolution(engName) {
       cryUrl: sourcePokemon.cryUrl,
       isMega: true
     };
+    // POKEMON_LIST에 추가
     POKEMON_LIST.push(megaPokemon);
     
+    // 캐시에도 저장
     try {
       const cacheData = localStorage.getItem(CACHE_KEY);
       if (cacheData) {
@@ -4261,54 +4290,105 @@ function performMegaEvolution(engName) {
           localStorage.setItem(CACHE_KEY, JSON.stringify(list));
         }
       }
-    } catch(e) {}
+    } catch(e) {
+      console.warn('⚠️ 캐시 저장 실패:', e);
+    }
+  } else {
+    // 이미 존재하면 이미지 업데이트
+    megaPokemon.image = megaImage;
   }
   
-  // ⭐⭐⭐ 기존 카드 1장 삭제 ⭐⭐⭐
+  console.log('✅ 메가 포켓몬 준비 완료:', megaPokemon.name);
+  
+  // ⭐⭐⭐ 3. 기존 카드 1장 삭제 ⭐⭐⭐
   state.owned[engName].count -= 1;
   if (state.owned[engName].count <= 0) {
     delete state.owned[engName];
   }
+  console.log('🗑️ 기존 카드 삭제 후:', state.owned[engName] || '없음');
   
-  // ⭐⭐⭐ 메가 카드 추가 ⭐⭐⭐
+  // ⭐⭐⭐ 4. 메가 카드 추가 ⭐⭐⭐
   if (!state.owned[megaEvo.id]) {
     state.owned[megaEvo.id] = { count: 1, rarity: 'mega' };
   } else {
     state.owned[megaEvo.id].count += 1;
+    // 등급 업데이트
+    state.owned[megaEvo.id].rarity = 'mega';
   }
+  console.log('✅ 메가 카드 추가 후:', state.owned[megaEvo.id]);
   
+  // ⭐⭐⭐ 5. 저장 및 UI 업데이트 ⭐⭐⭐
   saveState();
   SFX.megaEvolution();
   closeModal();
   renderDex();
   updateStatline();
+  
+  // ⭐⭐⭐ 6. 결과 표시 ⭐⭐⭐
   showRewardPopup(megaPokemon, '💎 메가진화 성공!', '모든 스탯 +20!');
+  
+  console.log('🎉 메가진화 완료!');
 }
 
 // ===== 거다이맥스 실행 =====
 function performGigantamaxEvolution(engName) {
   const gigaEvo = GIGANTAMAX_EVOLUTIONS[engName];
-  if (!gigaEvo) { alert('거다이맥스할 수 없는 포켓몬입니다!'); return; }
-  if (!useEvolutionStone('gigantamax')) { alert('거다이맥스진화의돌이 부족합니다!'); return; }
+  if (!gigaEvo) { 
+    alert('거다이맥스할 수 없는 포켓몬입니다!'); 
+    return; 
+  }
+  
+  // 🔥 진화의돌 체크
+  if (!useEvolutionStone('gigantamax')) { 
+    alert('거다이맥스진화의돌이 부족합니다! 레이드를 클리어해주세요.'); 
+    return; 
+  }
   
   const sourcePokemon = getPokemonByName(engName);
-  if (!sourcePokemon) { alert('포켓몬을 찾을 수 없어요!'); return; }
+  if (!sourcePokemon) { 
+    alert('포켓몬을 찾을 수 없어요!'); 
+    return; 
+  }
   
-  // ⭐⭐⭐ 기존 카드가 있는지 확인 ⭐⭐⭐
+  // ⭐⭐⭐ 기존 카드 확인 ⭐⭐⭐
   if (!state.owned[engName] || state.owned[engName].count < 1) {
     alert('진화할 카드가 없어요!');
     return;
   }
   
-  // 이미지 가져오기
+  console.log('🔍 거다이맥스 진화 시작:', engName);
+  console.log('📦 기존 카드:', state.owned[engName]);
+  
+  // ⭐⭐⭐ 1. 거다이맥스 이미지 가져오기 ⭐⭐⭐
   let gigaImage = null;
+  
+  // GIGANTAMAX_IMAGE_MAP에서 찾기
   if (GIGANTAMAX_IMAGE_MAP && GIGANTAMAX_IMAGE_MAP[gigaEvo.id]) {
     gigaImage = GIGANTAMAX_IMAGE_MAP[gigaEvo.id];
   }
+  
+  // SPECIAL_IMAGES에서 찾기 (pokemonImage에 정의된 것)
+  if (!gigaImage) {
+    const SPECIAL_IMAGES = {
+      'gigantamax-sandaconda': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10218.png',
+      'gigantamax-centiskorch': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10220.png',
+      'gigantamax-toxtricity': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10219.png',
+      'gigantamax-grimmsnarl': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10213.png',
+      'gigantamax-hatterene': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10221.png'
+    };
+    if (SPECIAL_IMAGES[gigaEvo.id]) {
+      gigaImage = SPECIAL_IMAGES[gigaEvo.id];
+    }
+  }
+  
+  // 없으면 원본 이미지 사용
   if (!gigaImage) {
     gigaImage = sourcePokemon.image || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${sourcePokemon.id}.png`;
   }
   
+  console.log('🖼️ 거다이맥스 이미지:', gigaImage);
+  
+  // ⭐⭐⭐ 2. 거다이맥스 포켓몬 객체 생성/확인 ⭐⭐⭐
   let gigaPokemon = getPokemonByName(gigaEvo.id);
   if (!gigaPokemon) {
     gigaPokemon = {
@@ -4326,8 +4406,10 @@ function performGigantamaxEvolution(engName) {
       cryUrl: sourcePokemon.cryUrl,
       isGigantamax: true
     };
+    // POKEMON_LIST에 추가
     POKEMON_LIST.push(gigaPokemon);
     
+    // 캐시에도 저장
     try {
       const cacheData = localStorage.getItem(CACHE_KEY);
       if (cacheData) {
@@ -4337,30 +4419,44 @@ function performGigantamaxEvolution(engName) {
           localStorage.setItem(CACHE_KEY, JSON.stringify(list));
         }
       }
-    } catch(e) {}
+    } catch(e) {
+      console.warn('⚠️ 캐시 저장 실패:', e);
+    }
   } else {
+    // 이미 존재하면 이미지 업데이트
     gigaPokemon.image = gigaImage;
   }
   
-  // ⭐⭐⭐ 기존 카드 1장 삭제 ⭐⭐⭐
+  console.log('✅ 거다이맥스 포켓몬 준비 완료:', gigaPokemon.name);
+  
+  // ⭐⭐⭐ 3. 기존 카드 1장 삭제 ⭐⭐⭐
   state.owned[engName].count -= 1;
   if (state.owned[engName].count <= 0) {
     delete state.owned[engName];
   }
+  console.log('🗑️ 기존 카드 삭제 후:', state.owned[engName] || '없음');
   
-  // ⭐⭐⭐ 거다이맥스 카드 추가 ⭐⭐⭐
+  // ⭐⭐⭐ 4. 거다이맥스 카드 추가 ⭐⭐⭐
   if (!state.owned[gigaEvo.id]) {
     state.owned[gigaEvo.id] = { count: 1, rarity: 'gigantamax' };
   } else {
     state.owned[gigaEvo.id].count += 1;
+    // 등급 업데이트
+    state.owned[gigaEvo.id].rarity = 'gigantamax';
   }
+  console.log('✅ 거다이맥스 카드 추가 후:', state.owned[gigaEvo.id]);
   
+  // ⭐⭐⭐ 5. 저장 및 UI 업데이트 ⭐⭐⭐
   saveState();
   SFX.megaEvolution();
   closeModal();
   renderDex();
   updateStatline();
+  
+  // ⭐⭐⭐ 6. 결과 표시 ⭐⭐⭐
   showRewardPopup(gigaPokemon, '🔥 거다이맥스 성공!', '모든 스탯 +22!');
+  
+  console.log('🎉 거다이맥스 완료!');
 }
 function extractEvoChain(chain) {
   const result = [];
