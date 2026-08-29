@@ -2110,7 +2110,39 @@ async function getAllEvolvablePokemon() {
 
 // ===== 유틸리티 =====
 function getPokemonById(id) { return POKEMON_LIST.find(p => p.id === id || p.engName === id); }
-function getPokemonByName(name) { return POKEMON_LIST.find(p => p.engName === name || p.name === name); }
+function getPokemonByName(name) {
+  // 일반 검색
+  let result = POKEMON_LIST.find(p => p.engName === name || p.name === name);
+  if (result) return result;
+  
+  // 메가/거다이맥스 ID로 검색 (저장된 데이터에서)
+  if (name && (name.startsWith('mega-') || name.startsWith('gigantamax-'))) {
+    // owned에서 찾기
+    if (state.owned && state.owned[name]) {
+      // 임시 포켓몬 객체 생성
+      const evoInfo = MEGA_EVOLUTIONS[Object.keys(MEGA_EVOLUTIONS).find(k => MEGA_EVOLUTIONS[k].id === name)] ||
+                      GIGANTAMAX_EVOLUTIONS[Object.keys(GIGANTAMAX_EVOLUTIONS).find(k => GIGANTAMAX_EVOLUTIONS[k].id === name)];
+      if (evoInfo) {
+        return {
+          id: name,
+          name: evoInfo.name,
+          engName: name,
+          type: 'normal',
+          types: ['normal'],
+          hp: 100,
+          atk: 100,
+          def: 100,
+          spd: 100,
+          image: '',
+          speciesUrl: null,
+          cryUrl: null
+        };
+      }
+    }
+  }
+  
+  return null;
+}
 function clamp(n, lo, hi) { return Math.max(lo, Math.min(hi, n)); }
 function todayKey() { 
   const now = new Date();
@@ -3518,10 +3550,12 @@ function performMegaEvolution(engName) {
   const sourcePokemon = getPokemonByName(engName);
   if (!sourcePokemon) { alert('포켓몬을 찾을 수 없어요!'); return; }
   
-  // 메가 포켓몬 정보 생성 (없으면 임시 생성)
+  // 메가 포켓몬 정보 생성
   let megaPokemon = getPokemonByName(megaEvo.id);
   if (!megaPokemon) {
-    // 임시 메가 포켓몬 생성
+    // 이미지 URL 생성 (기본 이미지 사용)
+    const imageUrl = sourcePokemon.image || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${sourcePokemon.id}.png`;
+    
     megaPokemon = {
       id: 'mega-' + sourcePokemon.id,
       name: megaEvo.name,
@@ -3532,11 +3566,25 @@ function performMegaEvolution(engName) {
       atk: sourcePokemon.atk + 20,
       def: sourcePokemon.def + 20,
       spd: sourcePokemon.spd + 20,
-      image: sourcePokemon.image || '',
+      image: imageUrl,
       speciesUrl: sourcePokemon.speciesUrl,
       cryUrl: sourcePokemon.cryUrl
     };
+    // POKEMON_LIST에 추가 (메모리)
     POKEMON_LIST.push(megaPokemon);
+    
+    // localStorage에도 저장 (새로고침 후에도 유지)
+    try {
+      const cacheData = localStorage.getItem(CACHE_KEY);
+      if (cacheData) {
+        const list = JSON.parse(cacheData);
+        // 중복 방지
+        if (!list.find(p => p.engName === megaEvo.id)) {
+          list.push(megaPokemon);
+          localStorage.setItem(CACHE_KEY, JSON.stringify(list));
+        }
+      }
+    } catch(e) {}
   }
   
   // 카드 획득
@@ -3553,7 +3601,6 @@ function performMegaEvolution(engName) {
   updateStatline();
   showRewardPopup(megaPokemon, '💎 메가진화 성공!', '모든 스탯 +20!');
 }
-
 function performGigantamaxEvolution(engName) {
   const gigaEvo = GIGANTAMAX_EVOLUTIONS[engName];
   if (!gigaEvo) { alert('거다이맥스할 수 없는 포켓몬입니다!'); return; }
@@ -3564,6 +3611,8 @@ function performGigantamaxEvolution(engName) {
   
   let gigaPokemon = getPokemonByName(gigaEvo.id);
   if (!gigaPokemon) {
+    const imageUrl = sourcePokemon.image || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${sourcePokemon.id}.png`;
+    
     gigaPokemon = {
       id: 'gigantamax-' + sourcePokemon.id,
       name: gigaEvo.name,
@@ -3574,11 +3623,22 @@ function performGigantamaxEvolution(engName) {
       atk: sourcePokemon.atk + 22,
       def: sourcePokemon.def + 22,
       spd: sourcePokemon.spd + 18,
-      image: sourcePokemon.image || '',
+      image: imageUrl,
       speciesUrl: sourcePokemon.speciesUrl,
       cryUrl: sourcePokemon.cryUrl
     };
     POKEMON_LIST.push(gigaPokemon);
+    
+    try {
+      const cacheData = localStorage.getItem(CACHE_KEY);
+      if (cacheData) {
+        const list = JSON.parse(cacheData);
+        if (!list.find(p => p.engName === gigaEvo.id)) {
+          list.push(gigaPokemon);
+          localStorage.setItem(CACHE_KEY, JSON.stringify(list));
+        }
+      }
+    } catch(e) {}
   }
   
   if (!state.owned[gigaEvo.id]) {
@@ -3594,7 +3654,6 @@ function performGigantamaxEvolution(engName) {
   updateStatline();
   showRewardPopup(gigaPokemon, '🔥 거다이맥스 성공!', '모든 스탯 +22!');
 }
-
 function extractEvoChain(chain) {
   const result = [];
   let current = chain;
