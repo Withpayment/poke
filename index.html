@@ -3658,6 +3658,9 @@ function closeModal() {
 }
 
 // ===== 메가/거다이맥스 진화 실행 =====
+// ===== 메가/거다이맥스 진화 실행 =====
+
+// ===== 메가진화 실행 =====
 function performMegaEvolution(engName) {
   const megaEvo = MEGA_EVOLUTIONS[engName];
   if (!megaEvo) { alert('메가진화할 수 없는 포켓몬입니다!'); return; }
@@ -3666,7 +3669,7 @@ function performMegaEvolution(engName) {
   const sourcePokemon = getPokemonByName(engName);
   if (!sourcePokemon) { alert('포켓몬을 찾을 수 없어요!'); return; }
   
-  // ⭐⭐⭐ 이미지 가져오기 (이 부분 추가) ⭐⭐⭐
+  // 메가 이미지 가져오기
   let megaImage = MEGA_IMAGE_MAP[megaEvo.id];
   if (!megaImage) {
     megaImage = sourcePokemon.image || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${sourcePokemon.id}.png`;
@@ -3674,7 +3677,6 @@ function performMegaEvolution(engName) {
   
   let megaPokemon = getPokemonByName(megaEvo.id);
   if (!megaPokemon) {
-    // ⭐⭐⭐ image: megaImage 로 변경 (중요!) ⭐⭐⭐
     megaPokemon = {
       id: 'mega-' + sourcePokemon.id,
       name: megaEvo.name,
@@ -3685,16 +3687,12 @@ function performMegaEvolution(engName) {
       atk: sourcePokemon.atk + 20,
       def: sourcePokemon.def + 20,
       spd: sourcePokemon.spd + 20,
-      image: megaImage,  // ⭐ 이 부분이 중요!
+      image: megaImage,
       speciesUrl: sourcePokemon.speciesUrl,
       cryUrl: sourcePokemon.cryUrl
     };
-    POKEMON_LIST.push(megaPokemon);
-    // ... 나머지 코드 ...
-  }
-  // ... 나머지 코드 ...
-}
-    // POKEMON_LIST에 추가 (메모리)
+    
+    // POKEMON_LIST에 추가
     POKEMON_LIST.push(megaPokemon);
     
     // localStorage에도 저장 (새로고침 후에도 유지)
@@ -3702,7 +3700,6 @@ function performMegaEvolution(engName) {
       const cacheData = localStorage.getItem(CACHE_KEY);
       if (cacheData) {
         const list = JSON.parse(cacheData);
-        // 중복 방지
         if (!list.find(p => p.engName === megaEvo.id)) {
           list.push(megaPokemon);
           localStorage.setItem(CACHE_KEY, JSON.stringify(list));
@@ -3724,6 +3721,69 @@ function performMegaEvolution(engName) {
   renderDex();
   updateStatline();
   showRewardPopup(megaPokemon, '💎 메가진화 성공!', '모든 스탯 +20!');
+}
+
+// ===== 거다이맥스 실행 =====
+function performGigantamaxEvolution(engName) {
+  const gigaEvo = GIGANTAMAX_EVOLUTIONS[engName];
+  if (!gigaEvo) { alert('거다이맥스할 수 없는 포켓몬입니다!'); return; }
+  if (!useEvolutionStone('gigantamax')) { alert('거다이맥스진화의돌이 부족합니다!'); return; }
+  
+  const sourcePokemon = getPokemonByName(engName);
+  if (!sourcePokemon) { alert('포켓몬을 찾을 수 없어요!'); return; }
+  
+  // 거다이맥스 이미지 가져오기
+  let gigaImage = GIGANTAMAX_IMAGE_MAP[gigaEvo.id];
+  if (!gigaImage) {
+    gigaImage = sourcePokemon.image || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${sourcePokemon.id}.png`;
+  }
+  
+  let gigaPokemon = getPokemonByName(gigaEvo.id);
+  if (!gigaPokemon) {
+    gigaPokemon = {
+      id: 'gigantamax-' + sourcePokemon.id,
+      name: gigaEvo.name,
+      engName: gigaEvo.id,
+      type: sourcePokemon.type,
+      types: sourcePokemon.types,
+      hp: sourcePokemon.hp + 25,
+      atk: sourcePokemon.atk + 22,
+      def: sourcePokemon.def + 22,
+      spd: sourcePokemon.spd + 18,
+      image: gigaImage,
+      speciesUrl: sourcePokemon.speciesUrl,
+      cryUrl: sourcePokemon.cryUrl
+    };
+    
+    // POKEMON_LIST에 추가
+    POKEMON_LIST.push(gigaPokemon);
+    
+    // localStorage에도 저장 (새로고침 후에도 유지)
+    try {
+      const cacheData = localStorage.getItem(CACHE_KEY);
+      if (cacheData) {
+        const list = JSON.parse(cacheData);
+        if (!list.find(p => p.engName === gigaEvo.id)) {
+          list.push(gigaPokemon);
+          localStorage.setItem(CACHE_KEY, JSON.stringify(list));
+        }
+      }
+    } catch(e) {}
+  }
+  
+  // 카드 획득
+  if (!state.owned[gigaEvo.id]) {
+    state.owned[gigaEvo.id] = { count: 1, rarity: 'gigantamax' };
+  } else {
+    state.owned[gigaEvo.id].count += 1;
+  }
+  
+  saveState();
+  SFX.megaEvolution();
+  closeModal();
+  renderDex();
+  updateStatline();
+  showRewardPopup(gigaPokemon, '🔥 거다이맥스 성공!', '모든 스탯 +22!');
 }
 function performGigantamaxEvolution(engName) {
   const gigaEvo = GIGANTAMAX_EVOLUTIONS[engName];
