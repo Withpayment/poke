@@ -1422,6 +1422,16 @@
     .raid-pokemon-card .rpc-name { font-size: 9px; }
     .raid-pokemon-card .rpc-atk { font-size: 7px; }
   }
+  #clearCacheBtn, #clearAllDataBtn {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  user-select: none;
+}
+
+#clearCacheBtn:active, #clearAllDataBtn:active {
+  transform: scale(0.95);
+  opacity: 0.7;
+}
 </style>
 </head>
 <body>
@@ -1430,6 +1440,15 @@
     <div class="eyebrow" id="resetHiddenBtn" title="게임 초기화 (숨김)">🔧</div>
     <h1>⚡ 포켓몬 카드 마스터 v8.0</h1>
     <div class="sub">진화하고, 교환하고, 레이드하자!</div>
+     <div style="margin-top:8px;display:flex;gap:6px;justify-content:center;flex-wrap:wrap;">
+    <button id="clearCacheBtn" style="background:rgba(255,255,255,.08);border:2px solid rgba(255,201,60,.2);color:#B7AFDE;padding:4px 12px;border-radius:8px;font-size:11px;cursor:pointer;font-family:var(--font-mono);touch-action:manipulation;">
+      🗑️ 캐시 삭제
+    </button>
+    <button id="clearAllDataBtn" style="background:rgba(255,107,53,.15);border:2px solid rgba(255,107,53,.3);color:#F0A79A;padding:4px 12px;border-radius:8px;font-size:11px;cursor:pointer;font-family:var(--font-mono);touch-action:manipulation;">
+      ⚠️ 모든 데이터 삭제
+    </button>
+  </div>
+</header>
   </header>
 
   <div class="statline">
@@ -2445,6 +2464,69 @@ function resetGame() {
   location.reload();
 }
 document.getElementById('resetHiddenBtn').addEventListener('click', resetGame);
+  function clearPokeCache() {
+  if (!confirm('🔄 PokeAPI 캐시를 삭제할까요?\n(포켓몬 데이터를 다시 불러옵니다)')) return;
+  
+  try {
+    localStorage.removeItem(CACHE_KEY);
+    localStorage.removeItem(CACHE_TIME_KEY);
+    console.log('✅ PokeAPI 캐시 삭제됨');
+    
+    const status = document.getElementById('loadingStatus');
+    if (status) {
+      status.textContent = '🔄 캐시 삭제됨! 페이지를 새로고침합니다...';
+      status.style.color = 'var(--sun-2)';
+    }
+    
+    toast('✅ PokeAPI 캐시 삭제 완료! 새로고침합니다...');
+    
+    setTimeout(() => {
+      location.reload();
+    }, 1500);
+    
+  } catch(e) {
+    console.error('❌ 캐시 삭제 실패:', e);
+    alert('⚠️ 캐시 삭제 중 오류가 발생했습니다: ' + e.message);
+  }
+}
+
+// 2. 모든 데이터 삭제
+function clearAllData() {
+  if (!confirm('⚠️ 정말로 모든 데이터를 삭제할까요?\n(게임 진행, 카드, 캐시 모두 삭제됩니다!)')) return;
+  if (!confirm('⚠️ 마지막 확인입니다! 되돌릴 수 없습니다!')) return;
+  
+  try {
+    const keys = [
+      'pkmn-state-v8',
+      'pkmn-state-v7',
+      CACHE_KEY,
+      CACHE_TIME_KEY,
+      'pokedex-all-v7',
+      'pokedex-time-v7'
+    ];
+    
+    keys.forEach(key => {
+      localStorage.removeItem(key);
+      console.log('🗑️ 삭제됨:', key);
+    });
+    
+    if (window.caches) {
+      caches.keys().then(names => {
+        names.forEach(name => caches.delete(name));
+      });
+    }
+    
+    toast('🗑️ 모든 데이터 삭제 완료! 새로고침합니다...');
+    
+    setTimeout(() => {
+      location.reload();
+    }, 1500);
+    
+  } catch(e) {
+    console.error('❌ 데이터 삭제 실패:', e);
+    alert('⚠️ 데이터 삭제 중 오류가 발생했습니다: ' + e.message);
+  }
+}
 
 // ===== 탭 전환 =====
 document.querySelectorAll('nav.tabbar button').forEach(btn => {
@@ -4987,7 +5069,25 @@ async function initGame() {
   
   bindMissionEditEvents();
   updateStoneDisplay();
+  const clearCacheBtn = document.getElementById('clearCacheBtn');
+  if (clearCacheBtn) {
+    clearCacheBtn.addEventListener('click', clearPokeCache);
+    clearCacheBtn.addEventListener('touchend', function(e) {
+      e.preventDefault();
+      clearPokeCache();
+    });
+  }
+  
+  const clearAllBtn = document.getElementById('clearAllDataBtn');
+  if (clearAllBtn) {
+    clearAllBtn.addEventListener('click', clearAllData);
+    clearAllBtn.addEventListener('touchend', function(e) {
+      e.preventDefault();
+      clearAllData();
+    });
+  }
 }
+
 
 function renderAll() {
   updateStatline();
