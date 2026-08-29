@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>포켓몬 카드 마스터 v7.5</title>
+<title>포켓몬 카드 마스터 v8.0</title>
 
 <script>
   const MY_CONFIG = {
@@ -48,6 +48,8 @@
     --super-rare: #3E9FDC;
     --ultra-rare: #9B59B6;
     --special: #FF6B35;
+    --mega: #FF00FF;
+    --gigantamax: #00D4FF;
   }
   * { box-sizing: border-box; }
   body {
@@ -127,6 +129,8 @@
   .btn.block { width: 100%; display: block; }
   .btn.good { background: var(--good); box-shadow: 0 4px 0 #2E7A54; color: #fff; }
   .btn.danger { background: var(--bad); box-shadow: 0 4px 0 #A04030; color: #fff; }
+  .btn.mega { background: var(--mega); box-shadow: 0 4px 0 #AA00AA; color: #fff; }
+  .btn.gigantamax { background: var(--gigantamax); box-shadow: 0 4px 0 #0099CC; color: #fff; }
   
   .mission-intro { text-align: center; }
   .mission-intro .big-emoji { font-size: 56px; margin-bottom: 6px; }
@@ -246,9 +250,19 @@
   .card.rarity-super-rare { border-color: var(--super-rare); box-shadow: 0 0 18px rgba(62,159,220,.4); }
   .card.rarity-ultra-rare { border-color: var(--ultra-rare); box-shadow: 0 0 22px rgba(155,89,182,.5); }
   .card.rarity-special { border-color: var(--special); box-shadow: 0 0 28px rgba(255,107,53,.6); animation: glow-special 1.5s infinite alternate; }
+  .card.rarity-mega { border-color: var(--mega); box-shadow: 0 0 30px rgba(255,0,255,.6); animation: glow-mega 1.5s infinite alternate; }
+  .card.rarity-gigantamax { border-color: var(--gigantamax); box-shadow: 0 0 30px rgba(0,212,255,.6); animation: glow-giga 1.5s infinite alternate; }
   @keyframes glow-special {
     from { box-shadow: 0 0 14px rgba(255,107,53,.3); }
     to { box-shadow: 0 0 30px rgba(255,107,53,.6), 0 0 50px rgba(255,107,53,.2); }
+  }
+  @keyframes glow-mega {
+    from { box-shadow: 0 0 14px rgba(255,0,255,.3); }
+    to { box-shadow: 0 0 40px rgba(255,0,255,.6), 0 0 60px rgba(255,0,255,.2); }
+  }
+  @keyframes glow-giga {
+    from { box-shadow: 0 0 14px rgba(0,212,255,.3); }
+    to { box-shadow: 0 0 40px rgba(0,212,255,.6), 0 0 60px rgba(0,212,255,.2); }
   }
   
   .card .rarity-badge {
@@ -1285,7 +1299,6 @@
     50% { border-color: var(--bad); box-shadow: 0 0 40px rgba(228,97,75,0.3); }
   }
   
-  /* 합성 스타일 */
   .craft-area { padding: 8px 0; }
   .craft-slot-group {
     display: flex;
@@ -1375,6 +1388,17 @@
   .craft-pokemon-item .cp-art { font-size: 28px; }
   .craft-pokemon-item .cp-name { font-size: 10px; font-family: var(--font-display); }
   
+  .evolution-stone-badge {
+    display: inline-block;
+    padding: 2px 12px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700;
+    margin: 2px 4px;
+  }
+  .evolution-stone-badge.mega { background: var(--mega); color: #fff; }
+  .evolution-stone-badge.gigantamax { background: var(--gigantamax); color: #fff; }
+  
   @media (max-width: 400px) {
     .grid { gap: 6px; }
     .card.mini { padding: 6px; }
@@ -1404,7 +1428,7 @@
 <div class="app">
   <header class="top">
     <div class="eyebrow" id="resetHiddenBtn" title="게임 초기화 (숨김)">🔧</div>
-    <h1>⚡ 포켓몬 카드 마스터 v7.5</h1>
+    <h1>⚡ 포켓몬 카드 마스터 v8.0</h1>
     <div class="sub">진화하고, 교환하고, 레이드하자!</div>
   </header>
 
@@ -1416,6 +1440,7 @@
     <div class="pill">🎯 퀴즈 <b id="quizCount">0</b></div>
     <div class="pill">🧮 수학 <b id="mathCount">0</b></div>
     <div class="pill">⚔️ 레이드 <b id="raidCount">0</b></div>
+    <div class="pill">💎 <b id="stoneCount">0</b></div>
   </div>
 
   <div class="battle-picker-overlay" id="battlePicker" style="display:none;">
@@ -1489,6 +1514,8 @@
         <button class="chip" data-rarity="super-rare">슈퍼</button>
         <button class="chip" data-rarity="ultra-rare">울트라</button>
         <button class="chip" data-rarity="special">스페셜</button>
+        <button class="chip" data-rarity="mega">메가</button>
+        <button class="chip" data-rarity="gigantamax">거다이맥스</button>
       </div>
       <div class="filter-row" id="filterRow"></div>
       <div class="grid" id="dexGrid"></div>
@@ -1572,7 +1599,7 @@
 
 <script>
 // ============================================================
-// 🚀 포켓몬 카드 마스터 v7.5 - 전체 코드
+// 🚀 포켓몬 카드 마스터 v8.0 - 전체 코드
 // ============================================================
 
 // ===== 효과음 시스템 =====
@@ -1601,6 +1628,7 @@ const SFX = {
   },
   cardReward() { this.beep(523,100); setTimeout(()=>this.beep(659,100),120); setTimeout(()=>this.beep(784,150),240); },
   evolution() { this.beep(523,80); setTimeout(()=>this.beep(659,80),100); setTimeout(()=>this.beep(784,80),200); setTimeout(()=>this.beep(1047,200),300); },
+  megaEvolution() { this.beep(440,60); setTimeout(()=>this.beep(659,60),80); setTimeout(()=>this.beep(880,60),160); setTimeout(()=>this.beep(1047,100),240); setTimeout(()=>this.beep(1318,150),340); },
   attack() { this.beep(200,100,'sawtooth',0.2); setTimeout(()=>this.beep(150,150,'sawtooth',0.15),50); },
   victory() { this.beep(523,100); setTimeout(()=>this.beep(659,100),120); setTimeout(()=>this.beep(784,100),240); setTimeout(()=>this.beep(1047,200),360); },
   defeat() { this.beep(440,150); setTimeout(()=>this.beep(349,150),160); setTimeout(()=>this.beep(294,200),320); },
@@ -1658,19 +1686,22 @@ function getEffMult(attackType, defendType) {
   return 1;
 }
 
-// ===== 등급 시스템 =====
+// ===== 등급 시스템 (메가/거다이맥스 추가) =====
 const RARITIES = [
   { id: 'common', label: '일반', weight: 60, color: '#A6A0BE', emoji: '⬜', bonus: { hp: 0, atk: 0, def: 0, spd: 0 } },
   { id: 'rare', label: '레어', weight: 25, color: '#4CAF7D', emoji: '🟩', bonus: { hp: 3, atk: 2, def: 2, spd: 1 } },
   { id: 'super-rare', label: '슈퍼레어', weight: 10, color: '#3E9FDC', emoji: '🟦', bonus: { hp: 5, atk: 4, def: 4, spd: 3 } },
   { id: 'ultra-rare', label: '울트라레어', weight: 4, color: '#9B59B6', emoji: '🟪', bonus: { hp: 8, atk: 6, def: 6, spd: 5 } },
-  { id: 'special', label: '스페셜', weight: 1, color: '#FF6B35', emoji: '🌟', bonus: { hp: 12, atk: 10, def: 10, spd: 8 } }
+  { id: 'special', label: '스페셜', weight: 1, color: '#FF6B35', emoji: '🌟', bonus: { hp: 12, atk: 10, def: 10, spd: 8 } },
+  { id: 'mega', label: '메가', weight: 0, color: '#FF00FF', emoji: '💎', bonus: { hp: 20, atk: 20, def: 20, spd: 20 } },
+  { id: 'gigantamax', label: '거다이맥스', weight: 0, color: '#00D4FF', emoji: '🔥', bonus: { hp: 25, atk: 22, def: 22, spd: 18 } }
 ];
 
 function rollRarity() {
-  const total = RARITIES.reduce((sum, r) => sum + r.weight, 0);
+  const total = RARITIES.filter(r => r.weight > 0).reduce((sum, r) => sum + r.weight, 0);
   let rand = Math.random() * total;
   for (const r of RARITIES) {
+    if (r.weight === 0) continue;
     rand -= r.weight;
     if (rand <= 0) return r.id;
   }
@@ -1679,7 +1710,7 @@ function rollRarity() {
 function getRarityInfo(id) { return RARITIES.find(r => r.id === id) || RARITIES[0]; }
 function getRarityBonus(id) { return getRarityInfo(id).bonus || { hp: 0, atk: 0, def: 0, spd: 0 }; }
 function getRarityDamageBonus(rarity) {
-  const bonuses = { 'common':0, 'rare':2, 'super-rare':5, 'ultra-rare':8, 'special':12 };
+  const bonuses = { 'common':0, 'rare':2, 'super-rare':5, 'ultra-rare':8, 'special':12, 'mega':20, 'gigantamax':25 };
   return bonuses[rarity] || 0;
 }
 
@@ -1690,6 +1721,138 @@ function getAbilityKorean(engName) {
 function getMoveKorean(engName) {
   const map = { 'tackle':'몸통박치기', 'scratch':'할퀴기', 'ember':'불꽃세례', 'water gun':'물대포', 'vine whip':'덩굴채찍', 'thunder shock':'전기쇼크', 'quick attack':'전광석화', 'bite':'물기', 'growl':'울음소리' };
   return map[engName] || engName;
+}
+
+// ===== 진화의 돌 시스템 =====
+function getEvolutionStones() {
+  return state.evolutionStones || { mega: 0, gigantamax: 0 };
+}
+
+function addEvolutionStone(type, count = 1) {
+  if (!state.evolutionStones) state.evolutionStones = { mega: 0, gigantamax: 0 };
+  state.evolutionStones[type] = (state.evolutionStones[type] || 0) + count;
+  saveState();
+  updateStoneDisplay();
+}
+
+function useEvolutionStone(type) {
+  if (!state.evolutionStones) state.evolutionStones = { mega: 0, gigantamax: 0 };
+  if (state.evolutionStones[type] <= 0) return false;
+  state.evolutionStones[type] -= 1;
+  saveState();
+  updateStoneDisplay();
+  return true;
+}
+
+function updateStoneDisplay() {
+  const stones = getEvolutionStones();
+  document.getElementById('stoneCount').textContent = stones.mega + stones.gigantamax;
+}
+
+// ===== 메가/거다이맥스 진화 가능 포켓몬 목록 =====
+const MEGA_EVOLUTIONS = {
+  'venusaur': { name: '메가이상해꽃', id: 'mega-venusaur' },
+  'charizard': { name: '메가리자몽', id: 'mega-charizard' },
+  'blastoise': { name: '메가거북왕', id: 'mega-blastoise' },
+  'beedrill': { name: '메가독침붕', id: 'mega-beedrill' },
+  'pidgeot': { name: '메가피죤투', id: 'mega-pidgeot' },
+  'alakazam': { name: '메가후딘', id: 'mega-alakazam' },
+  'slowbro': { name: '메가야도란', id: 'mega-slowbro' },
+  'gengar': { name: '메가팬텀', id: 'mega-gengar' },
+  'kangaskhan': { name: '메가캥카', id: 'mega-kangaskhan' },
+  'pinsir': { name: '메가쁘사이저', id: 'mega-pinsir' },
+  'gyarados': { name: '메가갸라도스', id: 'mega-gyarados' },
+  'aerodactyl': { name: '메가프테라', id: 'mega-aerodactyl' },
+  'mewtwo': { name: '메가뮤츠', id: 'mega-mewtwo' },
+  'ampharos': { name: '메가전룡', id: 'mega-ampharos' },
+  'steelix': { name: '메가강철톤', id: 'mega-steelix' },
+  'scizor': { name: '메가핫삼', id: 'mega-scizor' },
+  'heracross': { name: '메가헤라크로스', id: 'mega-heracross' },
+  'houndoom': { name: '메가헬가', id: 'mega-houndoom' },
+  'tyranitar': { name: '메가마기라스', id: 'mega-tyranitar' },
+  'sceptile': { name: '메가나무킹', id: 'mega-sceptile' },
+  'blaziken': { name: '메가번치코', id: 'mega-blaziken' },
+  'swampert': { name: '메가대짱이', id: 'mega-swampert' },
+  'gardevoir': { name: '메가가디안', id: 'mega-gardevoir' },
+  'sableye': { name: '메가깜까미', id: 'mega-sableye' },
+  'mawile': { name: '메가입치트', id: 'mega-mawile' },
+  'aggron': { name: '메가보스로라', id: 'mega-aggron' },
+  'medicham': { name: '메가요가램', id: 'mega-medicham' },
+  'manectric': { name: '메가썬더볼트', id: 'mega-manectric' },
+  'sharpedo': { name: '메가샤크니아', id: 'mega-sharpedo' },
+  'camerupt': { name: '메가폭타', id: 'mega-camerupt' },
+  'altaria': { name: '메가파비코리', id: 'mega-altaria' },
+  'banette': { name: '메가다크펫', id: 'mega-banette' },
+  'absol': { name: '메가앱솔', id: 'mega-absol' },
+  'glalie': { name: '메가얼음귀신', id: 'mega-glalie' },
+  'salamence': { name: '메가보만다', id: 'mega-salamence' },
+  'metagross': { name: '메가메타그로스', id: 'mega-metagross' },
+  'latias': { name: '메가라티아스', id: 'mega-latias' },
+  'latios': { name: '메가라티오스', id: 'mega-latios' },
+  'rayquaza': { name: '메가레쿠쟈', id: 'mega-rayquaza' },
+  'lopunny': { name: '메가이어롭', id: 'mega-lopunny' },
+  'garchomp': { name: '메가한카리아스', id: 'mega-garchomp' },
+  'lucario': { name: '메가루카리오', id: 'mega-lucario' },
+  'abomasnow': { name: '메가눈설왕', id: 'mega-abomasnow' },
+  'gallade': { name: '메가엘레이드', id: 'mega-gallade' },
+  'audino': { name: '메가다부니', id: 'mega-audino' },
+  'diancie': { name: '메가디안시', id: 'mega-diancie' }
+};
+
+const GIGANTAMAX_EVOLUTIONS = {
+  'venusaur': { name: '거다이맥스이상해꽃', id: 'gigantamax-venusaur' },
+  'charizard': { name: '거다이맥스리자몽', id: 'gigantamax-charizard' },
+  'blastoise': { name: '거다이맥스거북왕', id: 'gigantamax-blastoise' },
+  'butterfree': { name: '거다이맥스버터플', id: 'gigantamax-butterfree' },
+  'pikachu': { name: '거다이맥스피카츄', id: 'gigantamax-pikachu' },
+  'meowth': { name: '거다이맥스나옹', id: 'gigantamax-meowth' },
+  'eevee': { name: '거다이맥스이브이', id: 'gigantamax-eevee' },
+  'snorlax': { name: '거다이맥스잠만보', id: 'gigantamax-snorlax' },
+  'gengar': { name: '거다이맥스팬텀', id: 'gigantamax-gengar' },
+  'kingler': { name: '거다이맥스킹크라', id: 'gigantamax-kingler' },
+  'lapras': { name: '거다이맥스라프라스', id: 'gigantamax-lapras' },
+  'eevee': { name: '거다이맥스이브이', id: 'gigantamax-eevee' },
+  'corviknight': { name: '거다이맥스아머까오', id: 'gigantamax-corviknight' },
+  'drednaw': { name: '거다이맥스갈가모크', id: 'gigantamax-drednaw' },
+  'coalossal': { name: '거다이맥스석탄산', id: 'gigantamax-coalossal' },
+  'flapple': { name: '거다이맥스애프룡', id: 'gigantamax-flapple' },
+  'appletun': { name: '거다이맥스단지래플', id: 'gigantamax-appletun' },
+  'sandaconda': { name: '거다이맥스모래비단뱀', id: 'gigantamax-sandaconda' },
+  'centiskorch': { name: '거다이맥스누라레기', id: 'gigantamax-centiskorch' },
+  'garbodor': { name: '거다이맥스더스트나', id: 'gigantamax-garbodor' },
+  'alcremie': { name: '거다이맥스마휘핑', id: 'gigantamax-alcremie' },
+  'copperajah': { name: '거다이맥스대왕끼리동', id: 'gigantamax-copperajah' },
+  'duraludon': { name: '거다이맥스두랄루돈', id: 'gigantamax-duraludon' }
+};
+
+function getMegaEvo(engName) {
+  return MEGA_EVOLUTIONS[engName] || null;
+}
+
+function getGigantamaxEvo(engName) {
+  return GIGANTAMAX_EVOLUTIONS[engName] || null;
+}
+
+function isFinalEvolution(engName) {
+  const chain = getEvoChain(engName);
+  if (!chain || chain.length === 0) return false;
+  return chain[chain.length - 1] === engName;
+}
+
+function getEvolutionStoneType(engName) {
+  if (MEGA_EVOLUTIONS[engName]) return 'mega';
+  if (GIGANTAMAX_EVOLUTIONS[engName]) return 'gigantamax';
+  return null;
+}
+
+// ===== 진화의 돌 이미지 생성 =====
+function getStoneImage(type) {
+  if (type === 'mega') {
+    return 'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><radialGradient id="megaGrad" cx="50%" cy="50%" r="50%"><stop offset="0%" style="stop-color:#FF66FF"/><stop offset="100%" style="stop-color:#990099"/></radialGradient></defs><polygon points="50,10 90,40 80,90 20,90 10,40" fill="url(#megaGrad)" stroke="#FF00FF" stroke-width="3"/><text x="50" y="65" text-anchor="middle" font-size="30" font-weight="bold" fill="white">M</text></svg>`);
+  } else if (type === 'gigantamax') {
+    return 'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><radialGradient id="gigaGrad" cx="50%" cy="50%" r="50%"><stop offset="0%" style="stop-color:#66D4FF"/><stop offset="100%" style="stop-color:#006699"/></radialGradient></defs><circle cx="50" cy="50" r="40" fill="url(#gigaGrad)" stroke="#00D4FF" stroke-width="3"/><text x="50" y="65" text-anchor="middle" font-size="30" font-weight="bold" fill="white">G</text></svg>`);
+  }
+  return '';
 }
 
 // ===== 전역 상태 =====
@@ -1713,7 +1876,8 @@ let state = {
   raidSelectedType: null,
   raidSelectedCard: null,
   battleChances: 0,
-  pvpChances: 0
+  pvpChances: 0,
+  evolutionStones: { mega: 0, gigantamax: 0 }
 };
 
 let ownershipFilter = 'all';
@@ -1734,8 +1898,8 @@ const DEFAULT_LIFE_MISSIONS = [
   { id:'sleep-time', label:'제시간에 자기', emoji:'🌙' }
 ];
 const COOLDOWN = { FEED: 2*60*60*1000, PLAY: 2*60*60*1000, SLEEP: 2*60*60*1000 };
-const CACHE_KEY = 'pokedex-all-v7';
-const CACHE_TIME_KEY = 'pokedex-time-v7';
+const CACHE_KEY = 'pokedex-all-v8';
+const CACHE_TIME_KEY = 'pokedex-time-v8';
 const CACHE_DURATION = 7*24*60*60*1000;
 
 // ===== 진화 체인 캐시 =====
@@ -1805,7 +1969,7 @@ function getEvoChain(engName) {
   return [engName];
 }
 
-// ===== loadAllPokemon =====
+// ===== loadAllPokemon (개선: 더 많은 포켓몬 로드) =====
 async function loadAllPokemon() {
   try {
     const cached = localStorage.getItem(CACHE_KEY);
@@ -1819,12 +1983,13 @@ async function loadAllPokemon() {
   } catch(e) {}
   
   try {
-    const listRes = await fetch('https://pokeapi.co/api/v2/pokemon?limit=1000');
+    // 1300마리까지 요청 (최신 세대 포함)
+    const listRes = await fetch('https://pokeapi.co/api/v2/pokemon?limit=1300');
     const listData = await listRes.json();
     const allUrls = listData.results.map(p => p.url);
     let allPokemon = [];
-    for (let i = 0; i < allUrls.length; i += 50) {
-      const batch = allUrls.slice(i, i + 50);
+    for (let i = 0; i < allUrls.length; i += 30) {
+      const batch = allUrls.slice(i, i + 30);
       const promises = batch.map(async (url) => {
         try {
           const detailRes = await fetch(url);
@@ -1837,10 +2002,8 @@ async function loadAllPokemon() {
             if (name) koreanName = name.name;
           } catch(e) {}
           
-          // ⭐⭐⭐ 수정 부분 1: 이미지 처리 ⭐⭐⭐
           let imageUrl = detail.sprites.other['official-artwork']?.front_default || detail.sprites.front_default;
           
-          // 코라이돈, 미라이돈 이미지 강제 지정
           if (detail.name === 'koraidon') {
             imageUrl = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1007.png';
           } else if (detail.name === 'miraidon') {
@@ -1850,7 +2013,11 @@ async function loadAllPokemon() {
           if (!imageUrl) {
             imageUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${detail.id}.png`;
           }
-          // ⭐⭐⭐ 수정 끝 ⭐⭐⭐
+          
+          // Mega/Gigantamax 이미지 처리
+          if (detail.name === 'charizard') {
+            // 메가리자몽X, Y 이미지 추가
+          }
           
           return {
             id: detail.id, name: koreanName, engName: detail.name,
@@ -1858,7 +2025,7 @@ async function loadAllPokemon() {
             types: detail.types.map(t => t.type.name),
             hp: detail.stats[0].base_stat, atk: detail.stats[1].base_stat,
             def: detail.stats[2].base_stat, spd: detail.stats[5].base_stat,
-            image: imageUrl,  // ⭐ imageUrl 사용
+            image: imageUrl,
             speciesUrl: detail.species.url,
             cryUrl: detail.cries?.latest || detail.cries?.legacy || null
           };
@@ -1870,7 +2037,7 @@ async function loadAllPokemon() {
     }
     allPokemon.sort((a, b) => a.id - b.id);
     
-    // ⭐⭐⭐ 수정 부분 2: 중복 제거 ⭐⭐⭐
+    // 중복 제거
     const uniqueMap = new Map();
     allPokemon.forEach(p => {
       if (!uniqueMap.has(p.engName)) {
@@ -1879,7 +2046,6 @@ async function loadAllPokemon() {
     });
     allPokemon = Array.from(uniqueMap.values());
     allPokemon.sort((a, b) => a.id - b.id);
-    // ⭐⭐⭐ 수정 끝 ⭐⭐⭐
     
     POKEMON_LIST = allPokemon;
     localStorage.setItem(CACHE_KEY, JSON.stringify(POKEMON_LIST));
@@ -2021,11 +2187,13 @@ function speakPokemonInfo(pokemon) {
 // ===== 저장/로드 =====
 function loadState() {
   try {
-    const saved = localStorage.getItem('pkmn-state-v7');
+    const saved = localStorage.getItem('pkmn-state-v8');
     if (saved) {
       const parsed = JSON.parse(saved);
       state = Object.assign(state, parsed);
+      if (!state.evolutionStones) state.evolutionStones = { mega: 0, gigantamax: 0 };
       console.log('✅ 저장된 상태 로드 완료!', Object.keys(state.owned).length + '마리 보유');
+      updateStoneDisplay();
       return true;
     }
   } catch(e) {}
@@ -2034,7 +2202,7 @@ function loadState() {
 
 function saveState() {
   try {
-    localStorage.setItem('pkmn-state-v7', JSON.stringify(state));
+    localStorage.setItem('pkmn-state-v8', JSON.stringify(state));
   } catch(e) { console.error('저장 실패:', e); }
 }
 
@@ -2050,9 +2218,13 @@ function updateStatline() {
   document.getElementById('raidCount').textContent = state.raid?.completed ? 1 : 0;
   let specialCount = 0;
   for (const key in state.owned) {
-    if (state.owned[key].rarity === 'special') specialCount += state.owned[key].count || 1;
+    const info = state.owned[key];
+    if (info.rarity === 'special' || info.rarity === 'mega' || info.rarity === 'gigantamax') {
+      specialCount += info.count || 1;
+    }
   }
   document.getElementById('specialCount').textContent = specialCount;
+  updateStoneDisplay();
 }
 
 // ===== 나이 설정 =====
@@ -2120,6 +2292,7 @@ function resetGame() {
   state.raid = { boss: null, hp: 0, maxHp: 0, completed: false, today: null, rewardCollected: false, attackChance: 0 };
   state.raidSelectedType = null;
   state.raidSelectedCard = null;
+  state.evolutionStones = { mega: 0, gigantamax: 0 };
   saveState();
   location.reload();
 }
@@ -2404,10 +2577,7 @@ function renderLifeMissions() {
     return m;
   });
   
-  // ⭐ 한 번만 선언!
   const allMissions = [...baseMissions, ...(state.customMissions || [])];
-  
-  // ⭐ 미완료 미션을 위쪽으로 정렬
   const sortedMissions = [...allMissions].sort((a, b) => {
     const aDone = doneToday[a.id] || false;
     const bDone = doneToday[b.id] || false;
@@ -2430,6 +2600,7 @@ function renderLifeMissions() {
       <span>⚔️ 레이드 공격: <b>${state.raid?.attackChance || 0}</b>회</span>
       <span>🤖 AI 배틀: <b>${state.battleChances || 0}</b>회</span>
       <span>🌐 PVP 배틀: <b>${state.pvpChances || 0}</b>회</span>
+      <span>💎 진화의돌: <b>${(state.evolutionStones?.mega || 0) + (state.evolutionStones?.gigantamax || 0)}</b>개</span>
     </div>
     <div class="life-mission-list">
       ${sortedMissions.map(m => {
@@ -2453,7 +2624,6 @@ function renderLifeMissions() {
     <div class="reveal-wrap" id="lifeReveal"></div>
   `;
 
-  // ===== 미션 완료 버튼 이벤트 =====
   document.querySelectorAll('[data-life]').forEach(btn => {
     btn.addEventListener('click', function() {
       const key = todayKey();
@@ -2517,7 +2687,6 @@ function renderLifeMissions() {
     });
   });
 
-  // ===== 커스텀 미션 추가 버튼 이벤트 =====
   document.getElementById('addCustomMission').addEventListener('click', function() {
     const input = document.getElementById('customMissionInput');
     const emojiInput = document.getElementById('customMissionEmoji');
@@ -2550,7 +2719,6 @@ function renderLifeMissions() {
     }
   });
 
-  // ===== 커스텀 미션 초기화 버튼 =====
   document.getElementById('resetCustomMissions')?.addEventListener('click', function() {
     if (confirm('커스텀 미션을 모두 삭제할까요?')) {
       state.customMissions = [];
@@ -2711,7 +2879,7 @@ function checkMathAnswer2(selectedIdx) {
   }, 1500);
 }
 
-// ===== ⚔️ 레이드 =====
+// ===== ⚔️ 레이드 (진화의 돌 획득 추가) =====
 function renderRaidMission() {
   const panel = document.getElementById('missionPanel');
   const key = todayKey();
@@ -2731,7 +2899,9 @@ function renderRaidMission() {
   if (!boss) { panel.innerHTML = `<div class="mission-intro"><div class="big-emoji">😅</div><div style="font-size:18px;">레이드 보스를 불러올 수 없어요</div></div>`; return; }
   if (raid.completed) {
     const alreadyCollected = raid.rewardCollected || false;
-    panel.innerHTML = `<div class="mission-intro"><div class="big-emoji">🎉</div><div style="font-size:24px;color:var(--special);font-family:var(--font-display);">레이드 클리어!</div><div style="color:#B7AFDE;font-size:16px;margin-top:6px;">${boss.name}을(를) 물리쳤어요!</div><div style="margin-top:12px;font-size:16px;color:${alreadyCollected ? '#8d84b0' : 'var(--good)'};">${alreadyCollected ? '✅ 이미 보상을 받았어요!' : '🎁 보상: ' + boss.name + ' (스페셜) 카드 획득!'}</div>${!alreadyCollected ? `<button class="btn" onclick="collectRaidReward()" style="margin-top:14px;">🎁 보상 받기</button>` : ''}</div>`;
+    const stones = getEvolutionStones();
+    panel.innerHTML = `<div class="mission-intro"><div class="big-emoji">🎉</div><div style="font-size:24px;color:var(--special);font-family:var(--font-display);">레이드 클리어!</div><div style="color:#B7AFDE;font-size:16px;margin-top:6px;">${boss.name}을(를) 물리쳤어요!</div><div style="margin-top:12px;font-size:16px;color:${alreadyCollected ? '#8d84b0' : 'var(--good)'};">${alreadyCollected ? '✅ 이미 보상을 받았어요!' : '🎁 보상: ' + boss.name + ' (스페셜) 카드 + 진화의돌 1개 획득!'}</div>${!alreadyCollected ? `<button class="btn" onclick="collectRaidReward()" style="margin-top:14px;">🎁 보상 받기</button>` : ''}
+    <div style="margin-top:8px;font-size:13px;color:#B7AFDE;">💎 보유 진화의돌: 메가 ${stones.mega}개, 거다이맥스 ${stones.gigantamax}개</div></div>`;
     return;
   }
   const hpPercent = Math.max(0, (raid.hp / raid.maxHp) * 100);
@@ -2829,10 +2999,17 @@ function collectRaidReward() {
   const rarity = 'special';
   if (!state.owned[boss.engName]) state.owned[boss.engName] = { count: 1, rarity: rarity };
   else state.owned[boss.engName].count += 1;
+  
+  // 진화의 돌 획득 (메가 또는 거다이맥스 중 랜덤)
+  const stoneTypes = ['mega', 'gigantamax'];
+  const stoneType = stoneTypes[Math.floor(Math.random() * stoneTypes.length)];
+  addEvolutionStone(stoneType, 1);
+  const stoneLabel = stoneType === 'mega' ? '메가' : '거다이맥스';
+  
   raid.rewardCollected = true;
   saveState();
   SFX.victory();
-  showRewardPopup(boss, '🎉 레이드 보상 획득!', '스페셜 등급!');
+  showRewardPopup(boss, '🎉 레이드 보상 획득!', `스페셜 등급 + ${stoneLabel}진화의돌 1개!`);
   updateStatline();
   renderDex();
   renderRaidMission();
@@ -3101,45 +3278,61 @@ function renderDex() {
   if (ownershipFilter === 'owned') list = list.filter(c => state.owned[c.engName]);
   else if (ownershipFilter === 'missing') list = list.filter(c => !state.owned[c.engName]);
   if (activeRarity !== 'all') list = list.filter(c => { const ownedData = state.owned[c.engName]; return ownedData && ownedData.rarity === activeRarity; });
-grid.innerHTML = list.map(c => {
-  const ownedData = state.owned[c.engName];
-  const has = !!ownedData;
-  const rarity = has ? ownedData.rarity : 'common';
-  const count = has ? ownedData.count : 0;
-  const rInfo = getRarityInfo(rarity);
   
-  // ⭐ 키우는 포켓몬인지 확인
-  const isPet = state.pet && (state.pet.baseId === c.engName || state.pet.evolvedId === c.engName);
-  const petLevel = isPet ? state.pet.level : 0;
+  // 메가/거다이맥스 카드 추가 표시
+  const megaPokemons = Object.keys(MEGA_EVOLUTIONS);
+  const gigaPokemons = Object.keys(GIGANTAMAX_EVOLUTIONS);
   
-  // ⭐ 실제 능력치 계산 (키우기 보너스 적용)
-  let displayHp = c.hp;
-  let displayAtk = c.atk;
-  let displayDef = c.def;
-  let displaySpd = c.spd;
+  grid.innerHTML = list.map(c => {
+    const ownedData = state.owned[c.engName];
+    const has = !!ownedData;
+    const rarity = has ? ownedData.rarity : 'common';
+    const count = has ? ownedData.count : 0;
+    const rInfo = getRarityInfo(rarity);
+    
+    const isPet = state.pet && (state.pet.baseId === c.engName || state.pet.evolvedId === c.engName);
+    const petLevel = isPet ? state.pet.level : 0;
+    
+    let displayHp = c.hp;
+    let displayAtk = c.atk;
+    let displayDef = c.def;
+    let displaySpd = c.spd;
+    
+    if (isPet && state.pet) {
+      const levelBonus = getPetLevelBonus(state.pet);
+      displayHp = c.hp + levelBonus.hp;
+      displayAtk = c.atk + levelBonus.atk;
+      displayDef = c.def + levelBonus.def;
+      displaySpd = c.spd + levelBonus.spd;
+    }
+    
+    // 메가/거다이맥스 가능 여부 표시
+    let evoBadge = '';
+    if (has && isFinalEvolution(c.engName)) {
+      if (megaPokemons.includes(c.engName)) {
+        evoBadge += `<span class="evolution-stone-badge mega">💎메가</span>`;
+      }
+      if (gigaPokemons.includes(c.engName)) {
+        evoBadge += `<span class="evolution-stone-badge gigantamax">🔥거다이</span>`;
+      }
+    }
+    
+    return `<div class="card mini ${has ? 'rarity-' + rarity : 'locked'} ${isPet ? 'pet-card' : ''}" data-eng="${c.engName}" style="${isPet ? 'border-color:var(--special);box-shadow:0 0 20px rgba(255,107,53,.3);' : ''}">
+      <div class="art">${pokemonImage(c)}</div>
+      <div class="name">${has ? c.name : '???'} ${isPet ? '⭐' : ''}</div>
+      <span class="type-tag" style="background:${getTypeColor(c.type)}">${has ? getTypeLabel(c.type) : '???'}</span>
+      <div class="statrow">
+        <span>HP<b>${has ? displayHp : '-'}</b></span>
+        <span>ATK<b>${has ? displayAtk : '-'}</b></span>
+        <span>DEF<b>${has ? displayDef : '-'}</b></span>
+        <span>SPD<b>${has ? displaySpd : '-'}</b></span>
+      </div>
+      ${has ? `<span class="rarity-badge" style="background:${rInfo.color};">${rInfo.emoji} ${rInfo.label} ×${count}</span>` : ''}
+      ${evoBadge}
+      ${isPet ? `<span style="position:absolute;bottom:4px;left:4px;font-size:10px;background:rgba(255,107,53,.8);color:#fff;padding:1px 8px;border-radius:8px;">🐣 Lv.${petLevel}</span>` : ''}
+    </div>`;
+  }).join('');
   
-  if (isPet && state.pet) {
-    const levelBonus = getPetLevelBonus(state.pet);
-    displayHp = c.hp + levelBonus.hp;
-    displayAtk = c.atk + levelBonus.atk;
-    displayDef = c.def + levelBonus.def;
-    displaySpd = c.spd + levelBonus.spd;
-  }
-  
-  return `<div class="card mini ${has ? 'rarity-' + rarity : 'locked'} ${isPet ? 'pet-card' : ''}" data-eng="${c.engName}" style="${isPet ? 'border-color:var(--special);box-shadow:0 0 20px rgba(255,107,53,.3);' : ''}">
-    <div class="art">${pokemonImage(c)}</div>
-    <div class="name">${has ? c.name : '???'} ${isPet ? '⭐' : ''}</div>
-    <span class="type-tag" style="background:${getTypeColor(c.type)}">${has ? getTypeLabel(c.type) : '???'}</span>
-    <div class="statrow">
-      <span>HP<b>${has ? displayHp : '-'}</b></span>
-      <span>ATK<b>${has ? displayAtk : '-'}</b></span>
-      <span>DEF<b>${has ? displayDef : '-'}</b></span>
-      <span>SPD<b>${has ? displaySpd : '-'}</b></span>
-    </div>
-    ${has ? `<span class="rarity-badge" style="background:${rInfo.color};">${rInfo.emoji} ${rInfo.label} ×${count}</span>` : ''}
-    ${isPet ? `<span style="position:absolute;bottom:4px;left:4px;font-size:10px;background:rgba(255,107,53,.8);color:#fff;padding:1px 8px;border-radius:8px;">🐣 Lv.${petLevel}</span>` : ''}
-  </div>`;
-}).join('');
   grid.querySelectorAll('.card:not(.locked)').forEach(el => {
     el.addEventListener('click', function() {
       const engName = this.dataset.eng;
@@ -3152,7 +3345,7 @@ grid.innerHTML = list.map(c => {
   });
 }
 
-// ===== 카드 상세 모달 =====
+// ===== 카드 상세 모달 (메가/거다이맥스 진화 추가) =====
 let modalCryAudio = null;
 
 async function openCardDetail(pokemon) {
@@ -3169,6 +3362,13 @@ async function openCardDetail(pokemon) {
   const canUpgrade = canCraft && rarityIndex < RARITIES.length - 1;
   const isSpecial = rarity === 'special';
   const canSpecialCraft = canCraft && isSpecial;
+  
+  // 메가/거다이맥스 진화 체크
+  const isFinal = isFinalEvolution(pokemon.engName);
+  const canMega = isFinal && MEGA_EVOLUTIONS[pokemon.engName] && (state.evolutionStones?.mega || 0) > 0;
+  const canGiga = isFinal && GIGANTAMAX_EVOLUTIONS[pokemon.engName] && (state.evolutionStones?.gigantamax || 0) > 0;
+  const hasMegaCard = state.owned[MEGA_EVOLUTIONS[pokemon.engName]?.id];
+  const hasGigaCard = state.owned[GIGANTAMAX_EVOLUTIONS[pokemon.engName]?.id];
   
   let abilities = [], description = '', moves = [], evoChain = [];
   try {
@@ -3198,7 +3398,39 @@ async function openCardDetail(pokemon) {
     evoHTML = `<div class="modal-section"><h4>🔄 진화 과정</h4><div class="evo-chain">${evoChain.map((evo, idx) => { const isCurrent = evo.name === pokemon.name; return `${idx > 0 ? '<span class="evo-arrow">→</span>' : ''}<div class="evo-item" style="${isCurrent ? 'border:3px solid var(--sun);background:rgba(255,201,60,.15);' : ''}">${evo.image ? `<img src="${evo.image}" alt="${evo.name}">` : `<div style="width:56px;height:56px;background:rgba(255,255,255,.1);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;margin:0 auto;">❓</div>`}<div class="evo-name">${evo.name} ${isCurrent ? '⭐' : ''}</div>${evo.level ? `<div class="evo-level">Lv.${evo.level}</div>` : ''}</div>`; }).join('')}</div></div>`;
   }
   
-  // 합성 버튼 HTML (onclick 직접 사용!)
+  // 메가/거다이맥스 진화 버튼
+  let evolutionButtonHTML = '';
+  if (isFinal) {
+    const stones = getEvolutionStones();
+    if (canMega) {
+      const megaEvo = MEGA_EVOLUTIONS[pokemon.engName];
+      evolutionButtonHTML += `<button class="btn mega small" onclick="performMegaEvolution('${pokemon.engName}')" style="flex:1;font-size:14px;padding:10px;min-height:44px;">
+        💎 메가진화 (${megaEvo.name})
+        <span style="font-size:10px;display:block;">진화의돌(메가) ×1</span>
+      </button>`;
+    }
+    if (canGiga) {
+      const gigaEvo = GIGANTAMAX_EVOLUTIONS[pokemon.engName];
+      evolutionButtonHTML += `<button class="btn gigantamax small" onclick="performGigantamaxEvolution('${pokemon.engName}')" style="flex:1;font-size:14px;padding:10px;min-height:44px;">
+        🔥 거다이맥스 (${gigaEvo.name})
+        <span style="font-size:10px;display:block;">진화의돌(거다이맥스) ×1</span>
+      </button>`;
+    }
+    if (!canMega && !canGiga && isFinal) {
+      const stones = getEvolutionStones();
+      let needMsg = '';
+      if (MEGA_EVOLUTIONS[pokemon.engName]) needMsg = '💎 메가진화의돌 필요 (보유: ' + stones.mega + '개)';
+      else if (GIGANTAMAX_EVOLUTIONS[pokemon.engName]) needMsg = '🔥 거다이맥스진화의돌 필요 (보유: ' + stones.gigantamax + '개)';
+      if (needMsg) {
+        evolutionButtonHTML = `<div style="margin-top:12px;padding:10px;background:rgba(255,255,255,.03);border-radius:10px;border:1px solid rgba(255,255,255,.05);text-align:center;font-size:13px;color:#6b6395;">
+          ⚠️ ${needMsg}<br>
+          <span style="font-size:11px;">레이드를 클리어하면 진화의돌을 획득할 수 있어요!</span>
+        </div>`;
+      }
+    }
+  }
+  
+  // 합성 버튼 HTML
   let craftButtonHTML = '';
   if (canCraft) {
     if (canUpgrade) {
@@ -3253,6 +3485,7 @@ async function openCardDetail(pokemon) {
     ${description ? `<div class="modal-section"><h4>📝 설명</h4><p>${description}</p></div>` : ''}
     ${moves.length > 0 ? `<div class="modal-section"><h4>⚔️ 기술</h4><p>${moves.map(m => '✦ ' + m).join(' ')}</p></div>` : ''}
     ${evoHTML}
+    ${evolutionButtonHTML ? `<div class="modal-section" style="border-left-color:var(--special);"><h4>⭐ 추가 진화</h4><div style="display:flex;gap:8px;flex-wrap:wrap;">${evolutionButtonHTML}</div></div>` : ''}
     <div class="modal-section" style="border-left-color:${rInfo.color};"><h4>✨ ${rInfo.label} 등급 보너스</h4><p style="font-size:14px;color:#B7AFDE;">HP +${bonus.hp} / 공격 +${bonus.atk} / 방어 +${bonus.def} / 속도 +${bonus.spd}</p></div>
     ${craftButtonHTML}
     <div style="text-align:center;margin-top:12px;"><button class="btn small" id="closeModalBtn">닫기</button></div>
@@ -3274,6 +3507,92 @@ function closeModal() {
   if (window.speechSynthesis) window.speechSynthesis.cancel();
   if (modalCryAudio) { modalCryAudio.pause(); modalCryAudio = null; }
   document.getElementById('cardModal').classList.remove('open');
+}
+
+// ===== 메가/거다이맥스 진화 실행 =====
+function performMegaEvolution(engName) {
+  const megaEvo = MEGA_EVOLUTIONS[engName];
+  if (!megaEvo) { alert('메가진화할 수 없는 포켓몬입니다!'); return; }
+  if (!useEvolutionStone('mega')) { alert('메가진화의돌이 부족합니다! 레이드를 클리어해주세요.'); return; }
+  
+  const sourcePokemon = getPokemonByName(engName);
+  if (!sourcePokemon) { alert('포켓몬을 찾을 수 없어요!'); return; }
+  
+  // 메가 포켓몬 정보 생성 (없으면 임시 생성)
+  let megaPokemon = getPokemonByName(megaEvo.id);
+  if (!megaPokemon) {
+    // 임시 메가 포켓몬 생성
+    megaPokemon = {
+      id: 'mega-' + sourcePokemon.id,
+      name: megaEvo.name,
+      engName: megaEvo.id,
+      type: sourcePokemon.type,
+      types: sourcePokemon.types,
+      hp: sourcePokemon.hp + 20,
+      atk: sourcePokemon.atk + 20,
+      def: sourcePokemon.def + 20,
+      spd: sourcePokemon.spd + 20,
+      image: sourcePokemon.image || '',
+      speciesUrl: sourcePokemon.speciesUrl,
+      cryUrl: sourcePokemon.cryUrl
+    };
+    POKEMON_LIST.push(megaPokemon);
+  }
+  
+  // 카드 획득
+  if (!state.owned[megaEvo.id]) {
+    state.owned[megaEvo.id] = { count: 1, rarity: 'mega' };
+  } else {
+    state.owned[megaEvo.id].count += 1;
+  }
+  
+  saveState();
+  SFX.megaEvolution();
+  closeModal();
+  renderDex();
+  updateStatline();
+  showRewardPopup(megaPokemon, '💎 메가진화 성공!', '모든 스탯 +20!');
+}
+
+function performGigantamaxEvolution(engName) {
+  const gigaEvo = GIGANTAMAX_EVOLUTIONS[engName];
+  if (!gigaEvo) { alert('거다이맥스할 수 없는 포켓몬입니다!'); return; }
+  if (!useEvolutionStone('gigantamax')) { alert('거다이맥스진화의돌이 부족합니다! 레이드를 클리어해주세요.'); return; }
+  
+  const sourcePokemon = getPokemonByName(engName);
+  if (!sourcePokemon) { alert('포켓몬을 찾을 수 없어요!'); return; }
+  
+  let gigaPokemon = getPokemonByName(gigaEvo.id);
+  if (!gigaPokemon) {
+    gigaPokemon = {
+      id: 'gigantamax-' + sourcePokemon.id,
+      name: gigaEvo.name,
+      engName: gigaEvo.id,
+      type: sourcePokemon.type,
+      types: sourcePokemon.types,
+      hp: sourcePokemon.hp + 25,
+      atk: sourcePokemon.atk + 22,
+      def: sourcePokemon.def + 22,
+      spd: sourcePokemon.spd + 18,
+      image: sourcePokemon.image || '',
+      speciesUrl: sourcePokemon.speciesUrl,
+      cryUrl: sourcePokemon.cryUrl
+    };
+    POKEMON_LIST.push(gigaPokemon);
+  }
+  
+  if (!state.owned[gigaEvo.id]) {
+    state.owned[gigaEvo.id] = { count: 1, rarity: 'gigantamax' };
+  } else {
+    state.owned[gigaEvo.id].count += 1;
+  }
+  
+  saveState();
+  SFX.megaEvolution();
+  closeModal();
+  renderDex();
+  updateStatline();
+  showRewardPopup(gigaPokemon, '🔥 거다이맥스 성공!', '모든 스탯 +22!');
 }
 
 function extractEvoChain(chain) {
@@ -3307,19 +3626,16 @@ function showRewardPopup(pokemon, title, subtitle) {
 let battleMode = 'pvp';
 let battlePickerStep = 'type';
 let selectedSlotIndex = 0;
-// ===== 배틀 모드 토글 (탭 내부 버튼) =====
+
 document.querySelectorAll('#tab-battle .mode-toggle button').forEach(btn => {
   btn.addEventListener('click', function() {
-    console.log('🔘 배틀 모드 버튼 클릭!', this.dataset.mode);
-    
     document.querySelectorAll('#tab-battle .mode-toggle button').forEach(b => b.classList.remove('active'));
     this.classList.add('active');
     battleMode = this.dataset.mode;
-    console.log('🔄 battleMode 변경됨:', battleMode);
-    
     renderBattleSetup();
   });
 });
+
 function renderBattleSetup() {
   const slots = document.getElementById('teamSlots');
   const body = document.getElementById('battleBody');
@@ -3339,26 +3655,25 @@ function renderBattleSetup() {
     div.className = 'battle-slot';
     div.style.cssText = `width:90px;height:110px;background:${c ? 'rgba(255,201,60,.08)' : 'rgba(255,255,255,.04)'};border:${c ? '3px solid var(--sun)' : '3px dashed rgba(255,201,60,.15)'};border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:all .25s ease;position:relative;padding:6px;`;
     
-if (c) {
-  // ⭐ 키우는 포켓몬인지 확인
-  let displayAtk = c.atk;
-  let displayHp = c.hp;
-  
-  if (state.pet && (state.pet.baseId === c.engName || state.pet.evolvedId === c.engName)) {
-    const levelBonus = getPetLevelBonus(state.pet);
-    displayAtk = c.atk + levelBonus.atk;
-    displayHp = c.hp + levelBonus.hp;
-  }
-  
-  const typeColor = getTypeColor(c.type);
-  div.innerHTML = `
-    <button class="slot-remove" data-remove="${i}" style="position:absolute;top:2px;right:4px;background:rgba(0,0,0,.5);border:none;color:#fff;font-size:14px;cursor:pointer;padding:0 6px;border-radius:50%;line-height:1.4;">✕</button>
-    <div style="width:44px;height:44px;display:flex;align-items:center;justify-content:center;">${pokemonImage(c, '36px')}</div>
-    <div style="font-family:var(--font-display);font-size:12px;color:var(--paper);margin-top:1px;text-align:center;line-height:1.2;">${c.name}</div>
-    <span style="background:${typeColor};font-size:8px;padding:1px 8px;border-radius:10px;color:#fff;font-weight:600;margin-top:1px;">${getTypeLabel(c.type)}</span>
-    <div style="font-size:7px;color:#B7AFDE;margin-top:1px;">⚔️${displayAtk} ❤️${displayHp}</div>
-  `;
-} else {
+    if (c) {
+      let displayAtk = c.atk;
+      let displayHp = c.hp;
+      
+      if (state.pet && (state.pet.baseId === c.engName || state.pet.evolvedId === c.engName)) {
+        const levelBonus = getPetLevelBonus(state.pet);
+        displayAtk = c.atk + levelBonus.atk;
+        displayHp = c.hp + levelBonus.hp;
+      }
+      
+      const typeColor = getTypeColor(c.type);
+      div.innerHTML = `
+        <button class="slot-remove" data-remove="${i}" style="position:absolute;top:2px;right:4px;background:rgba(0,0,0,.5);border:none;color:#fff;font-size:14px;cursor:pointer;padding:0 6px;border-radius:50%;line-height:1.4;">✕</button>
+        <div style="width:44px;height:44px;display:flex;align-items:center;justify-content:center;">${pokemonImage(c, '36px')}</div>
+        <div style="font-family:var(--font-display);font-size:12px;color:var(--paper);margin-top:1px;text-align:center;line-height:1.2;">${c.name}</div>
+        <span style="background:${typeColor};font-size:8px;padding:1px 8px;border-radius:10px;color:#fff;font-weight:600;margin-top:1px;">${getTypeLabel(c.type)}</span>
+        <div style="font-size:7px;color:#B7AFDE;margin-top:1px;">⚔️${displayAtk} ❤️${displayHp}</div>
+      `;
+    } else {
       div.innerHTML = `<span style="font-size:24px;opacity:0.3;">+</span><span style="font-size:11px;color:#6b6395;margin-top:2px;">${i+1}번째</span>`;
     }
     
@@ -3376,13 +3691,10 @@ if (c) {
     slots.appendChild(div);
   }
   
-  // ⭐⭐⭐ 배틀 본문 - AI/실시간 버튼 생성 (중요!) ⭐⭐⭐
   if (state.team.length === 3) {
     const teamNames2 = state.team.map(eng => { const p = getPokemonByName(eng); return p ? p.name : '?'; }).join(' · ');
     const aiChances = state.battleChances || 0;
     const pvpChances = state.pvpChances || 0;
-    
-    console.log('📊 배틀 모드:', battleMode, 'AI횟수:', aiChances, 'PVP횟수:', pvpChances);
     
     body.innerHTML = `
       <div style="text-align:center;padding:16px 0;">
@@ -3404,11 +3716,6 @@ if (c) {
           : ''}
       </div>
     `;
-    
-    // ⭐ 버튼이 제대로 생성되었는지 확인
-    const aiBtn = document.getElementById('aiBattleBtn');
-    console.log('🔘 AI 버튼 생성됨:', aiBtn);
-    
   } else {
     body.innerHTML = `
       <div style="text-align:center;padding:30px 16px;color:#8d84b0;border:2px dashed rgba(255,201,60,.15);border-radius:14px;margin-top:4px;">
@@ -3419,6 +3726,7 @@ if (c) {
     `;
   }
 }
+
 function openBattlePicker(slotIndex) {
   const overlay = document.getElementById('battlePicker');
   overlay.style.display = 'flex';
@@ -3525,23 +3833,12 @@ function setBattleMode(mode) { battleMode = mode; renderBattleSetup(); }
 let aiBattle = null;
 
 function startAiBattle() {
-  console.log('🤖🤖🤖 AI 배틀 시작 버튼 클릭!');
-  
   const aiChances = state.battleChances || 0;
-  console.log('📊 현재 AI 배틀 횟수:', aiChances);
+  if (aiChances <= 0) { toast('⚠️ AI 배틀 횟수가 부족합니다!'); return; }
   
-  // 횟수 체크 (21이니까 당연히 통과)
-  if (aiChances <= 0) { 
-    toast('⚠️ AI 배틀 횟수가 부족합니다!'); 
-    return; 
-  }
-  
-  // 팀 확인
   const playerTeam = state.team.map(engName => { 
     const c = getPokemonByName(engName); 
     if (!c) return null;
-    
-    // 키우는 포켓몬인지 확인하고 능력치 강화
     let finalHp = c.hp;
     let finalAtk = c.atk;
     let finalDef = c.def;
@@ -3558,22 +3855,12 @@ function startAiBattle() {
     return { ...c, hp: finalHp, atk: finalAtk, def: finalDef, spd: finalSpd, curHp: finalHp }; 
   }).filter(Boolean);
   
-  console.log('👥 플레이어 팀:', playerTeam.map(p => p.name));
+  if (playerTeam.length < 3) { toast('⚠️ 3장의 카드를 모두 선택해주세요!'); return; }
   
-  if (playerTeam.length < 3) { 
-    toast('⚠️ 3장의 카드를 모두 선택해주세요!'); 
-    return; 
-  }
-  
-  // ⭐ 배틀 횟수 차감
   state.battleChances = state.battleChances - 1;
-  console.log('✅ 차감 후 횟수:', state.battleChances);
   saveState();
   
-  // AI 팀 생성
   const enemyTeam = makeEnemyTeam();
-  console.log('👾 AI 팀:', enemyTeam.map(p => p.name));
-  
   aiBattle = { 
     player: playerTeam, 
     enemy: enemyTeam, 
@@ -3586,6 +3873,7 @@ function startAiBattle() {
   addAiLog('⚔️ 상대 트레이너가 나타났다!', 'sys');
   renderAiArena();
 }
+
 function makeEnemyTeam() {
   const pool = POKEMON_LIST.filter(c => state.owned[c.engName]);
   const team = [];
@@ -3806,7 +4094,6 @@ async function doBattleAttack() {
     const mult = getEffMult(myPokemon.type, oppPokemon.type);
     const rarityBonus = getRarityDamageBonus(state.owned[myPokemon.engName]?.rarity);
     
-    // ⭐⭐⭐ 여기 수정! ⭐⭐⭐
     let myAtk = myPokemon.atk;
     let myDef = myPokemon.def;
     
@@ -3871,7 +4158,6 @@ function renderTradeTab() {
     return;
   }
   
-  // ⭐ 선택된 카드 저장 변수
   window._selectedTradeCard = null;
   
   container.innerHTML = `
@@ -3891,7 +4177,6 @@ function renderTradeTab() {
       <div style="text-align:center;color:#8d84b0;padding:16px;font-size:14px;">⏳ 교환방에 참가하면 상태가 표시됩니다</div>
     </div>
     
-    <!-- ⭐ 검색 기능 추가된 카드 선택 영역 -->
     <div style="margin-top:12px;padding:12px;background:rgba(255,255,255,.05);border-radius:10px;">
       <div style="font-size:13px;color:#B7AFDE;margin-bottom:4px;">🔍 보낼 카드 검색</div>
       <input type="text" id="tradeCardSearch" placeholder="포켓몬 이름 검색..." style="width:100%;padding:10px 14px;border-radius:8px;background:rgba(255,255,255,.05);color:var(--paper);border:2px solid rgba(255,201,60,.2);font-size:16px;margin-bottom:8px;box-sizing:border-box;">
@@ -3922,7 +4207,6 @@ function renderTradeTab() {
     <button class="btn small ghost block" style="margin-top:10px;" onclick="leaveTradeRoom();">🚪 방 나가기</button>
   `;
   
-  // ⭐ 검색 기능
   document.getElementById('tradeCardSearch')?.addEventListener('input', function() {
     const query = this.value.toLowerCase();
     const items = document.querySelectorAll('.trade-card-item');
@@ -3932,7 +4216,6 @@ function renderTradeTab() {
     });
   });
   
-  // 버튼 이벤트
   document.getElementById('createTradeBtn').addEventListener('click', createTradeRoom);
   document.getElementById('joinTradeBtn').addEventListener('click', function() { 
     const code = document.getElementById('tradeCodeInput').value.trim(); 
@@ -3943,14 +4226,12 @@ function renderTradeTab() {
   document.getElementById('confirmTradeBtn').addEventListener('click', confirmTradeFinal);
 }
 
-// ⭐ 카드 선택 함수
 function selectTradeCard(engName) {
   window._selectedTradeCard = engName;
   const c = getPokemonByName(engName);
   const info = state.owned[engName];
   const rInfo = getRarityInfo(info?.rarity || 'common');
   
-  // 선택 표시 업데이트
   document.querySelectorAll('.trade-card-item').forEach(el => {
     el.style.borderColor = el.dataset.eng === engName ? 'var(--sun)' : getRarityInfo(state.owned[el.dataset.eng]?.rarity || 'common').color;
     el.style.background = el.dataset.eng === engName ? 'rgba(255,201,60,.15)' : 'rgba(255,255,255,.04)';
@@ -3959,16 +4240,12 @@ function selectTradeCard(engName) {
   document.getElementById('selectedTradeCardDisplay').textContent = c ? `${c.name} (${rInfo.emoji} ${rInfo.label} ×${info.count})` : '없음';
   document.getElementById('selectedTradeCardDisplay').style.color = 'var(--paper)';
   
-  // 교환 준비 버튼 활성화
   document.getElementById('sendTradeBtn').disabled = false;
-  
-  // 드롭다운도 함께 업데이트 (기존 호환성 유지)
-  const select = document.getElementById('tradeCardSelect');
-  if (select) select.value = engName;
 }
+
 async function createTradeRoom() {
   const code = String(Math.floor(1000 + Math.random() * 9000));
-  const myCard = document.getElementById('tradeCardSelect')?.value;
+  const myCard = window._selectedTradeCard;
   if (!myCard || !state.owned[myCard] || state.owned[myCard].count < 1) { alert('보낼 카드를 선택해주세요!'); return; }
   const myRarity = state.owned[myCard].rarity || 'common';
   const roomData = { host: { card: myCard, rarity: myRarity, ready: false, confirmed: false }, guest: null, status: 'waiting', log: ['🔵 교환방이 생성되었습니다.'], createdAt: Date.now(), completed: false, processed: false };
@@ -3991,7 +4268,7 @@ async function joinTradeRoom(code) {
     if (!room) { alert('❌ 존재하지 않는 방입니다!'); return; }
     if (room.completed || room.status === 'completed') { alert('❌ 이미 교환이 완료된 방입니다!'); return; }
     if (room.guest !== null && room.guest !== undefined) { alert('❌ 이미 다른 사람이 참가한 방입니다!'); return; }
-    const myCard = document.getElementById('tradeCardSelect')?.value;
+    const myCard = window._selectedTradeCard;
     if (!myCard || !state.owned[myCard] || state.owned[myCard].count < 1) { alert('보낼 카드를 선택해주세요!'); return; }
     const myRarity = state.owned[myCard].rarity || 'common';
     await roomRef.update({ guest: { card: myCard, rarity: myRarity, ready: false, confirmed: false }, status: 'ready' });
@@ -4141,14 +4418,8 @@ function handleConfirmState(room, me, opp) {
 
 async function sendTradeProposal() {
   if (!myTradeRoom) { alert('먼저 교환방에 참가해주세요!'); return; }
-  
-  // ⭐ 선택된 카드 가져오기 (검색 UI에서 선택한 카드)
-  const myCard = window._selectedTradeCard || document.getElementById('tradeCardSelect')?.value;
-  
-  if (!myCard || !state.owned[myCard] || state.owned[myCard].count < 1) { 
-    alert('보낼 카드를 선택해주세요!'); 
-    return; 
-  }
+  const myCard = window._selectedTradeCard;
+  if (!myCard || !state.owned[myCard] || state.owned[myCard].count < 1) { alert('보낼 카드를 선택해주세요!'); return; }
   
   try {
     const roomRef = db.ref('trades/' + myTradeRoom.code);
@@ -4264,50 +4535,24 @@ setInterval(function() {
 // ============================================================
 
 window.craftFromDetail = function(engName) {
-    console.log('🔮 craftFromDetail 실행!', engName);
-    alert('🔮 합성 시도: ' + engName);
-    
     try {
         const info = state.owned[engName];
-        console.log('📦 카드 정보:', info);
-        
-        if (!info) {
-            alert('⚠️ 카드 정보가 없습니다!');
-            return;
-        }
-        
-        if (info.count < 2) {
-            alert('⚠️ 2장 이상 필요합니다! (현재 ' + info.count + '장)');
-            return;
-        }
+        if (!info) { alert('⚠️ 카드 정보가 없습니다!'); return; }
+        if (info.count < 2) { alert('⚠️ 2장 이상 필요합니다! (현재 ' + info.count + '장)'); return; }
         
         const currentRarity = info.rarity;
         const rarityIndex = RARITIES.findIndex(r => r.id === currentRarity);
-        
-        if (rarityIndex === -1) {
-            alert('⚠️ 알 수 없는 등급: ' + currentRarity);
-            return;
-        }
-        
-        if (rarityIndex >= RARITIES.length - 1) {
-            alert('⚠️ 최고 등급입니다! (스페셜)');
-            return;
-        }
+        if (rarityIndex === -1) { alert('⚠️ 알 수 없는 등급: ' + currentRarity); return; }
+        if (rarityIndex >= RARITIES.length - 1) { alert('⚠️ 최고 등급입니다!'); return; }
         
         const nextRarity = RARITIES[rarityIndex + 1];
         const pokemon = getPokemonByName(engName);
-        
-        if (!pokemon) {
-            alert('⚠️ 포켓몬을 찾을 수 없음!');
-            return;
-        }
+        if (!pokemon) { alert('⚠️ 포켓몬을 찾을 수 없음!'); return; }
         
         if (!confirm(`🔮 ${pokemon.name} (${getRarityInfo(currentRarity).label}) 2장을 합성할까요?\n→ ${getRarityInfo(nextRarity.id).label} 등급으로 업그레이드!`)) {
-            console.log('❌ 사용자 취소');
             return;
         }
         
-        // 합성 실행
         state.owned[engName].count -= 2;
         if (state.owned[engName].count <= 0) {
             delete state.owned[engName];
@@ -4340,25 +4585,10 @@ window.craftFromDetail = function(engName) {
 };
 
 window.craftSpecialFromDetail = function(engName) {
-    console.log('⭐ 스페셜 합성 시도:', engName);
-    alert('⭐ 스페셜 합성 시도: ' + engName);
-    
     const info = state.owned[engName];
-    if (!info) {
-        alert('⚠️ 카드 정보가 없습니다!');
-        return;
-    }
-    
-    if (info.count < 2) {
-        alert('⚠️ 2장 이상 필요합니다! (현재 ' + info.count + '장)');
-        return;
-    }
-    
-    if (info.rarity !== 'special') {
-        alert('⚠️ 스페셜 등급 카드만 가능합니다!');
-        return;
-    }
-    
+    if (!info) { alert('⚠️ 카드 정보가 없습니다!'); return; }
+    if (info.count < 2) { alert('⚠️ 2장 이상 필요합니다! (현재 ' + info.count + '장)'); return; }
+    if (info.rarity !== 'special') { alert('⚠️ 스페셜 등급 카드만 가능합니다!'); return; }
     showSpecialCraftPicker(engName);
 };
 
@@ -4410,34 +4640,16 @@ window.showSpecialCraftPicker = function(sourceEngName) {
 };
 
 window.doSpecialCraft = function(sourceEngName, targetEngName) {
-    console.log('⭐ 스페셜 합성 실행:', sourceEngName, '→', targetEngName);
-    
     const sourceInfo = state.owned[sourceEngName];
-    if (!sourceInfo || sourceInfo.count < 2) {
-        alert('⚠️ 카드가 부족합니다!');
-        return;
-    }
-    if (sourceInfo.rarity !== 'special') {
-        alert('⚠️ 스페셜 등급이 아닙니다!');
-        return;
-    }
+    if (!sourceInfo || sourceInfo.count < 2) { alert('⚠️ 카드가 부족합니다!'); return; }
+    if (sourceInfo.rarity !== 'special') { alert('⚠️ 스페셜 등급이 아닙니다!'); return; }
     
     const sourcePokemon = getPokemonByName(sourceEngName);
     const targetPokemon = getPokemonByName(targetEngName);
+    if (!sourcePokemon || !targetPokemon) { alert('⚠️ 포켓몬 정보를 찾을 수 없어요!'); return; }
+    if (sourceEngName === targetEngName) { alert('⚠️ 같은 포켓몬으로는 변경할 수 없어요!'); return; }
     
-    if (!sourcePokemon || !targetPokemon) {
-        alert('⚠️ 포켓몬 정보를 찾을 수 없어요!');
-        return;
-    }
-    
-    if (sourceEngName === targetEngName) {
-        alert('⚠️ 같은 포켓몬으로는 변경할 수 없어요!');
-        return;
-    }
-    
-    if (!confirm(`⭐ ${sourcePokemon.name} (스페셜) 2장 → ${targetPokemon.name} (스페셜) 으로 변경할까요?`)) {
-        return;
-    }
+    if (!confirm(`⭐ ${sourcePokemon.name} (스페셜) 2장 → ${targetPokemon.name} (스페셜) 으로 변경할까요?`)) return;
     
     try {
         state.owned[sourceEngName].count -= 2;
@@ -4454,15 +4666,11 @@ window.doSpecialCraft = function(sourceEngName, targetEngName) {
         
         saveState();
         SFX.evolution();
-        
         document.getElementById('specialCraftOverlay')?.remove();
-        
         renderDex();
         updateStatline();
-        
         alert(`🎉 ${targetPokemon.name} (스페셜) 획득!`);
         showRewardPopup(targetPokemon, '⭐ 스페셜 합성 완료!', `${targetPokemon.name} (스페셜) 으로 변경!`);
-        
     } catch(e) {
         console.error('❌ 스페셜 합성 오류:', e);
         alert('⚠️ 합성 중 오류가 발생했습니다: ' + e.message);
@@ -4549,7 +4757,6 @@ function renderCraftTab() {
 }
 
 window.openCardDetailFromCraft = function(engName) {
-  console.log('🔮 openCardDetailFromCraft 호출됨:', engName);
   const pokemon = getPokemonByName(engName);
   if (pokemon) {
     document.querySelectorAll('nav.tabbar button').forEach(b => b.classList.remove('active'));
@@ -4590,6 +4797,7 @@ async function initGame() {
     state.raidSelectedCard = null;
     state.battleChances = 0;
     state.pvpChances = 0;
+    state.evolutionStones = { mega: 0, gigantamax: 0 };
     saveState();
   }
   
@@ -4607,6 +4815,7 @@ async function initGame() {
   }
   
   bindMissionEditEvents();
+  updateStoneDisplay();
 }
 
 function renderAll() {
