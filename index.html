@@ -1898,8 +1898,8 @@ const DEFAULT_LIFE_MISSIONS = [
   { id:'sleep-time', label:'제시간에 자기', emoji:'🌙' }
 ];
 const COOLDOWN = { FEED: 2*60*60*1000, PLAY: 2*60*60*1000, SLEEP: 2*60*60*1000 };
-const CACHE_KEY = 'pokedex-all-v8';
-const CACHE_TIME_KEY = 'pokedex-time-v8';
+const CACHE_KEY = 'pokedex-all-v7';
+const CACHE_TIME_KEY = 'pokedex-time-v7';
 const CACHE_DURATION = 7*24*60*60*1000;
 
 // ===== 진화 체인 캐시 =====
@@ -2187,7 +2187,7 @@ function speakPokemonInfo(pokemon) {
 // ===== 저장/로드 =====
 function loadState() {
   try {
-    const saved = localStorage.getItem('pkmn-state-v8');
+    const saved = localStorage.getItem('pkmn-state-v7');
     if (saved) {
       const parsed = JSON.parse(saved);
       state = Object.assign(state, parsed);
@@ -2202,7 +2202,7 @@ function loadState() {
 
 function saveState() {
   try {
-    localStorage.setItem('pkmn-state-v8', JSON.stringify(state));
+    localStorage.setItem('pkmn-state-v7', JSON.stringify(state))
   } catch(e) { console.error('저장 실패:', e); }
 }
 
