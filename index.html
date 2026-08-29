@@ -3892,7 +3892,29 @@ function renderDex() {
   const grid = document.getElementById('dexGrid');
   const total = POKEMON_LIST.length;
   const owned = Object.keys(state.owned).length;
-    // ⭐ 중복 제거 (engName 기준)
+  
+  document.getElementById('dexProgress').style.width = (owned / total * 100) + '%';
+  document.getElementById('dexProgressText').textContent = owned + ' / ' + total + ' 마리';
+  
+  // ⭐ 1. 필터링 (list 변수 선언)
+  let list = POKEMON_LIST.filter(c => activeFilter === 'all' || c.type === activeFilter);
+  
+  // ⭐ 2. 보유 필터
+  if (ownershipFilter === 'owned') {
+    list = list.filter(c => state.owned[c.engName]);
+  } else if (ownershipFilter === 'missing') {
+    list = list.filter(c => !state.owned[c.engName]);
+  }
+  
+  // ⭐ 3. 등급 필터
+  if (activeRarity !== 'all') {
+    list = list.filter(c => {
+      const ownedData = state.owned[c.engName];
+      return ownedData && ownedData.rarity === activeRarity;
+    });
+  }
+  
+  // ⭐ 4. 중복 제거 (engName 기준)
   const uniqueList = [];
   const seenNames = new Set();
   list.forEach(p => {
@@ -3902,17 +3924,8 @@ function renderDex() {
     }
   });
   list = uniqueList;
-  document.getElementById('dexProgress').style.width = (owned / total * 100) + '%';
-  document.getElementById('dexProgressText').textContent = owned + ' / ' + total + ' 마리';
-  let list = POKEMON_LIST.filter(c => activeFilter === 'all' || c.type === activeFilter);
-  if (ownershipFilter === 'owned') list = list.filter(c => state.owned[c.engName]);
-  else if (ownershipFilter === 'missing') list = list.filter(c => !state.owned[c.engName]);
-  if (activeRarity !== 'all') list = list.filter(c => { const ownedData = state.owned[c.engName]; return ownedData && ownedData.rarity === activeRarity; });
   
-  // 메가/거다이맥스 카드 추가 표시
-  const megaPokemons = Object.keys(MEGA_EVOLUTIONS);
-  const gigaPokemons = Object.keys(GIGANTAMAX_EVOLUTIONS);
-  
+  // ⭐ 5. 렌더링
   grid.innerHTML = list.map(c => {
     const ownedData = state.owned[c.engName];
     const has = !!ownedData;
@@ -3936,18 +3949,23 @@ function renderDex() {
       displaySpd = c.spd + levelBonus.spd;
     }
     
-    // 메가/거다이맥스 가능 여부 표시
+    const isMega = rarity === 'mega';
+    const isGiga = rarity === 'gigantamax';
     let evoBadge = '';
     if (has && isFinalEvolution(c.engName)) {
-      if (megaPokemons.includes(c.engName)) {
+      if (MEGA_EVOLUTIONS[c.engName]) {
         evoBadge += `<span class="evolution-stone-badge mega">💎메가</span>`;
       }
-      if (gigaPokemons.includes(c.engName)) {
+      if (GIGANTAMAX_EVOLUTIONS[c.engName]) {
         evoBadge += `<span class="evolution-stone-badge gigantamax">🔥거다이</span>`;
       }
     }
     
-    return `<div class="card mini ${has ? 'rarity-' + rarity : 'locked'} ${isPet ? 'pet-card' : ''}" data-eng="${c.engName}" style="${isPet ? 'border-color:var(--special);box-shadow:0 0 20px rgba(255,107,53,.3);' : ''}">
+    const cardStyle = isPet ? 'border-color:var(--special);box-shadow:0 0 20px rgba(255,107,53,.3);' : '';
+    const rarityClass = has ? 'rarity-' + rarity : 'locked';
+    const petClass = isPet ? 'pet-card' : '';
+    
+    return `<div class="card mini ${rarityClass} ${petClass}" data-eng="${c.engName}" style="${cardStyle}">
       <div class="art">${pokemonImage(c)}</div>
       <div class="name">${has ? c.name : '???'} ${isPet ? '⭐' : ''}</div>
       <span class="type-tag" style="background:${getTypeColor(c.type)}">${has ? getTypeLabel(c.type) : '???'}</span>
@@ -3963,12 +3981,15 @@ function renderDex() {
     </div>`;
   }).join('');
   
+  // ⭐ 6. 클릭 이벤트
   grid.querySelectorAll('.card:not(.locked)').forEach(el => {
     el.addEventListener('click', function() {
       const engName = this.dataset.eng;
       const pokemon = getPokemonByName(engName);
-      if (pokemon) {
-        if (pokemon.cryUrl) { new Audio(pokemon.cryUrl).play().catch(()=>{}); }
+      if (pokemon && state.owned[engName]) {
+        if (pokemon.cryUrl) {
+          new Audio(pokemon.cryUrl).play().catch(() => {});
+        }
         openCardDetail(pokemon);
       }
     });
