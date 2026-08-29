@@ -1970,6 +1970,7 @@ function getEvoChain(engName) {
 }
 
 // ===== loadAllPokemon (개선: 더 많은 포켓몬 로드) =====
+// ===== loadAllPokemon (완전판: 모든 포켓몬 로드) =====
 async function loadAllPokemon() {
   try {
     const cached = localStorage.getItem(CACHE_KEY);
@@ -1983,17 +1984,34 @@ async function loadAllPokemon() {
   } catch(e) {}
   
   try {
-    // 1300마리까지 요청 (최신 세대 포함)
-    const listRes = await fetch('https://pokeapi.co/api/v2/pokemon?limit=1300');
+    // ⭐ 1. 전체 포켓몬 수 확인 (실제 API 호출)
+    const countRes = await fetch('https://pokeapi.co/api/v2/pokemon?limit=0');
+    const countData = await countRes.json();
+    const totalCount = countData.count || 1350;
+    console.log('📊 PokeAPI 전체 포켓몬 수:', totalCount);
+    
+    // ⭐ 2. 모든 포켓몬 ID 수집 (진짜 전체 목록)
+    const allUrls = [];
+    const limit = 2000; // 충분히 큰 값으로 설정 (실제로는 1350개)
+    const listRes = await fetch(`https://pokeapi.co/api/v2/pokemon?limit=${limit}&offset=0`);
     const listData = await listRes.json();
-    const allUrls = listData.results.map(p => p.url);
+    
+    // 모든 URL 수집
+    listData.results.forEach(p => allUrls.push(p.url));
+    console.log('📋 수집된 포켓몬 URL:', allUrls.length + '개');
+    
+    // ⭐ 3. 30개씩 병렬 처리 (서버 부하 방지)
     let allPokemon = [];
-    for (let i = 0; i < allUrls.length; i += 30) {
-      const batch = allUrls.slice(i, i + 30);
+    const batchSize = 30;
+    
+    for (let i = 0; i < allUrls.length; i += batchSize) {
+      const batch = allUrls.slice(i, i + batchSize);
       const promises = batch.map(async (url) => {
         try {
           const detailRes = await fetch(url);
           const detail = await detailRes.json();
+          
+          // 한글 이름 가져오기
           let koreanName = detail.name;
           try {
             const speciesRes = await fetch(detail.species.url);
@@ -2002,42 +2020,58 @@ async function loadAllPokemon() {
             if (name) koreanName = name.name;
           } catch(e) {}
           
-          let imageUrl = detail.sprites.other['official-artwork']?.front_default || detail.sprites.front_default;
+          // 이미지 URL
+          let imageUrl = detail.sprites.other['official-artwork']?.front_default || 
+                         detail.sprites.front_default;
           
-          if (detail.name === 'koraidon') {
-            imageUrl = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1007.png';
-          } else if (detail.name === 'miraidon') {
-            imageUrl = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1008.png';
+          // 특수 포켓몬 이미지 처리
+          const specialImages = {
+            'koraidon': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1007.png',
+            'miraidon': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1008.png',
+            'gholdengo': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1000.png'
+          };
+          if (specialImages[detail.name]) {
+            imageUrl = specialImages[detail.name];
           }
           
           if (!imageUrl) {
             imageUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${detail.id}.png`;
           }
           
-          // Mega/Gigantamax 이미지 처리
-          if (detail.name === 'charizard') {
-            // 메가리자몽X, Y 이미지 추가
-          }
+          // ⭐ 4. 타입 정보 (2차 타입 포함)
+          const types = detail.types.map(t => t.type.name);
           
           return {
-            id: detail.id, name: koreanName, engName: detail.name,
-            type: detail.types[0].type.name,
-            types: detail.types.map(t => t.type.name),
-            hp: detail.stats[0].base_stat, atk: detail.stats[1].base_stat,
-            def: detail.stats[2].base_stat, spd: detail.stats[5].base_stat,
+            id: detail.id,
+            name: koreanName,
+            engName: detail.name,
+            type: types[0] || 'normal',
+            types: types,
+            hp: detail.stats[0].base_stat,
+            atk: detail.stats[1].base_stat,
+            def: detail.stats[2].base_stat,
+            spd: detail.stats[5].base_stat,
             image: imageUrl,
             speciesUrl: detail.species.url,
             cryUrl: detail.cries?.latest || detail.cries?.legacy || null
           };
-        } catch(e) { return null; }
+        } catch(e) { 
+          console.warn('⚠️ 개별 포켓몬 로드 실패:', url, e);
+          return null; 
+        }
       });
+      
       const results = await Promise.all(promises);
       allPokemon = allPokemon.concat(results.filter(p => p !== null));
-      document.getElementById('loadingStatus').textContent = 'PokeAPI 로딩 중... ' + allPokemon.length + '/' + allUrls.length;
+      
+      // 로딩 상태 업데이트
+      const progress = Math.round((i + batch.length) / allUrls.length * 100);
+      document.getElementById('loadingStatus').textContent = 
+        `PokeAPI 로딩 중... ${allPokemon.length}/${allUrls.length} (${progress}%)`;
     }
-    allPokemon.sort((a, b) => a.id - b.id);
     
-    // 중복 제거
+    // ⭐ 5. 중복 제거 및 정렬
+    allPokemon.sort((a, b) => a.id - b.id);
     const uniqueMap = new Map();
     allPokemon.forEach(p => {
       if (!uniqueMap.has(p.engName)) {
@@ -2047,19 +2081,26 @@ async function loadAllPokemon() {
     allPokemon = Array.from(uniqueMap.values());
     allPokemon.sort((a, b) => a.id - b.id);
     
+    console.log('✅ 최종 로드 완료!', allPokemon.length + '마리');
     POKEMON_LIST = allPokemon;
+    
+    // ⭐ 6. 캐시 저장
     localStorage.setItem(CACHE_KEY, JSON.stringify(POKEMON_LIST));
     localStorage.setItem(CACHE_TIME_KEY, String(Date.now()));
+    
+    document.getElementById('loadingStatus').textContent = 
+      `✅ ${POKEMON_LIST.length}마리 로드 완료! 🎉`;
+    
     return POKEMON_LIST;
+    
   } catch(error) {
-    console.error('API 로드 실패:', error);
+    console.error('❌ API 로드 실패:', error);
     POKEMON_LIST = getFallbackData();
     localStorage.setItem(CACHE_KEY, JSON.stringify(POKEMON_LIST));
     localStorage.setItem(CACHE_TIME_KEY, String(Date.now()));
     return POKEMON_LIST;
   }
 }
-
 function getFallbackData() {
   return [
     {id:1, name:'이상해씨', engName:'bulbasaur', type:'grass', hp:45, atk:49, def:49, spd:45, image:'', types:['grass']},
