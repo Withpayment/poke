@@ -1436,11 +1436,18 @@
 </head>
 <body>
 <div class="app">
-  <header class="top">
-    <div class="eyebrow" id="resetHiddenBtn" title="게임 초기화 (숨김)">🔧</div>
-    <h1>⚡ 포켓몬 카드 마스터 v8.0</h1>
-    <div class="sub">진화하고, 교환하고, 레이드하자!</div>
-     <div style="margin-top:8px;display:flex;gap:6px;justify-content:center;flex-wrap:wrap;">
+<header class="top">
+  <div class="eyebrow" id="resetHiddenBtn" title="게임 초기화 (숨김)">🔧</div>
+  <h1>⚡ 포켓몬 카드 마스터 v8.0</h1>
+  <div class="sub">진화하고, 교환하고, 레이드하자!</div>
+  
+  <div style="margin-top:8px;display:flex;gap:6px;justify-content:center;flex-wrap:wrap;">
+    <!-- ⭐ 관리자 버튼 (새로 추가) -->
+    <button id="adminPanelBtn" style="background:rgba(255,215,0,.15);border:2px solid rgba(255,215,0,.3);color:#FFD700;padding:4px 12px;border-radius:8px;font-size:11px;cursor:pointer;font-family:var(--font-mono);touch-action:manipulation;">
+      👑 관리자
+    </button>
+    
+    <!-- 기존 버튼들 -->
     <button id="clearCacheBtn" style="background:rgba(255,255,255,.08);border:2px solid rgba(255,201,60,.2);color:#B7AFDE;padding:4px 12px;border-radius:8px;font-size:11px;cursor:pointer;font-family:var(--font-mono);touch-action:manipulation;">
       🗑️ 캐시 삭제
     </button>
@@ -1449,7 +1456,6 @@
     </button>
   </div>
 </header>
-  </header>
 
   <div class="statline">
     <div class="pill">📖 <b id="collectedCount">0</b>/<span id="totalCount">0</span></div>
@@ -1474,6 +1480,68 @@
   </div>
 
   <main>
+    <!-- 관리자 패널 모달 -->
+<div class="modal-overlay" id="adminModal">
+  <div class="modal-content" style="max-width:500px;">
+    <button class="modal-close" id="adminModalClose">✕</button>
+    <div style="text-align:center;margin-bottom:16px;">
+      <div style="font-size:36px;">👑</div>
+      <div style="font-family:var(--font-display);font-size:24px;color:var(--sun-2);">관리자 패널</div>
+      <div style="font-size:13px;color:#B7AFDE;">카드와 진화의돌을 수동으로 지급합니다</div>
+    </div>
+    
+    <!-- 비밀번호 입력 -->
+    <div id="adminPasswordSection">
+      <input class="edit-pw-input" id="adminPasswordInput" type="password" maxlength="4" placeholder="비밀번호 4자리" inputmode="numeric" style="width:100%;padding:12px 16px;border-radius:12px;border:3px solid rgba(255,215,0,.2);background:rgba(255,255,255,.05);color:var(--paper);font-family:var(--font-body);font-size:20px;text-align:center;letter-spacing:8px;margin-bottom:12px;">
+      <div class="edit-pw-error" id="adminPwError" style="color:var(--bad);font-size:14px;text-align:center;margin-top:8px;display:none;">❌ 비밀번호가 틀렸어요!</div>
+      <div style="display:flex;gap:10px;">
+        <button class="btn" id="adminPwConfirmBtn" style="flex:1;">확인</button>
+        <button class="btn ghost" id="adminPwCancelBtn" style="flex:1;">취소</button>
+      </div>
+    </div>
+    
+    <!-- 관리자 컨텐츠 -->
+    <div id="adminContentSection" style="display:none;">
+      <!-- 카드 지급 -->
+      <div style="margin-bottom:16px;padding:14px;background:rgba(255,255,255,.05);border-radius:12px;border:2px solid rgba(255,215,0,.15);">
+        <div style="font-family:var(--font-display);font-size:16px;color:var(--sun-2);margin-bottom:8px;">🎴 카드 지급</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <input id="adminCardSearch" placeholder="포켓몬 이름 검색..." style="flex:2;min-width:120px;padding:10px 14px;border-radius:8px;border:2px solid rgba(255,201,60,.2);background:rgba(255,255,255,.05);color:var(--paper);font-size:14px;">
+          <input id="adminCardCount" type="number" value="1" min="1" max="99" style="width:60px;padding:10px 8px;border-radius:8px;border:2px solid rgba(255,201,60,.2);background:rgba(255,255,255,.05);color:var(--paper);font-size:14px;text-align:center;">
+          <button class="btn small" id="adminGiveCardBtn" style="font-size:14px;padding:8px 16px;min-height:40px;">🎁 지급</button>
+        </div>
+        <div id="adminCardResult" style="font-size:12px;color:#B7AFDE;margin-top:6px;"></div>
+      </div>
+      
+      <!-- 진화의돌 지급 -->
+      <div style="margin-bottom:16px;padding:14px;background:rgba(255,255,255,.05);border-radius:12px;border:2px solid rgba(255,215,0,.15);">
+        <div style="font-family:var(--font-display);font-size:16px;color:var(--sun-2);margin-bottom:8px;">💎 진화의돌 지급</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <select id="adminStoneType" style="flex:1;min-width:100px;padding:10px 14px;border-radius:8px;border:2px solid rgba(255,201,60,.2);background:rgba(255,255,255,.05);color:var(--paper);font-size:14px;">
+            <option value="mega">💎 메가진화의돌</option>
+            <option value="gigantamax">🔥 거다이맥스돌</option>
+          </select>
+          <input id="adminStoneCount" type="number" value="1" min="1" max="99" style="width:60px;padding:10px 8px;border-radius:8px;border:2px solid rgba(255,201,60,.2);background:rgba(255,255,255,.05);color:var(--paper);font-size:14px;text-align:center;">
+          <button class="btn small" id="adminGiveStoneBtn" style="font-size:14px;padding:8px 16px;min-height:40px;">💎 지급</button>
+        </div>
+        <div id="adminStoneResult" style="font-size:12px;color:#B7AFDE;margin-top:6px;"></div>
+      </div>
+      
+      <!-- 현재 보유량 -->
+      <div style="padding:12px;background:rgba(255,255,255,.03);border-radius:10px;border:1px solid rgba(255,255,255,.05);">
+        <div style="font-size:13px;color:#B7AFDE;text-align:center;">
+          📊 보유 카드: <b style="color:var(--paper);" id="adminOwnedCount">0</b>장 &nbsp;|&nbsp;
+          💎 메가돌: <b style="color:#FF00FF;" id="adminMegaCount">0</b>개 &nbsp;|&nbsp;
+          🔥 거다이돌: <b style="color:#00D4FF;" id="adminGigaCount">0</b>개
+        </div>
+      </div>
+      
+      <div style="display:flex;gap:10px;margin-top:12px;">
+        <button class="btn ghost" id="adminCloseBtn" style="flex:1;">닫기</button>
+      </div>
+    </div>
+  </div>
+</div>
     <div id="loadingScreen" class="loading-spinner">
       <div class="spinner"></div>
       <div style="font-family:var(--font-display);font-size:22px;">포켓몬 데이터를 불러오는 중...</div>
@@ -2222,13 +2290,59 @@ async function loadAllPokemon() {
     
     // ⭐ 5. 중복 제거 및 정렬
     allPokemon.sort((a, b) => a.id - b.id);
-    const uniqueMap = new Map();
-    allPokemon.forEach(p => {
-      if (!uniqueMap.has(p.engName)) {
-        uniqueMap.set(p.engName, p);
+const uniqueMap = new Map();
+  allPokemon.forEach(p => {
+    // engName 기준으로 중복 체크
+    if (!uniqueMap.has(p.engName)) {
+      uniqueMap.set(p.engName, p);
+    } else {
+      // 이미 있는 경우, 더 나은 데이터로 업데이트
+      const existing = uniqueMap.get(p.engName);
+      if (p.image && !existing.image) {
+        existing.image = p.image;
       }
-    });
+      if (p.types && p.types.length > existing.types.length) {
+        existing.types = p.types;
+      }
+    }
+  });
     allPokemon = Array.from(uniqueMap.values());
+     const SPECIAL_POKEMON = {
+    'miraidon': {
+      id: 1008,
+      name: '미라이돈',
+      engName: 'miraidon',
+      type: 'electric',
+      types: ['electric', 'dragon'],
+      hp: 100,
+      atk: 85,
+      def: 100,
+      spd: 135,
+      image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1008.png'
+    },
+    'koraidon': {
+      id: 1007,
+      name: '코라이돈',
+      engName: 'koraidon',
+      type: 'fighting',
+      types: ['fighting', 'dragon'],
+      hp: 100,
+      atk: 130,
+      def: 100,
+      spd: 135,
+      image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1007.png'
+    }
+  };
+  
+  // 특수 포켓몬이 없으면 추가, 있으면 덮어쓰기
+  Object.keys(SPECIAL_POKEMON).forEach(key => {
+    const existingIndex = allPokemon.findIndex(p => p.engName === key);
+    if (existingIndex !== -1) {
+      allPokemon[existingIndex] = SPECIAL_POKEMON[key];
+    } else {
+      allPokemon.push(SPECIAL_POKEMON[key]);
+    }
+  });
     allPokemon.sort((a, b) => a.id - b.id);
     
     console.log('✅ 최종 로드 완료!', allPokemon.length + '마리');
@@ -2305,7 +2419,64 @@ function getPokemonByName(name) {
   // 일반 검색
   let result = POKEMON_LIST.find(p => p.engName === name || p.name === name);
   if (result) return result;
+    const SPECIAL_POKEMON = {
+    'miraidon': {
+      id: 1008,
+      name: '미라이돈',
+      engName: 'miraidon',
+      type: 'electric',
+      types: ['electric', 'dragon'],
+      hp: 100,
+      atk: 85,
+      def: 100,
+      spd: 135,
+      image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1008.png',
+      speciesUrl: null,
+      cryUrl: null
+    },
+    'koraidon': {
+      id: 1007,
+      name: '코라이돈',
+      engName: 'koraidon',
+      type: 'fighting',
+      types: ['fighting', 'dragon'],
+      hp: 100,
+      atk: 130,
+      def: 100,
+      spd: 135,
+      image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1007.png',
+      speciesUrl: null,
+      cryUrl: null
+    },
+    '미라이돈': {
+      id: 1008,
+      name: '미라이돈',
+      engName: 'miraidon',
+      type: 'electric',
+      types: ['electric', 'dragon'],
+      hp: 100,
+      atk: 85,
+      def: 100,
+      spd: 135,
+      image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1008.png'
+    },
+    '코라이돈': {
+      id: 1007,
+      name: '코라이돈',
+      engName: 'koraidon',
+      type: 'fighting',
+      types: ['fighting', 'dragon'],
+      hp: 100,
+      atk: 130,
+      def: 100,
+      spd: 135,
+      image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1007.png'
+    }
+  };
   
+  if (SPECIAL_POKEMON[name]) {
+    return SPECIAL_POKEMON[name];
+  }
   // 메가/거다이맥스 ID로 검색 (저장된 데이터에서)
   if (name && (name.startsWith('mega-') || name.startsWith('gigantamax-'))) {
     // owned에서 찾기
@@ -2539,7 +2710,125 @@ function grantCardReward() {
   renderDex();
   return { target, rarity, isNew };
 }
+// ===== 관리자 패널 =====
+const ADMIN_PASSWORD = '4987';
 
+function openAdminPanel() {
+  document.getElementById('adminModal').classList.add('open');
+  document.getElementById('adminPasswordSection').style.display = 'block';
+  document.getElementById('adminContentSection').style.display = 'none';
+  document.getElementById('adminPasswordInput').value = '';
+  document.getElementById('adminPwError').style.display = 'none';
+  document.getElementById('adminPasswordInput').focus();
+}
+
+function closeAdminPanel() {
+  document.getElementById('adminModal').classList.remove('open');
+}
+
+function checkAdminPassword() {
+  const input = document.getElementById('adminPasswordInput').value;
+  const errorEl = document.getElementById('adminPwError');
+  if (input === ADMIN_PASSWORD) {
+    errorEl.style.display = 'none';
+    document.getElementById('adminPasswordSection').style.display = 'none';
+    document.getElementById('adminContentSection').style.display = 'block';
+    updateAdminStats();
+  } else {
+    errorEl.style.display = 'block';
+    document.getElementById('adminPasswordInput').value = '';
+    document.getElementById('adminPasswordInput').focus();
+  }
+}
+
+function updateAdminStats() {
+  const owned = Object.keys(state.owned).length;
+  const stones = getEvolutionStones();
+  document.getElementById('adminOwnedCount').textContent = owned;
+  document.getElementById('adminMegaCount').textContent = stones.mega || 0;
+  document.getElementById('adminGigaCount').textContent = stones.gigantamax || 0;
+}
+
+function adminGiveCard() {
+  const searchInput = document.getElementById('adminCardSearch');
+  const countInput = document.getElementById('adminCardCount');
+  const resultEl = document.getElementById('adminCardResult');
+  
+  const query = searchInput.value.trim().toLowerCase();
+  if (!query) {
+    resultEl.textContent = '⚠️ 포켓몬 이름을 입력해주세요!';
+    resultEl.style.color = 'var(--bad)';
+    return;
+  }
+  
+  let pokemon = POKEMON_LIST.find(p => 
+    p.engName.toLowerCase() === query || 
+    p.name.toLowerCase() === query ||
+    p.engName.toLowerCase().includes(query) ||
+    p.name.includes(query)
+  );
+  
+  if (!pokemon) {
+    resultEl.textContent = '❌ "' + query + '" 포켓몬을 찾을 수 없어요!';
+    resultEl.style.color = 'var(--bad)';
+    return;
+  }
+  
+  const count = parseInt(countInput.value) || 1;
+  const rarity = rollRarity();
+  
+  if (!state.owned[pokemon.engName]) {
+    state.owned[pokemon.engName] = { count: count, rarity: rarity };
+  } else {
+    state.owned[pokemon.engName].count += count;
+  }
+  
+  saveState();
+  updateAdminStats();
+  renderDex();
+  updateStatline();
+  
+  const rInfo = getRarityInfo(rarity);
+  resultEl.textContent = `✅ ${pokemon.name} (${rInfo.label}) ×${count} 지급 완료!`;
+  resultEl.style.color = 'var(--good)';
+  SFX.cardReward();
+}
+
+function adminGiveStone() {
+  const typeSelect = document.getElementById('adminStoneType');
+  const countInput = document.getElementById('adminStoneCount');
+  const resultEl = document.getElementById('adminStoneResult');
+  
+  const type = typeSelect.value;
+  const count = parseInt(countInput.value) || 1;
+  
+  addEvolutionStone(type, count);
+  updateAdminStats();
+  
+  const typeName = type === 'mega' ? '메가진화의돌' : '거다이맥스돌';
+  resultEl.textContent = `✅ ${typeName} ×${count} 지급 완료!`;
+  resultEl.style.color = 'var(--good)';
+  SFX.missionDone();
+}
+
+function bindAdminEvents() {
+  document.getElementById('adminPanelBtn').addEventListener('click', openAdminPanel);
+  document.getElementById('adminModalClose').addEventListener('click', closeAdminPanel);
+  document.getElementById('adminCloseBtn').addEventListener('click', closeAdminPanel);
+  document.getElementById('adminPwCancelBtn').addEventListener('click', closeAdminPanel);
+  document.getElementById('adminPwConfirmBtn').addEventListener('click', checkAdminPassword);
+  document.getElementById('adminPasswordInput').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') checkAdminPassword();
+  });
+  document.getElementById('adminGiveCardBtn').addEventListener('click', adminGiveCard);
+  document.getElementById('adminCardSearch').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') adminGiveCard();
+  });
+  document.getElementById('adminGiveStoneBtn').addEventListener('click', adminGiveStone);
+  document.getElementById('adminModal').addEventListener('click', function(e) {
+    if (e.target === this) closeAdminPanel();
+  });
+}
 // ===== 게임 초기화 =====
 function resetGame() {
   if (!confirm('⚠️ 정말로 게임을 초기화할까요?\n모든 진행 데이터가 삭제됩니다!')) return;
@@ -3603,6 +3892,16 @@ function renderDex() {
   const grid = document.getElementById('dexGrid');
   const total = POKEMON_LIST.length;
   const owned = Object.keys(state.owned).length;
+    // ⭐ 중복 제거 (engName 기준)
+  const uniqueList = [];
+  const seenNames = new Set();
+  list.forEach(p => {
+    if (!seenNames.has(p.engName)) {
+      seenNames.add(p.engName);
+      uniqueList.push(p);
+    }
+  });
+  list = uniqueList;
   document.getElementById('dexProgress').style.width = (owned / total * 100) + '%';
   document.getElementById('dexProgressText').textContent = owned + ' / ' + total + ' 마리';
   let list = POKEMON_LIST.filter(c => activeFilter === 'all' || c.type === activeFilter);
@@ -5167,7 +5466,7 @@ async function initGame() {
     document.getElementById('tab-mission').classList.add('active');
     renderAll();
   }
-  
+  bindAdminEvents();
   bindMissionEditEvents();
   updateStoneDisplay();
   const clearCacheBtn = document.getElementById('clearCacheBtn');
