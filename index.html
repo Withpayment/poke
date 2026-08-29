@@ -1811,7 +1811,6 @@ const GIGANTAMAX_EVOLUTIONS = {
   'gengar': { name: '거다이맥스팬텀', id: 'gigantamax-gengar' },
   'kingler': { name: '거다이맥스킹크라', id: 'gigantamax-kingler' },
   'lapras': { name: '거다이맥스라프라스', id: 'gigantamax-lapras' },
-  'eevee': { name: '거다이맥스이브이', id: 'gigantamax-eevee' },
   'corviknight': { name: '거다이맥스아머까오', id: 'gigantamax-corviknight' },
   'drednaw': { name: '거다이맥스갈가모크', id: 'gigantamax-drednaw' },
   'coalossal': { name: '거다이맥스석탄산', id: 'gigantamax-coalossal' },
@@ -1824,7 +1823,83 @@ const GIGANTAMAX_EVOLUTIONS = {
   'copperajah': { name: '거다이맥스대왕끼리동', id: 'gigantamax-copperajah' },
   'duraludon': { name: '거다이맥스두랄루돈', id: 'gigantamax-duraludon' }
 };
+  // ===== 메가진화 이미지 매핑 =====
+const MEGA_IMAGE_MAP = {
+  'mega-venusaur': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10001.png',
+  'mega-charizard-x': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10034.png',
+  'mega-charizard-y': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10035.png',
+  'mega-blastoise': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10002.png',
+  'mega-beedrill': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10003.png',
+  'mega-pidgeot': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10004.png',
+  'mega-alakazam': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10005.png',
+  'mega-slowbro': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10006.png',
+  'mega-gengar': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10007.png',
+  'mega-kangaskhan': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10008.png',
+  'mega-pinsir': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10009.png',
+  'mega-gyarados': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10010.png',
+  'mega-aerodactyl': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10011.png',
+  'mega-mewtwo-x': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10036.png',
+  'mega-mewtwo-y': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10037.png',
+  'mega-ampharos': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10012.png',
+  'mega-steelix': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10013.png',
+  'mega-scizor': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10014.png',
+  'mega-heracross': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10015.png',
+  'mega-houndoom': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10016.png',
+  'mega-tyranitar': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10017.png',
+  'mega-sceptile': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10018.png',
+  'mega-blaziken': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10019.png',
+  'mega-swampert': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10020.png',
+  'mega-gardevoir': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10021.png',
+  'mega-sableye': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10022.png',
+  'mega-mawile': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10023.png',
+  'mega-aggron': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10024.png',
+  'mega-medicham': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10025.png',
+  'mega-manectric': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10026.png',
+  'mega-sharpedo': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10027.png',
+  'mega-camerupt': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10028.png',
+  'mega-altaria': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10029.png',
+  'mega-banette': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10030.png',
+  'mega-absol': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10031.png',
+  'mega-glalie': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10032.png',
+  'mega-salamence': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10033.png',
+  'mega-metagross': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10038.png',
+  'mega-latias': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10039.png',
+  'mega-latios': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10040.png',
+  'mega-rayquaza': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10041.png',
+  'mega-lopunny': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10042.png',
+  'mega-garchomp': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10043.png',
+  'mega-lucario': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10044.png',
+  'mega-abomasnow': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10045.png',
+  'mega-gallade': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10046.png',
+  'mega-audino': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10047.png',
+  'mega-diancie': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10048.png'
+};
 
+// ===== 거다이맥스 이미지 매핑 =====
+const GIGANTAMAX_IMAGE_MAP = {
+  'gigantamax-venusaur': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10186.png',
+  'gigantamax-charizard': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10187.png',
+  'gigantamax-blastoise': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10188.png',
+  'gigantamax-butterfree': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10189.png',
+  'gigantamax-pikachu': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10190.png',
+  'gigantamax-meowth': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10191.png',
+  'gigantamax-eevee': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10192.png',
+  'gigantamax-snorlax': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10193.png',
+  'gigantamax-gengar': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10194.png',
+  'gigantamax-kingler': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10195.png',
+  'gigantamax-lapras': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10196.png',
+  'gigantamax-corviknight': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10197.png',
+  'gigantamax-drednaw': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10198.png',
+  'gigantamax-coalossal': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10199.png',
+  'gigantamax-flapple': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10200.png',
+  'gigantamax-appletun': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10201.png',
+  'gigantamax-sandaconda': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10202.png',
+  'gigantamax-centiskorch': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10203.png',
+  'gigantamax-garbodor': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10204.png',
+  'gigantamax-alcremie': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10205.png',
+  'gigantamax-copperajah': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10206.png',
+  'gigantamax-duraludon': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10207.png'
+};
 function getMegaEvo(engName) {
   return MEGA_EVOLUTIONS[engName] || null;
 }
@@ -3586,17 +3661,20 @@ function closeModal() {
 function performMegaEvolution(engName) {
   const megaEvo = MEGA_EVOLUTIONS[engName];
   if (!megaEvo) { alert('메가진화할 수 없는 포켓몬입니다!'); return; }
-  if (!useEvolutionStone('mega')) { alert('메가진화의돌이 부족합니다! 레이드를 클리어해주세요.'); return; }
+  if (!useEvolutionStone('mega')) { alert('메가진화의돌이 부족합니다!'); return; }
   
   const sourcePokemon = getPokemonByName(engName);
   if (!sourcePokemon) { alert('포켓몬을 찾을 수 없어요!'); return; }
   
-  // 메가 포켓몬 정보 생성
+  // ⭐⭐⭐ 이미지 가져오기 (이 부분 추가) ⭐⭐⭐
+  let megaImage = MEGA_IMAGE_MAP[megaEvo.id];
+  if (!megaImage) {
+    megaImage = sourcePokemon.image || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${sourcePokemon.id}.png`;
+  }
+  
   let megaPokemon = getPokemonByName(megaEvo.id);
   if (!megaPokemon) {
-    // 이미지 URL 생성 (기본 이미지 사용)
-    const imageUrl = sourcePokemon.image || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${sourcePokemon.id}.png`;
-    
+    // ⭐⭐⭐ image: megaImage 로 변경 (중요!) ⭐⭐⭐
     megaPokemon = {
       id: 'mega-' + sourcePokemon.id,
       name: megaEvo.name,
@@ -3607,10 +3685,15 @@ function performMegaEvolution(engName) {
       atk: sourcePokemon.atk + 20,
       def: sourcePokemon.def + 20,
       spd: sourcePokemon.spd + 20,
-      image: imageUrl,
+      image: megaImage,  // ⭐ 이 부분이 중요!
       speciesUrl: sourcePokemon.speciesUrl,
       cryUrl: sourcePokemon.cryUrl
     };
+    POKEMON_LIST.push(megaPokemon);
+    // ... 나머지 코드 ...
+  }
+  // ... 나머지 코드 ...
+}
     // POKEMON_LIST에 추가 (메모리)
     POKEMON_LIST.push(megaPokemon);
     
@@ -3645,15 +3728,20 @@ function performMegaEvolution(engName) {
 function performGigantamaxEvolution(engName) {
   const gigaEvo = GIGANTAMAX_EVOLUTIONS[engName];
   if (!gigaEvo) { alert('거다이맥스할 수 없는 포켓몬입니다!'); return; }
-  if (!useEvolutionStone('gigantamax')) { alert('거다이맥스진화의돌이 부족합니다! 레이드를 클리어해주세요.'); return; }
+  if (!useEvolutionStone('gigantamax')) { alert('거다이맥스진화의돌이 부족합니다!'); return; }
   
   const sourcePokemon = getPokemonByName(engName);
   if (!sourcePokemon) { alert('포켓몬을 찾을 수 없어요!'); return; }
   
+  // ⭐⭐⭐ 이미지 가져오기 (이 부분 추가) ⭐⭐⭐
+  let gigaImage = GIGANTAMAX_IMAGE_MAP[gigaEvo.id];
+  if (!gigaImage) {
+    gigaImage = sourcePokemon.image || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${sourcePokemon.id}.png`;
+  }
+  
   let gigaPokemon = getPokemonByName(gigaEvo.id);
   if (!gigaPokemon) {
-    const imageUrl = sourcePokemon.image || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${sourcePokemon.id}.png`;
-    
+    // ⭐⭐⭐ image: gigaImage 로 변경 (중요!) ⭐⭐⭐
     gigaPokemon = {
       id: 'gigantamax-' + sourcePokemon.id,
       name: gigaEvo.name,
@@ -3664,10 +3752,15 @@ function performGigantamaxEvolution(engName) {
       atk: sourcePokemon.atk + 22,
       def: sourcePokemon.def + 22,
       spd: sourcePokemon.spd + 18,
-      image: imageUrl,
+      image: gigaImage,  // ⭐ 이 부분이 중요!
       speciesUrl: sourcePokemon.speciesUrl,
       cryUrl: sourcePokemon.cryUrl
     };
+    POKEMON_LIST.push(gigaPokemon);
+    // ... 나머지 코드 ...
+  }
+  // ... 나머지 코드 ...
+}
     POKEMON_LIST.push(gigaPokemon);
     
     try {
