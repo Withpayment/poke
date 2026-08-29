@@ -3692,29 +3692,56 @@ function petExpThreshold() { return Math.floor(25 + state.pet.level * 3); }
 function checkPetLevelUp() {
   let leveled = false, evolved = false;
   let evoPokemon = null;
+  
   while (state.pet.exp >= petExpThreshold()) {
     state.pet.exp -= petExpThreshold();
     state.pet.level++;
     leveled = true;
-    if (state.pet.level >= 50) { state.pet.exp = 0; break; }
+    
+    if (state.pet.level >= 50) { 
+      state.pet.exp = 0; 
+      break; 
+    }
+    
     const currentId = state.pet.evolvedId || state.pet.baseId;
     const evoChain = getEvoChain(currentId);
+    
     if (evoChain && evoChain.length > 1) {
       const currentIndex = evoChain.indexOf(currentId);
       if (currentIndex !== -1 && currentIndex < evoChain.length - 1) {
         const nextId = evoChain[currentIndex + 1];
         const evoLevel = 5 + (currentIndex * 5);
+        
         if (state.pet.level >= evoLevel && state.pet.evolvedId !== nextId) {
           const nextPokemon = getPokemonByName(nextId);
           if (nextPokemon) {
+            // ⭐⭐⭐ 기존 카드 1장 삭제 ⭐⭐⭐
+            const currentPokemon = getPokemonByName(currentId);
+            if (currentPokemon && state.owned[currentPokemon.engName]) {
+              state.owned[currentPokemon.engName].count -= 1;
+              if (state.owned[currentPokemon.engName].count <= 0) {
+                delete state.owned[currentPokemon.engName];
+              }
+            }
+            
+            // ⭐⭐⭐ 진화된 카드 추가 ⭐⭐⭐
+            const rarity = rollRarity();
+            if (!state.owned[nextPokemon.engName]) {
+              state.owned[nextPokemon.engName] = { count: 1, rarity: rarity };
+            } else {
+              state.owned[nextPokemon.engName].count += 1;
+              // 더 좋은 등급으로 업데이트
+              if (getRarityInfo(rarity).weight > getRarityInfo(state.owned[nextPokemon.engName].rarity).weight) {
+                state.owned[nextPokemon.engName].rarity = rarity;
+              }
+            }
+            
             state.pet.evolvedId = nextId;
             if (!state.pet.evolved) state.pet.evolved = true;
             evolved = true;
             evoPokemon = nextPokemon;
+            
             SFX.evolution();
-            const rarity = rollRarity();
-            if (!state.owned[nextPokemon.engName]) state.owned[nextPokemon.engName] = { count: 1, rarity: rarity };
-            else state.owned[nextPokemon.engName].count += 1;
             showRewardPopup(nextPokemon, '🎉 ' + nextPokemon.name + '(으)로 진화했어요!', '진화 성공! 🌟');
             saveState();
             renderDex();
@@ -3724,6 +3751,7 @@ function checkPetLevelUp() {
       }
     }
   }
+  
   return { leveled, evolved };
 }
 
@@ -4193,6 +4221,13 @@ function performMegaEvolution(engName) {
   const sourcePokemon = getPokemonByName(engName);
   if (!sourcePokemon) { alert('포켓몬을 찾을 수 없어요!'); return; }
   
+  // ⭐⭐⭐ 기존 카드가 있는지 확인 ⭐⭐⭐
+  if (!state.owned[engName] || state.owned[engName].count < 1) {
+    alert('진화할 카드가 없어요!');
+    return;
+  }
+  
+  // 메가 이미지 가져오기
   let megaImage = MEGA_IMAGE_MAP[megaEvo.id];
   if (!megaImage) {
     megaImage = sourcePokemon.image || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${sourcePokemon.id}.png`;
@@ -4212,9 +4247,11 @@ function performMegaEvolution(engName) {
       spd: sourcePokemon.spd + 20,
       image: megaImage,
       speciesUrl: sourcePokemon.speciesUrl,
-      cryUrl: sourcePokemon.cryUrl
+      cryUrl: sourcePokemon.cryUrl,
+      isMega: true
     };
     POKEMON_LIST.push(megaPokemon);
+    
     try {
       const cacheData = localStorage.getItem(CACHE_KEY);
       if (cacheData) {
@@ -4227,6 +4264,13 @@ function performMegaEvolution(engName) {
     } catch(e) {}
   }
   
+  // ⭐⭐⭐ 기존 카드 1장 삭제 ⭐⭐⭐
+  state.owned[engName].count -= 1;
+  if (state.owned[engName].count <= 0) {
+    delete state.owned[engName];
+  }
+  
+  // ⭐⭐⭐ 메가 카드 추가 ⭐⭐⭐
   if (!state.owned[megaEvo.id]) {
     state.owned[megaEvo.id] = { count: 1, rarity: 'mega' };
   } else {
@@ -4250,15 +4294,17 @@ function performGigantamaxEvolution(engName) {
   const sourcePokemon = getPokemonByName(engName);
   if (!sourcePokemon) { alert('포켓몬을 찾을 수 없어요!'); return; }
   
-  // 이미지 가져오기 (GIGANTAMAX_IMAGE_MAP에서 직접 가져옴)
-  let gigaImage = null;
+  // ⭐⭐⭐ 기존 카드가 있는지 확인 ⭐⭐⭐
+  if (!state.owned[engName] || state.owned[engName].count < 1) {
+    alert('진화할 카드가 없어요!');
+    return;
+  }
   
-  // 1. GIGANTAMAX_IMAGE_MAP에서 찾기
+  // 이미지 가져오기
+  let gigaImage = null;
   if (GIGANTAMAX_IMAGE_MAP && GIGANTAMAX_IMAGE_MAP[gigaEvo.id]) {
     gigaImage = GIGANTAMAX_IMAGE_MAP[gigaEvo.id];
   }
-  
-  // 2. 없으면 원본 이미지 사용
   if (!gigaImage) {
     gigaImage = sourcePokemon.image || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${sourcePokemon.id}.png`;
   }
@@ -4296,6 +4342,13 @@ function performGigantamaxEvolution(engName) {
     gigaPokemon.image = gigaImage;
   }
   
+  // ⭐⭐⭐ 기존 카드 1장 삭제 ⭐⭐⭐
+  state.owned[engName].count -= 1;
+  if (state.owned[engName].count <= 0) {
+    delete state.owned[engName];
+  }
+  
+  // ⭐⭐⭐ 거다이맥스 카드 추가 ⭐⭐⭐
   if (!state.owned[gigaEvo.id]) {
     state.owned[gigaEvo.id] = { count: 1, rarity: 'gigantamax' };
   } else {
