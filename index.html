@@ -2884,6 +2884,41 @@ function resetGame() {
   saveState();
   location.reload();
 }
+
+// ⭐⭐⭐ 여기에 추가! (resetGame 함수 바로 아래) ⭐⭐⭐
+
+// ===== 중복 카드 자동 합치기 =====
+function autoMergeDuplicates() {
+  const merged = {};
+  let mergedCount = 0;
+  
+  Object.keys(state.owned).forEach(key => {
+    const card = state.owned[key];
+    const normalizedKey = key.toLowerCase();
+    
+    if (!merged[normalizedKey]) {
+      merged[normalizedKey] = {
+        count: card.count,
+        rarity: card.rarity
+      };
+    } else {
+      merged[normalizedKey].count += card.count;
+      // 더 높은 등급으로 업데이트
+      const currentWeight = getRarityInfo(merged[normalizedKey].rarity)?.weight || 0;
+      const newWeight = getRarityInfo(card.rarity)?.weight || 0;
+      if (newWeight > currentWeight) {
+        merged[normalizedKey].rarity = card.rarity;
+      }
+      mergedCount++;
+    }
+  });
+  
+  if (mergedCount > 0) {
+    state.owned = merged;
+    saveState();
+    console.log(`🔄 중복 카드 ${mergedCount}개 자동 합침!`);
+  }
+}
 document.getElementById('resetHiddenBtn').addEventListener('click', resetGame);
   function clearPokeCache() {
   if (!confirm('🔄 PokeAPI 캐시를 삭제할까요?\n(포켓몬 데이터를 다시 불러옵니다)')) return;
@@ -5558,6 +5593,7 @@ async function initGame() {
   document.querySelectorAll('section').forEach(s => s.style.display = 'none');
   
   const hasSavedData = loadState();
+  autoMergeDuplicates();
   await loadAllPokemon();
   EVOLVABLE_POKEMON_LIST = await getAllEvolvablePokemon();
   
