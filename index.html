@@ -2892,22 +2892,50 @@ function autoMergeDuplicates() {
   const merged = {};
   let mergedCount = 0;
   
+  // 한글↔영문 매핑
+  const nameMap = {
+    '미라이돈': 'miraidon',
+    '코라이돈': 'koraidon',
+    '이상해씨': 'bulbasaur',
+    '파이리': 'charmander',
+    '꼬부기': 'squirtle',
+    '피카츄': 'pikachu',
+    '잠만보': 'snorlax'
+  };
+  
   Object.keys(state.owned).forEach(key => {
     const card = state.owned[key];
-    const normalizedKey = key.toLowerCase();
+    let normalizedKey = key.toLowerCase();
+    
+    // 한글 이름을 영문으로 변환
+    if (nameMap[key]) {
+      normalizedKey = nameMap[key];
+    }
+    for (const [ko, en] of Object.entries(nameMap)) {
+      if (key.includes(ko) || key.includes(en)) {
+        normalizedKey = en;
+        break;
+      }
+    }
     
     if (!merged[normalizedKey]) {
       merged[normalizedKey] = {
         count: card.count,
-        rarity: card.rarity
+        rarity: card.rarity,
+        originalRarity: card.originalRarity || card.rarity
       };
     } else {
       merged[normalizedKey].count += card.count;
-      // 더 높은 등급으로 업데이트
       const currentWeight = getRarityInfo(merged[normalizedKey].rarity)?.weight || 0;
       const newWeight = getRarityInfo(card.rarity)?.weight || 0;
       if (newWeight > currentWeight) {
         merged[normalizedKey].rarity = card.rarity;
+      }
+      // originalRarity도 더 높은 등급으로
+      const origCurrent = getRarityInfo(merged[normalizedKey].originalRarity || 'common')?.weight || 0;
+      const origNew = getRarityInfo(card.originalRarity || card.rarity)?.weight || 0;
+      if (origNew > origCurrent) {
+        merged[normalizedKey].originalRarity = card.originalRarity || card.rarity;
       }
       mergedCount++;
     }
@@ -4250,83 +4278,104 @@ function closeModal() {
 // ===== 메가진화 실행 =====
 function performMegaEvolution(engName) {
   const megaEvo = MEGA_EVOLUTIONS[engName];
-  if (!megaEvo) { alert('메가진화할 수 없는 포켓몬입니다!'); return; }
-  if (!useEvolutionStone('mega')) { alert('메가진화의돌이 부족합니다!'); return; }
+  if (!megaEvo) {
+    alert('메가진화할 수 없는 포켓몬입니다!');
+    return;
+  }
+  if (!useEvolutionStone('mega')) {
+    alert('메가진화의돌이 부족합니다!');
+    return;
+  }
 
   const sourcePokemon = getPokemonByName(engName);
-  if (!sourcePokemon) { alert('포켓몬을 찾을 수 없어요!'); return; }
+  if (!sourcePokemon) {
+    alert('포켓몬을 찾을 수 없어요!');
+    return;
+  }
 
-  if (!state.owned[engName] || state.owned[engName].count < 1) {
+  const sourceCard = state.owned[engName];
+  if (!sourceCard || sourceCard.count < 1) {
     alert('진화할 카드가 없어요!');
     return;
   }
 
-  console.log('🔍 메가진화 시작:', engName);
+  const originalRarity = sourceCard.originalRarity || sourceCard.rarity || 'common';
+  console.log('🔍 메가진화 시작:', engName, '등급:', originalRarity);
 
-  // 1️⃣ 메가 이미지
   let megaImage = MEGA_IMAGE_MAP?.[megaEvo.id] ||
                    sourcePokemon.image ||
                    `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${sourcePokemon.id}.png`;
 
-  // 2️⃣ 메가 포켓몬 객체 생성
-  const megaPokemon = {
-    id: 'mega-' + sourcePokemon.id,
-    name: megaEvo.name,
-    engName: megaEvo.id,
-    type: sourcePokemon.type,
-    types: sourcePokemon.types,
-    hp: sourcePokemon.hp + 20,
-    atk: sourcePokemon.atk + 20,
-    def: sourcePokemon.def + 20,
-    spd: sourcePokemon.spd + 20,
-    image: megaImage,
-    speciesUrl: sourcePokemon.speciesUrl,
-    cryUrl: sourcePokemon.cryUrl,
-    isMega: true
-  };
-
-  // 3️⃣ POKEMON_LIST에 추가 (중복 방지)
-  const existing = POKEMON_LIST.find(p => p.engName === megaEvo.id);
-  if (!existing) {
+  let megaPokemon = getPokemonByName(megaEvo.id);
+  if (!megaPokemon) {
+    megaPokemon = {
+      id: 'mega-' + sourcePokemon.id,
+      name: megaEvo.name,
+      engName: megaEvo.id,
+      type: sourcePokemon.type,
+      types: sourcePokemon.types,
+      hp: sourcePokemon.hp + 20,
+      atk: sourcePokemon.atk + 20,
+      def: sourcePokemon.def + 20,
+      spd: sourcePokemon.spd + 20,
+      image: megaImage,
+      speciesUrl: sourcePokemon.speciesUrl,
+      cryUrl: sourcePokemon.cryUrl,
+      isMega: true,
+      originalRarity: originalRarity
+    };
     POKEMON_LIST.push(megaPokemon);
-    console.log('✅ POKEMON_LIST에 메가 포켓몬 추가:', megaPokemon.name);
-  } else {
-    // 이미 있으면 이미지 업데이트
-    existing.image = megaImage;
-    console.log('✅ 이미 POKEMON_LIST에 있음:', existing.name);
+    console.log('✅ POKEMON_LIST에 메가 추가:', megaPokemon.name);
+
+    try {
+      const cache = localStorage.getItem(CACHE_KEY);
+      if (cache) {
+        const list = JSON.parse(cache);
+        if (!list.find(p => p.engName === megaEvo.id)) {
+          list.push(megaPokemon);
+          localStorage.setItem(CACHE_KEY, JSON.stringify(list));
+        }
+      }
+    } catch (e) {}
   }
 
-  // 4️⃣ 캐시 저장
-  try {
-    const cache = localStorage.getItem(CACHE_KEY);
-    if (cache) {
-      const list = JSON.parse(cache);
-      if (!list.find(p => p.engName === megaEvo.id)) {
-        list.push(megaPokemon);
-        localStorage.setItem(CACHE_KEY, JSON.stringify(list));
-        console.log('✅ 캐시 저장 완료');
-      }
-    }
-  } catch (e) { console.warn('⚠️ 캐시 저장 실패:', e); }
-
-  // 5️⃣ 기존 카드 삭제
-  state.owned[engName].count -= 1;
-  if (state.owned[engName].count <= 0) {
+  sourceCard.count -= 1;
+  if (sourceCard.count <= 0) {
     delete state.owned[engName];
   }
-  console.log('🗑️ 기존 카드 삭제 후:', state.owned[engName] || '없음');
 
-  // 6️⃣ 메가 카드 추가
-  state.owned[megaEvo.id] = { count: 1, rarity: 'mega' };
-  console.log('✅ 메가 카드 추가 완료:', state.owned[megaEvo.id]);
+  if (!state.owned[megaEvo.id]) {
+    state.owned[megaEvo.id] = {
+      count: 1,
+      rarity: 'mega',
+      originalRarity: originalRarity
+    };
+  } else {
+    state.owned[megaEvo.id].count += 1;
+    if (getRarityInfo(originalRarity).weight > getRarityInfo(state.owned[megaEvo.id].originalRarity || 'common').weight) {
+      state.owned[megaEvo.id].originalRarity = originalRarity;
+    }
+  }
 
-  // 7️⃣ 저장 및 UI 갱신
+  // ⭐ Pet도 함께 진화!
+  if (state.pet) {
+    const petCurrentId = state.pet.evolvedId || state.pet.baseId;
+    if (petCurrentId === engName) {
+      state.pet.evolvedId = megaEvo.id;
+      state.pet.evolved = true;
+      state.pet.justEvolved = true;
+      state.pet.originalRarity = originalRarity;
+      console.log('🐣 Pet 메가진화 완료!', megaEvo.name);
+    }
+  }
+
   saveState();
   SFX.megaEvolution();
   closeModal();
   renderDex();
+  renderPetTab();
   updateStatline();
-  showRewardPopup(megaPokemon, '💎 메가진화 성공!', '모든 스탯 +20!');
+  showRewardPopup(megaPokemon, '💎 메가진화 성공!', `${getRarityInfo(originalRarity).label} → 메가진화!`);
 
   console.log('🎉 메가진화 완료!');
 }
@@ -4334,82 +4383,104 @@ function performMegaEvolution(engName) {
 // ===== 거다이맥스 실행 =====
 function performGigantamaxEvolution(engName) {
   const gigaEvo = GIGANTAMAX_EVOLUTIONS[engName];
-  if (!gigaEvo) { alert('거다이맥스할 수 없는 포켓몬입니다!'); return; }
-  if (!useEvolutionStone('gigantamax')) { alert('거다이맥스진화의돌이 부족합니다!'); return; }
+  if (!gigaEvo) {
+    alert('거다이맥스할 수 없는 포켓몬입니다!');
+    return;
+  }
+  if (!useEvolutionStone('gigantamax')) {
+    alert('거다이맥스진화의돌이 부족합니다!');
+    return;
+  }
 
   const sourcePokemon = getPokemonByName(engName);
-  if (!sourcePokemon) { alert('포켓몬을 찾을 수 없어요!'); return; }
+  if (!sourcePokemon) {
+    alert('포켓몬을 찾을 수 없어요!');
+    return;
+  }
 
-  if (!state.owned[engName] || state.owned[engName].count < 1) {
+  const sourceCard = state.owned[engName];
+  if (!sourceCard || sourceCard.count < 1) {
     alert('진화할 카드가 없어요!');
     return;
   }
 
-  console.log('🔍 거다이맥스 진화 시작:', engName);
+  const originalRarity = sourceCard.originalRarity || sourceCard.rarity || 'common';
+  console.log('🔍 거다이맥스 진화 시작:', engName, '등급:', originalRarity);
 
-  // 1️⃣ 거다이맥스 이미지
   let gigaImage = GIGANTAMAX_IMAGE_MAP?.[gigaEvo.id] ||
                    sourcePokemon.image ||
                    `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${sourcePokemon.id}.png`;
 
-  // 2️⃣ 거다이맥스 포켓몬 객체 생성
-  const gigaPokemon = {
-    id: 'gigantamax-' + sourcePokemon.id,
-    name: gigaEvo.name,
-    engName: gigaEvo.id,
-    type: sourcePokemon.type,
-    types: sourcePokemon.types,
-    hp: sourcePokemon.hp + 25,
-    atk: sourcePokemon.atk + 22,
-    def: sourcePokemon.def + 22,
-    spd: sourcePokemon.spd + 18,
-    image: gigaImage,
-    speciesUrl: sourcePokemon.speciesUrl,
-    cryUrl: sourcePokemon.cryUrl,
-    isGigantamax: true
-  };
-
-  // 3️⃣ POKEMON_LIST에 추가 (중복 방지)
-  const existing = POKEMON_LIST.find(p => p.engName === gigaEvo.id);
-  if (!existing) {
+  let gigaPokemon = getPokemonByName(gigaEvo.id);
+  if (!gigaPokemon) {
+    gigaPokemon = {
+      id: 'gigantamax-' + sourcePokemon.id,
+      name: gigaEvo.name,
+      engName: gigaEvo.id,
+      type: sourcePokemon.type,
+      types: sourcePokemon.types,
+      hp: sourcePokemon.hp + 25,
+      atk: sourcePokemon.atk + 22,
+      def: sourcePokemon.def + 22,
+      spd: sourcePokemon.spd + 18,
+      image: gigaImage,
+      speciesUrl: sourcePokemon.speciesUrl,
+      cryUrl: sourcePokemon.cryUrl,
+      isGigantamax: true,
+      originalRarity: originalRarity
+    };
     POKEMON_LIST.push(gigaPokemon);
-    console.log('✅ POKEMON_LIST에 거다이맥스 포켓몬 추가:', gigaPokemon.name);
-  } else {
-    existing.image = gigaImage;
-    console.log('✅ 이미 POKEMON_LIST에 있음:', existing.name);
+    console.log('✅ POKEMON_LIST에 거다이맥스 추가:', gigaPokemon.name);
+
+    try {
+      const cache = localStorage.getItem(CACHE_KEY);
+      if (cache) {
+        const list = JSON.parse(cache);
+        if (!list.find(p => p.engName === gigaEvo.id)) {
+          list.push(gigaPokemon);
+          localStorage.setItem(CACHE_KEY, JSON.stringify(list));
+        }
+      }
+    } catch (e) {}
   }
 
-  // 4️⃣ 캐시 저장
-  try {
-    const cache = localStorage.getItem(CACHE_KEY);
-    if (cache) {
-      const list = JSON.parse(cache);
-      if (!list.find(p => p.engName === gigaEvo.id)) {
-        list.push(gigaPokemon);
-        localStorage.setItem(CACHE_KEY, JSON.stringify(list));
-        console.log('✅ 캐시 저장 완료');
-      }
-    }
-  } catch (e) { console.warn('⚠️ 캐시 저장 실패:', e); }
-
-  // 5️⃣ 기존 카드 삭제
-  state.owned[engName].count -= 1;
-  if (state.owned[engName].count <= 0) {
+  sourceCard.count -= 1;
+  if (sourceCard.count <= 0) {
     delete state.owned[engName];
   }
-  console.log('🗑️ 기존 카드 삭제 후:', state.owned[engName] || '없음');
 
-  // 6️⃣ 거다이맥스 카드 추가
-  state.owned[gigaEvo.id] = { count: 1, rarity: 'gigantamax' };
-  console.log('✅ 거다이맥스 카드 추가 완료:', state.owned[gigaEvo.id]);
+  if (!state.owned[gigaEvo.id]) {
+    state.owned[gigaEvo.id] = {
+      count: 1,
+      rarity: 'gigantamax',
+      originalRarity: originalRarity
+    };
+  } else {
+    state.owned[gigaEvo.id].count += 1;
+    if (getRarityInfo(originalRarity).weight > getRarityInfo(state.owned[gigaEvo.id].originalRarity || 'common').weight) {
+      state.owned[gigaEvo.id].originalRarity = originalRarity;
+    }
+  }
 
-  // 7️⃣ 저장 및 UI 갱신
+  // ⭐ Pet도 함께 진화!
+  if (state.pet) {
+    const petCurrentId = state.pet.evolvedId || state.pet.baseId;
+    if (petCurrentId === engName) {
+      state.pet.evolvedId = gigaEvo.id;
+      state.pet.evolved = true;
+      state.pet.justEvolved = true;
+      state.pet.originalRarity = originalRarity;
+      console.log('🐣 Pet 거다이맥스 진화 완료!', gigaEvo.name);
+    }
+  }
+
   saveState();
   SFX.megaEvolution();
   closeModal();
   renderDex();
+  renderPetTab();
   updateStatline();
-  showRewardPopup(gigaPokemon, '🔥 거다이맥스 성공!', '모든 스탯 +22!');
+  showRewardPopup(gigaPokemon, '🔥 거다이맥스 성공!', `${getRarityInfo(originalRarity).label} → 거다이맥스!`);
 
   console.log('🎉 거다이맥스 완료!');
 }
