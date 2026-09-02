@@ -5770,7 +5770,7 @@ function generateColoringPage(engName) {
   // ⭐ 원본 이미지 (컬러)
   const colorImage = pokemon.image || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokemon.id}.png`;
   
-  // ⭐ 윤곽선 이미지 (PokeAPI 스프라이트 사용 - 선만 있는 이미지)
+  // ⭐ 윤곽선 이미지 (PokeAPI 스프라이트 - 투명 배경 + 실루엣)
   const outlineImage = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.id}.png`;
   
   const coloringHTML = `
@@ -5834,10 +5834,9 @@ function generateColoringPage(engName) {
           max-width: 100%;
           max-height: 175mm;
           object-fit: contain;
-          /* ⭐ 윤곽선만 남기고 내부는 흰색으로 */
-          filter: grayscale(100%) contrast(2) brightness(1.8);
-          -webkit-filter: grayscale(100%) contrast(2) brightness(1.8);
-          background: #fff;
+          /* ⭐ 스프라이트는 이미 투명 배경이라 필터 없이도 윤곽선처럼 보임 */
+          filter: grayscale(100%) contrast(1.2);
+          -webkit-filter: grayscale(100%) contrast(1.2);
         }
         
         /* ===== 원본 미리보기 (컬러, 20% 크기, 오른쪽 상단) ===== */
@@ -5912,9 +5911,9 @@ function generateColoringPage(engName) {
             <div class="label">🎯 원본</div>
           </div>
           
-          <!-- 윤곽선 (선만 남음, 내부 흰색) -->
+          <!-- 윤곽선 (PokeAPI 스프라이트 - 투명 배경 + 실루엣) -->
           <img src="${outlineImage}" alt="${pokemon.name} 윤곽선" 
-               style="filter: grayscale(100%) contrast(2) brightness(1.8); -webkit-filter: grayscale(100%) contrast(2) brightness(1.8); background: #fff;"
+               style="filter: grayscale(100%) contrast(1.2); -webkit-filter: grayscale(100%) contrast(1.2);"
                onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22300%22%3E%3Crect fill=%22%23fff%22 width=%22300%22 height=%22300%22/%3E%3Ctext x=%22150%22 y=%22160%22 font-size=%2240%22 text-anchor=%22middle%22%3E❓%3C/text%3E%3C/svg%3E'">
         </div>
         
