@@ -2536,12 +2536,25 @@ function getPokemonByName(name) {
   return null;
 }
 function clamp(n, lo, hi) { return Math.max(lo, Math.min(hi, n)); }
-function todayKey() { 
+// ===== 한국 시간 기준 오전 8시 30분 초기화 =====
+function todayKey() {
   const now = new Date();
-  const kstOffset = 9 * 60;
+  const kstOffset = 9 * 60; // 한국은 UTC+9
+  
+  // UTC 시간 계산
   const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
-  const kstTime = new Date(utc + (kstOffset * 60000));
-  return kstTime.toISOString().slice(0,10);
+  let kstTime = new Date(utc + (kstOffset * 60000));
+  
+  // ⭐ 오전 8시 30분 이전이면 전날로 처리
+  const hours = kstTime.getHours();
+  const minutes = kstTime.getMinutes();
+  
+  if (hours < 8 || (hours === 8 && minutes < 30)) {
+    // 8:30 이전이면 하루 빼기
+    kstTime.setDate(kstTime.getDate() - 1);
+  }
+  
+  return kstTime.toISOString().slice(0, 10);
 }
 
 function getTypeColor(type) {
