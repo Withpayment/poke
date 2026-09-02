@@ -5768,13 +5768,7 @@ function generateColoringPage(engName) {
   }
   
   // ⭐ 원본 이미지 (컬러)
-  const colorImage = pokemon.image || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokemon.id}.png`;
-  
-  // ⭐ 윤곽선 이미지 (PokeAPI 스프라이트)
-  const outlineImage = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.id}.png`;
-  
-  // ⭐ 대체 윤곽선 이미지 (공식 아트워크를 흑백으로)
-  const fallbackOutline = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokemon.id}.png`;
+  const imageUrl = pokemon.image || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokemon.id}.png`;
   
   const coloringHTML = `
     <!DOCTYPE html>
@@ -5819,7 +5813,7 @@ function generateColoringPage(engName) {
           margin-top: 2px;
         }
         
-        /* ===== 색칠 공간 ===== */
+        /* ===== 색칠 공간 (윤곽선만) ===== */
         .coloring-area {
           width: 100%;
           min-height: 190mm;
@@ -5837,13 +5831,26 @@ function generateColoringPage(engName) {
           max-height: 175mm;
           object-fit: contain;
         }
-        /* ⭐ 윤곽선 이미지 스타일 */
+        /* ⭐ 윤곽선 스타일 (방법 2: CSS 필터로 윤곽선처럼) */
         .coloring-area .outline-img {
-          filter: grayscale(100%) contrast(1.5) brightness(1.1);
-          -webkit-filter: grayscale(100%) contrast(1.5) brightness(1.1);
+          /* 윤곽선만 남기는 필터 조합 */
+          filter: grayscale(100%) 
+                  contrast(200%) 
+                  brightness(150%) 
+                  drop-shadow(0 0 2px rgba(0,0,0,0.3));
+          -webkit-filter: grayscale(100%) 
+                          contrast(200%) 
+                          brightness(150%) 
+                          drop-shadow(0 0 2px rgba(0,0,0,0.3));
           background: #ffffff;
-          padding: 8px;
+          padding: 12px;
           border-radius: 4px;
+          /* 윤곽선을 더 선명하게 */
+          image-rendering: pixelated;
+        }
+        /* 윤곽선을 더 부드럽게 보이게 */
+        .coloring-area .outline-img:hover {
+          filter: grayscale(100%) contrast(200%) brightness(150%);
         }
         
         /* ===== 원본 미리보기 (컬러, 20%) ===== */
@@ -5908,18 +5915,17 @@ function generateColoringPage(engName) {
         <div class="coloring-area">
           <!-- 원본 미리보기 (컬러, 20%) -->
           <div class="preview">
-            <img src="${colorImage}" alt="원본" 
+            <img src="${imageUrl}" alt="원본" 
                  style="filter: none; -webkit-filter: none;"
                  onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
             <div class="label">🎯 원본</div>
           </div>
           
-          <!-- 윤곽선 이미지 (스프라이트 + 필터) -->
+          <!-- 윤곽선 이미지 (CSS 필터로 변환) -->
           <img class="outline-img" 
-               src="${outlineImage}" 
+               src="${imageUrl}" 
                alt="${pokemon.name} 윤곽선"
-               onerror="this.src='${fallbackOutline}'; this.style.filter='grayscale(100%) contrast(2) brightness(1.5)';"
-               style="filter: grayscale(100%) contrast(1.5) brightness(1.1); -webkit-filter: grayscale(100%) contrast(1.5) brightness(1.1); background: #fff; padding: 8px; border-radius: 4px; max-width: 100%; max-height: 175mm; object-fit: contain;">
+               style="filter: grayscale(100%) contrast(200%) brightness(150%); -webkit-filter: grayscale(100%) contrast(200%) brightness(150%); background: #fff; padding: 12px; border-radius: 4px; max-width: 100%; max-height: 175mm; object-fit: contain;">
         </div>
         
         <div class="footer">
