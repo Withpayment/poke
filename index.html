@@ -5790,7 +5790,7 @@ function generateColoringPage(engName) {
           width: 210mm;
           min-height: 297mm;
           background: #fff;
-          padding: 15mm 20mm;
+          padding: 15mm 20mm 12mm;
           border: 1px solid #ddd;
           box-shadow: 0 0 10px rgba(0,0,0,.1);
           position: relative;
@@ -5799,28 +5799,28 @@ function generateColoringPage(engName) {
         /* ===== 헤더 ===== */
         .header {
           text-align: center;
-          margin-bottom: 12px;
-          padding-bottom: 8px;
+          margin-bottom: 10px;
+          padding-bottom: 6px;
           border-bottom: 2px solid #333;
         }
         .header h1 {
-          font-size: 24px;
+          font-size: 22px;
           color: #333;
         }
         .header .sub {
-          font-size: 12px;
+          font-size: 11px;
           color: #888;
           margin-top: 2px;
         }
         
-        /* ===== 색칠 공간 (전체) ===== */
+        /* ===== 색칠 공간 (윤곽선만) ===== */
         .coloring-area {
           width: 100%;
-          min-height: 200mm;
-          border: 3px solid #666;
+          min-height: 190mm;
+          border: 3px solid #555;
           border-radius: 8px;
-          padding: 20px;
-          background: #fafafa;
+          padding: 16px;
+          background: #ffffff;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -5828,56 +5828,61 @@ function generateColoringPage(engName) {
         }
         .coloring-area img {
           max-width: 100%;
-          max-height: 180mm;
+          max-height: 175mm;
           object-fit: contain;
-          filter: grayscale(100%) contrast(1.2) brightness(0.85);
-          opacity: 0.8;
+          /* ⭐ 윤곽선만 남기기 (회색 배경 제거) */
+          filter: grayscale(100%) contrast(1.5) brightness(1.1);
+          -webkit-filter: grayscale(100%) contrast(1.5) brightness(1.1);
+          background: transparent;
         }
         
-        /* ===== 원본 미리보기 (오른쪽 상단, 작게) ===== */
+        /* ===== 원본 미리보기 (오른쪽 상단, 20% 크기) ===== */
         .preview {
           position: absolute;
-          top: 20px;
-          right: 20px;
-          width: 80px;
-          height: 80px;
+          top: 16px;
+          right: 16px;
+          width: 20%;
+          max-width: 120px;
+          min-width: 60px;
           border: 2px solid #333;
           border-radius: 8px;
           background: #fff;
           padding: 4px;
-          box-shadow: 0 2px 8px rgba(0,0,0,.15);
+          box-shadow: 0 2px 10px rgba(0,0,0,.2);
           z-index: 10;
         }
         .preview img {
           width: 100%;
-          height: 100%;
+          height: auto;
+          aspect-ratio: 1/1;
           object-fit: contain;
+          display: block;
         }
         .preview .label {
           position: absolute;
-          bottom: -18px;
+          bottom: -20px;
           left: 50%;
           transform: translateX(-50%);
           font-size: 9px;
           color: #666;
           white-space: nowrap;
           background: #fff;
-          padding: 0 4px;
+          padding: 0 6px;
         }
         
         /* ===== 하단 정보 ===== */
         .footer {
           text-align: center;
-          margin-top: 12px;
-          padding-top: 8px;
+          margin-top: 10px;
+          padding-top: 6px;
           border-top: 2px solid #ddd;
-          font-size: 11px;
+          font-size: 10px;
           color: #999;
         }
         
         @media print {
           body { padding: 0; }
-          .page { border: none; box-shadow: none; padding: 10mm 15mm; }
+          .page { border: none; box-shadow: none; padding: 8mm 12mm; }
           .no-print { display: none; }
         }
       </style>
@@ -5887,20 +5892,21 @@ function generateColoringPage(engName) {
         <!-- 헤더 -->
         <div class="header">
           <h1>🎨 ${pokemon.name} 색칠놀이</h1>
-          <div class="sub">큰 그림에 색칠하고, 오른쪽 상단의 원본을 참고하세요!</div>
+          <div class="sub">큰 윤곽선에 색칠하고, 오른쪽 상단의 원본을 참고하세요!</div>
         </div>
         
-        <!-- 색칠 공간 (전체) -->
+        <!-- 색칠 공간 (윤곽선만) -->
         <div class="coloring-area">
-          <!-- 원본 미리보기 (오른쪽 상단) -->
+          <!-- 원본 미리보기 (20% 크기, 오른쪽 상단) -->
           <div class="preview">
             <img src="${imageUrl}" alt="${pokemon.name} 원본" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2280%22 height=%2280%22%3E%3Crect fill=%22%23eee%22 width=%2280%22 height=%2280%22/%3E%3Ctext x=%2240%22 y=%2245%22 font-size=%2220%22 text-anchor=%22middle%22%3E❓%3C/text%3E%3C/svg%3E'">
             <div class="label">🎯 원본</div>
           </div>
           
-          <!-- 윤곽선 (크게) -->
+          <!-- 윤곽선 (회색 배경 제거, 선만 남음) -->
           <img src="${imageUrl}" alt="${pokemon.name} 윤곽선" 
-               onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22300%22%3E%3Crect fill=%22%23eee%22 width=%22300%22 height=%22300%22/%3E%3Ctext x=%22150%22 y=%22160%22 font-size=%2240%22 text-anchor=%22middle%22%3E❓%3C/text%3E%3C/svg%3E'">
+               style="filter: grayscale(100%) contrast(1.5) brightness(1.1); -webkit-filter: grayscale(100%) contrast(1.5) brightness(1.1); background: transparent;"
+               onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22300%22%3E%3Crect fill=%22%23fff%22 width=%22300%22 height=%22300%22/%3E%3Ctext x=%22150%22 y=%22160%22 font-size=%2240%22 text-anchor=%22middle%22%3E❓%3C/text%3E%3C/svg%3E'">
         </div>
         
         <!-- 하단 -->
