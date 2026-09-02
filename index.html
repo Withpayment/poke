@@ -5770,8 +5770,11 @@ function generateColoringPage(engName) {
   // ⭐ 원본 이미지 (컬러)
   const colorImage = pokemon.image || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokemon.id}.png`;
   
-  // ⭐ 윤곽선 이미지 (PokeAPI 스프라이트 - 투명 배경 + 실루엣)
+  // ⭐ 윤곽선 이미지 (PokeAPI 스프라이트)
   const outlineImage = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.id}.png`;
+  
+  // ⭐ 대체 윤곽선 이미지 (공식 아트워크를 흑백으로)
+  const fallbackOutline = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokemon.id}.png`;
   
   const coloringHTML = `
     <!DOCTYPE html>
@@ -5800,7 +5803,6 @@ function generateColoringPage(engName) {
           position: relative;
         }
         
-        /* ===== 헤더 ===== */
         .header {
           text-align: center;
           margin-bottom: 10px;
@@ -5817,7 +5819,7 @@ function generateColoringPage(engName) {
           margin-top: 2px;
         }
         
-        /* ===== 색칠 공간 (윤곽선만) ===== */
+        /* ===== 색칠 공간 ===== */
         .coloring-area {
           width: 100%;
           min-height: 190mm;
@@ -5834,12 +5836,17 @@ function generateColoringPage(engName) {
           max-width: 100%;
           max-height: 175mm;
           object-fit: contain;
-          /* ⭐ 스프라이트는 이미 투명 배경이라 필터 없이도 윤곽선처럼 보임 */
-          filter: grayscale(100%) contrast(1.2);
-          -webkit-filter: grayscale(100%) contrast(1.2);
+        }
+        /* ⭐ 윤곽선 이미지 스타일 */
+        .coloring-area .outline-img {
+          filter: grayscale(100%) contrast(1.5) brightness(1.1);
+          -webkit-filter: grayscale(100%) contrast(1.5) brightness(1.1);
+          background: #ffffff;
+          padding: 8px;
+          border-radius: 4px;
         }
         
-        /* ===== 원본 미리보기 (컬러, 20% 크기, 오른쪽 상단) ===== */
+        /* ===== 원본 미리보기 (컬러, 20%) ===== */
         .preview {
           position: absolute;
           top: 16px;
@@ -5860,7 +5867,6 @@ function generateColoringPage(engName) {
           aspect-ratio: 1/1;
           object-fit: contain;
           display: block;
-          /* ⭐ 컬러 그대로 유지 */
           filter: none;
           -webkit-filter: none;
         }
@@ -5876,7 +5882,6 @@ function generateColoringPage(engName) {
           padding: 0 6px;
         }
         
-        /* ===== 하단 정보 ===== */
         .footer {
           text-align: center;
           margin-top: 10px;
@@ -5895,35 +5900,33 @@ function generateColoringPage(engName) {
     </head>
     <body>
       <div class="page">
-        <!-- 헤더 -->
         <div class="header">
           <h1>🎨 ${pokemon.name} 색칠놀이</h1>
           <div class="sub">큰 윤곽선에 색칠하고, 오른쪽 상단의 원본을 참고하세요!</div>
         </div>
         
-        <!-- 색칠 공간 (윤곽선만) -->
         <div class="coloring-area">
-          <!-- 원본 미리보기 (컬러, 20% 크기, 오른쪽 상단) -->
+          <!-- 원본 미리보기 (컬러, 20%) -->
           <div class="preview">
-            <img src="${colorImage}" alt="${pokemon.name} 원본" 
+            <img src="${colorImage}" alt="원본" 
                  style="filter: none; -webkit-filter: none;"
-                 onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2280%22 height=%2280%22%3E%3Crect fill=%22%23eee%22 width=%2280%22 height=%2280%22/%3E%3Ctext x=%2240%22 y=%2245%22 font-size=%2220%22 text-anchor=%22middle%22%3E❓%3C/text%3E%3C/svg%3E'">
+                 onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
             <div class="label">🎯 원본</div>
           </div>
           
-          <!-- 윤곽선 (PokeAPI 스프라이트 - 투명 배경 + 실루엣) -->
-          <img src="${outlineImage}" alt="${pokemon.name} 윤곽선" 
-               style="filter: grayscale(100%) contrast(1.2); -webkit-filter: grayscale(100%) contrast(1.2);"
-               onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22300%22%3E%3Crect fill=%22%23fff%22 width=%22300%22 height=%22300%22/%3E%3Ctext x=%22150%22 y=%22160%22 font-size=%2240%22 text-anchor=%22middle%22%3E❓%3C/text%3E%3C/svg%3E'">
+          <!-- 윤곽선 이미지 (스프라이트 + 필터) -->
+          <img class="outline-img" 
+               src="${outlineImage}" 
+               alt="${pokemon.name} 윤곽선"
+               onerror="this.src='${fallbackOutline}'; this.style.filter='grayscale(100%) contrast(2) brightness(1.5)';"
+               style="filter: grayscale(100%) contrast(1.5) brightness(1.1); -webkit-filter: grayscale(100%) contrast(1.5) brightness(1.1); background: #fff; padding: 8px; border-radius: 4px; max-width: 100%; max-height: 175mm; object-fit: contain;">
         </div>
         
-        <!-- 하단 -->
         <div class="footer">
           <p>📅 ${new Date().toLocaleDateString('ko-KR')}  |  포켓몬 카드 마스터</p>
         </div>
       </div>
       
-      <!-- 인쇄 버튼 -->
       <div style="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);display:flex;gap:12px;z-index:100;" class="no-print">
         <button onclick="window.print()" style="padding:12px 32px;font-size:18px;border-radius:12px;border:none;background:#4CAF7D;color:#fff;cursor:pointer;font-weight:700;box-shadow:0 4px 0 #2E7A54;">
           🖨️ 인쇄하기
