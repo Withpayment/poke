@@ -5767,8 +5767,9 @@ function generateColoringPage(engName) {
     return;
   }
   
-  // ⭐ 이미지 URL
-  const imageUrl = pokemon.image || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokemon.id}.png`;
+  // ⭐ 투명 배경 이미지 (Dream World / Home)
+  const transparentImage = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream_world/${pokemon.id}.svg`;
+  const fallbackImage = pokemon.image || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokemon.id}.png`;
   
   const coloringHTML = `
     <!DOCTYPE html>
@@ -5813,7 +5814,6 @@ function generateColoringPage(engName) {
           margin-top: 2px;
         }
         
-        /* ===== 색칠 공간 ===== */
         .coloring-area {
           width: 100%;
           height: 185mm;
@@ -5827,19 +5827,16 @@ function generateColoringPage(engName) {
           overflow: hidden;
         }
         
-        /* ⭐ 윤곽선 이미지 (흑백 + 내부 흰색) */
+        /* ⭐ 투명 배경 이미지 (Dream World) */
         .coloring-area .outline-img {
           max-width: 95%;
           max-height: 175mm;
           object-fit: contain;
-          /* 핵심: 윤곽선만 남기고 내부는 흰색으로 */
-          filter: grayscale(100%) contrast(300%) brightness(200%);
-          -webkit-filter: grayscale(100%) contrast(300%) brightness(200%);
           background: #ffffff;
           padding: 10px;
+          /* SVG는 벡터라 확대해도 깨지지 않음 */
         }
         
-        /* ===== 원본 미리보기 (컬러, 30%) ===== */
         .preview {
           position: absolute;
           top: 12px;
@@ -5885,84 +5882,44 @@ function generateColoringPage(engName) {
           color: #999;
         }
         
-        /* ===== 인쇄 최적화 ===== */
         @media print {
-          body { 
-            background: #fff; 
-            padding: 0; 
-            margin: 0;
-          }
-          .page { 
-            border: none; 
-            box-shadow: none; 
-            padding: 8mm 10mm; 
-            width: 100%;
-            min-height: 100vh;
-          }
+          body { background: #fff; padding: 0; margin: 0; }
+          .page { border: none; box-shadow: none; padding: 8mm 10mm; width: 100%; min-height: 100vh; }
           .no-print { display: none !important; }
-          .coloring-area {
-            border-color: #333;
-            height: 190mm;
-          }
-          .coloring-area .outline-img {
-            max-height: 180mm;
-          }
-        }
-        
-        /* ===== 이미지 로딩 실패 시 ===== */
-        .error-msg {
-          font-size: 18px;
-          color: #999;
-          text-align: center;
-          padding: 40px;
-        }
-        .error-msg .big {
-          font-size: 48px;
-          display: block;
-          margin-bottom: 12px;
+          .coloring-area { border-color: #333; height: 190mm; }
+          .coloring-area .outline-img { max-height: 180mm; }
         }
       </style>
     </head>
     <body>
       <div class="page">
-        <!-- 헤더 -->
         <div class="header">
           <h1>🎨 ${pokemon.name} 색칠놀이</h1>
           <div class="sub">큰 윤곽선에 색칠하고, 오른쪽 상단의 컬러 원본을 참고하세요!</div>
         </div>
         
-        <!-- 색칠 공간 -->
         <div class="coloring-area">
           <!-- 원본 미리보기 (컬러, 30%) -->
           <div class="preview">
-            <img src="${imageUrl}" alt="원본" 
+            <img src="${fallbackImage}" alt="원본" 
                  style="filter: none !important; -webkit-filter: none !important;"
                  onerror="this.parentElement.innerHTML='<div style=\\'padding:20px;text-align:center;font-size:12px;color:#999;\\'><div style=\\'font-size:30px;\\'>❌</div>이미지 없음</div>'">
             <div class="label">🎯 원본</div>
           </div>
           
-          <!-- 윤곽선 이미지 (흑백 + 내부 흰색) -->
+          <!-- ⭐ 투명 배경 윤곽선 (Dream World SVG) -->
           <img class="outline-img" 
-               src="${imageUrl}" 
+               src="${transparentImage}" 
                alt="${pokemon.name} 윤곽선"
-               onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
-               style="filter: grayscale(100%) contrast(300%) brightness(200%); -webkit-filter: grayscale(100%) contrast(300%) brightness(200%); background: #fff; padding: 10px; max-width: 95%; max-height: 175mm; object-fit: contain;">
-          
-          <!-- 이미지 로딩 실패 시 표시 -->
-          <div style="display:none; text-align:center; color:#999; padding:40px;">
-            <div style="font-size:48px; margin-bottom:12px;">🎨</div>
-            <div style="font-size:16px;">${pokemon.name} 이미지를 불러올 수 없어요</div>
-            <div style="font-size:12px; margin-top:8px;">다른 포켓몬을 선택해보세요!</div>
-          </div>
+               onerror="this.src='${fallbackImage}'; this.style.filter='grayscale(100%) contrast(200%) brightness(150%)';"
+               style="background: #fff; padding: 10px; max-width: 95%; max-height: 175mm; object-fit: contain;">
         </div>
         
-        <!-- 하단 -->
         <div class="footer">
           <p>📅 ${new Date().toLocaleDateString('ko-KR')}  |  포켓몬 카드 마스터</p>
         </div>
       </div>
       
-      <!-- 인쇄/닫기 버튼 -->
       <div style="position:fixed;bottom:24px;left:50%;transform:translateX(-50%);display:flex;gap:12px;z-index:100;background:rgba(255,255,255,.9);padding:10px 20px;border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,.15);" class="no-print">
         <button onclick="window.print()" style="padding:10px 28px;font-size:16px;border-radius:10px;border:none;background:#4CAF7D;color:#fff;cursor:pointer;font-weight:700;box-shadow:0 3px 0 #2E7A54;">
           🖨️ 인쇄하기
