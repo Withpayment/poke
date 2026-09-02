@@ -1457,16 +1457,17 @@
   </div>
 </header>
 
-  <div class="statline">
-    <div class="pill">📖 <b id="collectedCount">0</b>/<span id="totalCount">0</span></div>
-    <div class="pill">⭐ <b id="specialCount">0</b> 스페셜</div>
-    <div class="pill">✅ 미션 <b id="missionCount">0</b></div>
-    <div class="pill">🏆 <b id="winCount">0</b>승</div>
-    <div class="pill">🎯 퀴즈 <b id="quizCount">0</b></div>
-    <div class="pill">🧮 수학 <b id="mathCount">0</b></div>
-    <div class="pill">⚔️ 레이드 <b id="raidCount">0</b></div>
-    <div class="pill">💎 <b id="stoneCount">0</b></div>
-  </div>
+<div class="statline">
+  <div class="pill">📖 <b id="collectedCount">0</b>/<span id="totalCount">0</span></div>
+  <div class="pill">⭐ <b id="specialCount">0</b> 스페셜</div>
+  <div class="pill">✅ 미션 <b id="missionCount">0</b></div>
+  <div class="pill">🏆 <b id="winCount">0</b>승</div>
+  <div class="pill">🎯 퀴즈 <b id="quizCount">0</b></div>
+  <div class="pill">🧮 수학 <b id="mathCount">0</b></div>
+  <div class="pill">⚔️ 레이드 <b id="raidCount">0</b></div>
+  <div class="pill">💎 <b id="stoneCount">0</b></div>
+  <div class="pill">🎮 <b id="gameChances">0</b>회</div>
+</div>
 
   <div class="battle-picker-overlay" id="battlePicker" style="display:none;">
     <div class="battle-picker-box">
@@ -2085,7 +2086,8 @@ let state = {
   raidSelectedCard: null,
   battleChances: 0,
   pvpChances: 0,
-  evolutionStones: { mega: 0, gigantamax: 0 }
+  evolutionStones: { mega: 0, gigantamax: 0 },
+  gameChances: 0
 };
 
 let ownershipFilter = 'all';
@@ -2708,6 +2710,7 @@ function updateStatline() {
   }
   document.getElementById('specialCount').textContent = specialCount;
   updateStoneDisplay();
+  document.getElementById('gameChances').textContent = state.gameChances || 0;
 }
 
 // ===== 나이 설정 =====
@@ -3320,6 +3323,7 @@ function renderLifeMissions() {
         <br><span style="font-size:12px;color:#6b6395;">미션 완료 시 키우는 포켓몬 경험치 +10%!</span>
         <br><span style="font-size:12px;color:#6b6395;">미션 완료 시 레이드 공격 기회 +1!</span>
         <br><span style="font-size:12px;color:#6b6395;">미션 완료 시 AI 배틀 +1, PVP 배틀 +1 (누적 가능)</span>
+        <br><span style="font-size:12px;color:#6b6395;">미션 완료 시 🎮 게임 횟수 +1</span>
       </div>
       <button class="btn small ghost" onclick="openMissionEditor()" style="font-size:14px;padding:6px 12px;min-height:32px;flex-shrink:0;margin-left:8px;">⚙️</button>
     </div>
@@ -3328,6 +3332,7 @@ function renderLifeMissions() {
       <span>🤖 AI 배틀: <b>${state.battleChances || 0}</b>회</span>
       <span>🌐 PVP 배틀: <b>${state.pvpChances || 0}</b>회</span>
       <span>💎 진화의돌: <b>${(state.evolutionStones?.mega || 0) + (state.evolutionStones?.gigantamax || 0)}</b>개</span>
+      <span>🎮 게임 횟수: <b>${state.gameChances || 0}</b>회</span>
     </div>
     <div class="life-mission-list">
       ${sortedMissions.map(m => {
@@ -3377,6 +3382,10 @@ function renderLifeMissions() {
       }
       state.battleChances = (state.battleChances || 0) + 1;
       state.pvpChances = (state.pvpChances || 0) + 1;
+      
+      // ⭐ 게임 횟수 +1
+      state.gameChances = (state.gameChances || 0) + 1;
+      
       saveState();
       
       if (state.pet) {
@@ -3388,6 +3397,8 @@ function renderLifeMissions() {
       }
       
       renderLifeMissions();
+      updateStatline();
+      
       const reveal = document.getElementById('lifeReveal');
       
       if (rewards.length > 0) {
@@ -3408,6 +3419,7 @@ function renderLifeMissions() {
             <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:6px;">${cardHTML}</div>
             ${state.pet ? `<div style="font-family:var(--font-mono);font-size:12px;color:var(--sun-2);margin-top:4px;">✨ 키우는 포켓몬 경험치 +10%!</div>` : ''}
             ${state.raid?.boss ? `<div style="font-family:var(--font-mono);font-size:12px;color:var(--good);margin-top:4px;">⚔️ 레이드 공격 기회 +1!</div>` : ''}
+            <div style="font-family:var(--font-mono);font-size:12px;color:var(--good);margin-top:4px;">🎮 게임 횟수 +1!</div>
           </div>
         `;
       }
@@ -4597,21 +4609,27 @@ function renderBattleSetup() {
     const teamNames2 = state.team.map(eng => { const p = getPokemonByName(eng); return p ? p.name : '?'; }).join(' · ');
     const aiChances = state.battleChances || 0;
     const pvpChances = state.pvpChances || 0;
+    const gameChances = state.gameChances || 0;
     
     body.innerHTML = `
       <div style="text-align:center;padding:16px 0;">
         <div style="font-family:var(--font-display);font-size:22px;color:var(--sun-2);margin-bottom:4px;">⚔️ ${teamNames2}</div>
         <div style="font-family:var(--font-mono);font-size:13px;color:#B7AFDE;margin:6px 0;">
-          🤖 AI 배틀: <b style="color:${aiChances > 0 ? 'var(--good)' : '#8d84b0'};">${aiChances}</b>회 &nbsp;|&nbsp; 🌐 PVP 배틀: <b style="color:${pvpChances > 0 ? 'var(--good)' : '#8d84b0'};">${pvpChances}</b>회
+          🤖 AI 배틀: <b style="color:${aiChances > 0 ? 'var(--good)' : '#8d84b0'};">${aiChances}</b>회 &nbsp;|&nbsp; 
+          🌐 PVP 배틀: <b style="color:${pvpChances > 0 ? 'var(--good)' : '#8d84b0'};">${pvpChances}</b>회 &nbsp;|&nbsp;
+          🎮 게임 횟수: <b style="color:${gameChances > 0 ? 'var(--good)' : '#8d84b0'};">${gameChances}</b>회
         </div>
         <div style="font-size:11px;color:#6b6395;margin-bottom:12px;">※ 생활미션 완료 시 +1회 (누적)</div>
         <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
           <button class="btn small" onclick="clearTeam()" style="font-size:15px;padding:8px 18px;min-height:40px;">🔄 팀 초기화</button>
           <button class="btn small" onclick="autoFillTeam()" style="font-size:15px;padding:8px 18px;min-height:40px;">🤖 자동 구성</button>
           ${battleMode === 'pvp' 
-            ? `<button class="btn" onclick="renderPvpIntro()" style="font-size:15px;padding:10px 22px;min-height:48px;${pvpChances <= 0 ? 'opacity:0.4;cursor:not-allowed;' : ''}" ${pvpChances <= 0 ? 'disabled' : ''}>🌐 실시간 배틀 (${pvpChances}회)</button>` 
-            : `<button class="btn" id="aiBattleBtn" onclick="startAiBattle()" style="font-size:15px;padding:10px 22px;min-height:48px;${aiChances <= 0 ? 'opacity:0.4;cursor:not-allowed;' : ''}" ${aiChances <= 0 ? 'disabled' : ''}>🤖 AI 배틀 (${aiChances}회)</button>`
+            ? `<button class="btn" onclick="renderPvpIntro()" style="font-size:15px;padding:10px 22px;min-height:48px;${pvpChances <= 0 ? 'opacity:0.4;cursor:not-allowed;' : ''}" ${pvpChances <= 0 ? 'disabled' : ''}>🌐 PVP (${pvpChances}회)</button>` 
+            : `<button class="btn" onclick="startAiBattle()" style="font-size:15px;padding:10px 22px;min-height:48px;${aiChances <= 0 ? 'opacity:0.4;cursor:not-allowed;' : ''}" ${aiChances <= 0 ? 'disabled' : ''}>🤖 AI (${aiChances}회)</button>`
           }
+          <button class="btn" onclick="startPokemonRun()" style="font-size:15px;padding:10px 22px;min-height:48px;background:var(--electric);box-shadow:0 4px 0 #C99414;color:#2A2440;${gameChances <= 0 ? 'opacity:0.4;cursor:not-allowed;' : ''}" ${gameChances <= 0 ? 'disabled' : ''}>
+            🏃 런 (${gameChances}회)
+          </button>
         </div>
         ${(battleMode === 'ai' && aiChances <= 0) || (battleMode === 'pvp' && pvpChances <= 0) 
           ? `<div style="font-size:13px;color:var(--bad);margin-top:10px;">⚠️ 생활미션을 완료하면 배틀 횟수가 지급됩니다!</div>` 
@@ -4628,7 +4646,6 @@ function renderBattleSetup() {
     `;
   }
 }
-
 function openBattlePicker(slotIndex) {
   const overlay = document.getElementById('battlePicker');
   overlay.style.display = 'flex';
@@ -5670,7 +5687,147 @@ window.openCardDetailFromCraft = function(engName) {
     }, 300);
   }
 };
+// ===== 포켓몬 런 =====
+function startPokemonRun() {
+  if ((state.gameChances || 0) < 1) {
+    alert('⚠️ 게임 횟수가 부족합니다!\n미션을 완료해서 게임 횟수를 충전해주세요.');
+    return;
+  }
 
+  const myCards = Object.keys(state.owned)
+    .filter(key => state.owned[key].count > 0)
+    .map(key => {
+      const pokemon = getPokemonByName(key);
+      if (!pokemon) return null;
+      return { ...pokemon, count: state.owned[key].count };
+    })
+    .filter(p => p !== null)
+    .sort((a, b) => b.spd - a.spd)
+    .slice(0, 3);
+
+  if (myCards.length < 3) {
+    alert('⚠️ 3장 이상의 카드가 필요해요!');
+    return;
+  }
+
+  const enemyPool = POKEMON_LIST.filter(p => p.engName !== myCards[0].engName);
+  const enemyCards = [];
+  for (let i = 0; i < 3; i++) {
+    const random = enemyPool[Math.floor(Math.random() * enemyPool.length)];
+    enemyCards.push({ ...random });
+  }
+  enemyCards.sort((a, b) => b.spd - a.spd);
+
+  const myBest = myCards[0];
+  const enemyBest = enemyCards[0];
+
+  const myRandom = Math.floor(Math.random() * 20) + 1;
+  const enemyRandom = Math.floor(Math.random() * 20) + 1;
+  const myTotal = myBest.spd + myRandom;
+  const enemyTotal = enemyBest.spd + enemyRandom;
+
+  let result = '', message = '', color = '';
+
+  if (myTotal > enemyTotal) {
+    result = '승리! 🎉';
+    message = `${myBest.name} (SPD: ${myBest.spd} + ${myRandom}) → ${enemyBest.name} (SPD: ${enemyBest.spd} + ${enemyRandom}) 보다 빠르다!`;
+    color = 'var(--good)';
+    grantCardReward();
+  } else if (myTotal < enemyTotal) {
+    result = '패배... 😢';
+    message = `${myBest.name} (SPD: ${myBest.spd} + ${myRandom}) → ${enemyBest.name} (SPD: ${enemyBest.spd} + ${enemyRandom}) 보다 느리다...`;
+    color = 'var(--bad)';
+  } else {
+    result = '무승부! 🤝';
+    message = `${myBest.name} (SPD: ${myBest.spd} + ${myRandom}) → ${enemyBest.name} (SPD: ${enemyBest.spd} + ${enemyRandom}) 동률!`;
+    color = 'var(--sun)';
+  }
+
+  state.gameChances = (state.gameChances || 0) - 1;
+  saveState();
+  updateStatline();
+
+  const body = document.getElementById('battleBody');
+  body.innerHTML = `
+    <div class="arena" style="text-align:center;">
+      <div style="font-size:28px;font-family:var(--font-display);margin-bottom:8px;">🏃 포켓몬 런!</div>
+      
+      <div style="display:flex;justify-content:space-around;padding:16px;flex-wrap:wrap;">
+        <div style="flex:1;min-width:120px;">
+          <div style="font-size:14px;color:#B7AFDE;">내 최고 SPD</div>
+          <div style="font-size:48px;">${pokemonImage(myBest, '60px')}</div>
+          <div style="font-size:20px;font-weight:700;">${myBest.name}</div>
+          <div style="font-size:16px;color:#3E9FDC;">SPD: ${myBest.spd} + ${myRandom} = ${myTotal}</div>
+        </div>
+        <div style="font-size:32px;display:flex;align-items:center;padding:0 16px;">VS</div>
+        <div style="flex:1;min-width:120px;">
+          <div style="font-size:14px;color:#B7AFDE;">상대 최고 SPD</div>
+          <div style="font-size:48px;">${pokemonImage(enemyBest, '60px')}</div>
+          <div style="font-size:20px;font-weight:700;">${enemyBest.name}</div>
+          <div style="font-size:16px;color:#F0653B;">SPD: ${enemyBest.spd} + ${enemyRandom} = ${enemyTotal}</div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:8px;justify-content:center;margin:8px 0;flex-wrap:wrap;">
+        ${myCards.map(p => `<span style="padding:4px 12px;border-radius:8px;background:rgba(255,255,255,.05);font-size:12px;">${p.name} (SPD:${p.spd})</span>`).join('')}
+        <span style="color:#B7AFDE;">vs</span>
+        ${enemyCards.map(p => `<span style="padding:4px 12px;border-radius:8px;background:rgba(255,255,255,.05);font-size:12px;">${p.name} (SPD:${p.spd})</span>`).join('')}
+      </div>
+      
+      <div style="font-size:24px;font-weight:700;padding:16px;border-radius:12px;margin:12px 0;
+           background:${result.includes('승리') ? 'rgba(76,175,125,.2)' : result.includes('패배') ? 'rgba(228,97,75,.2)' : 'rgba(255,201,60,.2)'};
+           border:2px solid ${color};">
+        ${result}
+      </div>
+      
+      <div style="font-size:16px;color:#B7AFDE;margin:8px 0;">${message}</div>
+      
+      <div style="font-size:14px;color:#6b6395;margin-bottom:12px;">🎮 남은 게임 횟수: ${state.gameChances || 0}회</div>
+      
+      <div style="display:flex;gap:8px;margin-top:12px;justify-content:center;flex-wrap:wrap;">
+        <button class="btn small" onclick="startPokemonRun()" ${(state.gameChances || 0) < 1 ? 'disabled' : ''}>🔄 다시하기</button>
+        <button class="btn small ghost" onclick="renderBattleSetup()">🏠 돌아가기</button>
+      </div>
+    </div>
+  `;
+}
+
+// ===== 색칠놀이 =====
+function renderColoringTab() {
+  const container = document.getElementById('coloringContent');
+  
+  const ownedCards = Object.keys(state.owned).filter(key => state.owned[key].count > 0);
+  
+  if (ownedCards.length === 0) {
+    container.innerHTML = `
+      <div style="text-align:center;padding:30px 16px;color:#8d84b0;">
+        <div style="font-size:48px;margin-bottom:8px;">😅</div>
+        <div style="font-size:18px;">보유한 포켓몬이 없어요!</div>
+        <div style="font-size:13px;color:#6b6395;margin-top:4px;">미션을 완료해서 카드를 먼저 모아주세요!</div>
+      </div>
+    `;
+    return;
+  }
+  
+  container.innerHTML = `
+    <div style="text-align:center;margin-bottom:12px;">
+      <div style="font-size:20px;font-family:var(--font-display);color:var(--sun-2);">🎨 따라 색칠하기</div>
+      <div style="font-size:14px;color:#B7AFDE;margin-top:4px;">
+        색칠할 포켓몬을 선택하면 A4 용지에 출력할 수 있어요!
+      </div>
+    </div>
+    
+    <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-height:300px;overflow-y:auto;padding:8px;background:rgba(255,255,255,.03);border-radius:10px;">
+      ${ownedCards.map(key => {
+        const p = getPokemonByName(key);
+        if (!p) return '';
+        const info = state.owned[key];
+        const rInfo = getRarityInfo(info.rarity);
+        return `
+          <div class="coloring-select-card" data-eng="${key}" 
+               style="padding:10px 14px;border-radius:12px;border:2px solid ${rInfo.color};background:rgba(255,255,255,.04);display:flex;align-items:center;gap:10px;cursor:pointer;transition:all .2s;"
+               onmouseover="this.style.transform='scale(1.05)';this.style.boxShadow='0 4px 12px rgba(0,0,0,.3)';"
+              
 // ===== 초기화 =====
 async function initGame() {
   document.getElementById('loadingScreen').style.display = 'block';
