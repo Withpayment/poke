@@ -5767,7 +5767,11 @@ function generateColoringPage(engName) {
     return;
   }
   
-  const imageUrl = pokemon.image || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokemon.id}.png`;
+  // ⭐ 원본 이미지 (컬러)
+  const colorImage = pokemon.image || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokemon.id}.png`;
+  
+  // ⭐ 윤곽선 이미지 (PokeAPI 스프라이트 사용 - 선만 있는 이미지)
+  const outlineImage = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.id}.png`;
   
   const coloringHTML = `
     <!DOCTYPE html>
@@ -5830,13 +5834,13 @@ function generateColoringPage(engName) {
           max-width: 100%;
           max-height: 175mm;
           object-fit: contain;
-          /* ⭐ 윤곽선만 남기기 (회색 배경 제거) */
-          filter: grayscale(100%) contrast(1.5) brightness(1.1);
-          -webkit-filter: grayscale(100%) contrast(1.5) brightness(1.1);
-          background: transparent;
+          /* ⭐ 윤곽선만 남기고 내부는 흰색으로 */
+          filter: grayscale(100%) contrast(2) brightness(1.8);
+          -webkit-filter: grayscale(100%) contrast(2) brightness(1.8);
+          background: #fff;
         }
         
-        /* ===== 원본 미리보기 (오른쪽 상단, 20% 크기) ===== */
+        /* ===== 원본 미리보기 (컬러, 20% 크기, 오른쪽 상단) ===== */
         .preview {
           position: absolute;
           top: 16px;
@@ -5844,7 +5848,7 @@ function generateColoringPage(engName) {
           width: 20%;
           max-width: 120px;
           min-width: 60px;
-          border: 2px solid #333;
+          border: 3px solid #333;
           border-radius: 8px;
           background: #fff;
           padding: 4px;
@@ -5857,6 +5861,9 @@ function generateColoringPage(engName) {
           aspect-ratio: 1/1;
           object-fit: contain;
           display: block;
+          /* ⭐ 컬러 그대로 유지 */
+          filter: none;
+          -webkit-filter: none;
         }
         .preview .label {
           position: absolute;
@@ -5897,15 +5904,17 @@ function generateColoringPage(engName) {
         
         <!-- 색칠 공간 (윤곽선만) -->
         <div class="coloring-area">
-          <!-- 원본 미리보기 (20% 크기, 오른쪽 상단) -->
+          <!-- 원본 미리보기 (컬러, 20% 크기, 오른쪽 상단) -->
           <div class="preview">
-            <img src="${imageUrl}" alt="${pokemon.name} 원본" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2280%22 height=%2280%22%3E%3Crect fill=%22%23eee%22 width=%2280%22 height=%2280%22/%3E%3Ctext x=%2240%22 y=%2245%22 font-size=%2220%22 text-anchor=%22middle%22%3E❓%3C/text%3E%3C/svg%3E'">
+            <img src="${colorImage}" alt="${pokemon.name} 원본" 
+                 style="filter: none; -webkit-filter: none;"
+                 onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2280%22 height=%2280%22%3E%3Crect fill=%22%23eee%22 width=%2280%22 height=%2280%22/%3E%3Ctext x=%2240%22 y=%2245%22 font-size=%2220%22 text-anchor=%22middle%22%3E❓%3C/text%3E%3C/svg%3E'">
             <div class="label">🎯 원본</div>
           </div>
           
-          <!-- 윤곽선 (회색 배경 제거, 선만 남음) -->
-          <img src="${imageUrl}" alt="${pokemon.name} 윤곽선" 
-               style="filter: grayscale(100%) contrast(1.5) brightness(1.1); -webkit-filter: grayscale(100%) contrast(1.5) brightness(1.1); background: transparent;"
+          <!-- 윤곽선 (선만 남음, 내부 흰색) -->
+          <img src="${outlineImage}" alt="${pokemon.name} 윤곽선" 
+               style="filter: grayscale(100%) contrast(2) brightness(1.8); -webkit-filter: grayscale(100%) contrast(2) brightness(1.8); background: #fff;"
                onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22300%22%3E%3Crect fill=%22%23fff%22 width=%22300%22 height=%22300%22/%3E%3Ctext x=%22150%22 y=%22160%22 font-size=%2240%22 text-anchor=%22middle%22%3E❓%3C/text%3E%3C/svg%3E'">
         </div>
         
