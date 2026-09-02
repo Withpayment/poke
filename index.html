@@ -5767,7 +5767,7 @@ function generateColoringPage(engName) {
     return;
   }
   
-  // ⭐ 원본 이미지 (컬러)
+  // ⭐ 이미지 URL
   const imageUrl = pokemon.image || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokemon.id}.png`;
   
   const coloringHTML = `
@@ -5780,7 +5780,7 @@ function generateColoringPage(engName) {
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 
           font-family: 'Malgun Gothic', sans-serif; 
-          background: #fff; 
+          background: #e8e8e8; 
           padding: 20px;
           display: flex;
           justify-content: center;
@@ -5790,82 +5790,68 @@ function generateColoringPage(engName) {
         .page {
           width: 210mm;
           min-height: 297mm;
-          background: #fff;
-          padding: 15mm 20mm 12mm;
-          border: 1px solid #ddd;
-          box-shadow: 0 0 10px rgba(0,0,0,.1);
+          background: #ffffff;
+          padding: 12mm 15mm 10mm;
+          border: 1px solid #ccc;
+          box-shadow: 0 4px 20px rgba(0,0,0,.15);
           position: relative;
         }
         
         .header {
           text-align: center;
-          margin-bottom: 10px;
-          padding-bottom: 6px;
+          margin-bottom: 8px;
+          padding-bottom: 4px;
           border-bottom: 2px solid #333;
         }
         .header h1 {
-          font-size: 22px;
+          font-size: 20px;
           color: #333;
         }
         .header .sub {
-          font-size: 11px;
+          font-size: 10px;
           color: #888;
           margin-top: 2px;
         }
         
-        /* ===== 색칠 공간 (윤곽선만) ===== */
+        /* ===== 색칠 공간 ===== */
         .coloring-area {
           width: 100%;
-          min-height: 190mm;
+          height: 185mm;
           border: 3px solid #555;
-          border-radius: 8px;
-          padding: 16px;
+          border-radius: 6px;
           background: #ffffff;
           display: flex;
           align-items: center;
           justify-content: center;
           position: relative;
-        }
-        .coloring-area img {
-          max-width: 100%;
-          max-height: 175mm;
-          object-fit: contain;
-        }
-        /* ⭐ 윤곽선 스타일 (방법 2: CSS 필터로 윤곽선처럼) */
-        .coloring-area .outline-img {
-          /* 윤곽선만 남기는 필터 조합 */
-          filter: grayscale(100%) 
-                  contrast(200%) 
-                  brightness(150%) 
-                  drop-shadow(0 0 2px rgba(0,0,0,0.3));
-          -webkit-filter: grayscale(100%) 
-                          contrast(200%) 
-                          brightness(150%) 
-                          drop-shadow(0 0 2px rgba(0,0,0,0.3));
-          background: #ffffff;
-          padding: 12px;
-          border-radius: 4px;
-          /* 윤곽선을 더 선명하게 */
-          image-rendering: pixelated;
-        }
-        /* 윤곽선을 더 부드럽게 보이게 */
-        .coloring-area .outline-img:hover {
-          filter: grayscale(100%) contrast(200%) brightness(150%);
+          overflow: hidden;
         }
         
-        /* ===== 원본 미리보기 (컬러, 20%) ===== */
+        /* ⭐ 윤곽선 이미지 (흑백 + 내부 흰색) */
+        .coloring-area .outline-img {
+          max-width: 95%;
+          max-height: 175mm;
+          object-fit: contain;
+          /* 핵심: 윤곽선만 남기고 내부는 흰색으로 */
+          filter: grayscale(100%) contrast(300%) brightness(200%);
+          -webkit-filter: grayscale(100%) contrast(300%) brightness(200%);
+          background: #ffffff;
+          padding: 10px;
+        }
+        
+        /* ===== 원본 미리보기 (컬러, 30%) ===== */
         .preview {
           position: absolute;
-          top: 16px;
-          right: 16px;
-          width: 20%;
-          max-width: 120px;
-          min-width: 60px;
+          top: 12px;
+          right: 12px;
+          width: 30%;
+          max-width: 150px;
+          min-width: 80px;
           border: 3px solid #333;
           border-radius: 8px;
           background: #fff;
-          padding: 4px;
-          box-shadow: 0 2px 10px rgba(0,0,0,.2);
+          padding: 6px;
+          box-shadow: 0 2px 12px rgba(0,0,0,.25);
           z-index: 10;
         }
         .preview img {
@@ -5874,70 +5860,114 @@ function generateColoringPage(engName) {
           aspect-ratio: 1/1;
           object-fit: contain;
           display: block;
-          filter: none;
-          -webkit-filter: none;
+          filter: none !important;
+          -webkit-filter: none !important;
         }
         .preview .label {
           position: absolute;
-          bottom: -20px;
+          bottom: -18px;
           left: 50%;
           transform: translateX(-50%);
           font-size: 9px;
-          color: #666;
+          color: #555;
           white-space: nowrap;
           background: #fff;
-          padding: 0 6px;
+          padding: 0 8px;
+          font-weight: 700;
         }
         
         .footer {
           text-align: center;
-          margin-top: 10px;
-          padding-top: 6px;
+          margin-top: 8px;
+          padding-top: 4px;
           border-top: 2px solid #ddd;
-          font-size: 10px;
+          font-size: 9px;
           color: #999;
         }
         
+        /* ===== 인쇄 최적화 ===== */
         @media print {
-          body { padding: 0; }
-          .page { border: none; box-shadow: none; padding: 8mm 12mm; }
-          .no-print { display: none; }
+          body { 
+            background: #fff; 
+            padding: 0; 
+            margin: 0;
+          }
+          .page { 
+            border: none; 
+            box-shadow: none; 
+            padding: 8mm 10mm; 
+            width: 100%;
+            min-height: 100vh;
+          }
+          .no-print { display: none !important; }
+          .coloring-area {
+            border-color: #333;
+            height: 190mm;
+          }
+          .coloring-area .outline-img {
+            max-height: 180mm;
+          }
+        }
+        
+        /* ===== 이미지 로딩 실패 시 ===== */
+        .error-msg {
+          font-size: 18px;
+          color: #999;
+          text-align: center;
+          padding: 40px;
+        }
+        .error-msg .big {
+          font-size: 48px;
+          display: block;
+          margin-bottom: 12px;
         }
       </style>
     </head>
     <body>
       <div class="page">
+        <!-- 헤더 -->
         <div class="header">
           <h1>🎨 ${pokemon.name} 색칠놀이</h1>
-          <div class="sub">큰 윤곽선에 색칠하고, 오른쪽 상단의 원본을 참고하세요!</div>
+          <div class="sub">큰 윤곽선에 색칠하고, 오른쪽 상단의 컬러 원본을 참고하세요!</div>
         </div>
         
+        <!-- 색칠 공간 -->
         <div class="coloring-area">
-          <!-- 원본 미리보기 (컬러, 20%) -->
+          <!-- 원본 미리보기 (컬러, 30%) -->
           <div class="preview">
             <img src="${imageUrl}" alt="원본" 
-                 style="filter: none; -webkit-filter: none;"
-                 onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                 style="filter: none !important; -webkit-filter: none !important;"
+                 onerror="this.parentElement.innerHTML='<div style=\\'padding:20px;text-align:center;font-size:12px;color:#999;\\'><div style=\\'font-size:30px;\\'>❌</div>이미지 없음</div>'">
             <div class="label">🎯 원본</div>
           </div>
           
-          <!-- 윤곽선 이미지 (CSS 필터로 변환) -->
+          <!-- 윤곽선 이미지 (흑백 + 내부 흰색) -->
           <img class="outline-img" 
                src="${imageUrl}" 
                alt="${pokemon.name} 윤곽선"
-               style="filter: grayscale(100%) contrast(200%) brightness(150%); -webkit-filter: grayscale(100%) contrast(200%) brightness(150%); background: #fff; padding: 12px; border-radius: 4px; max-width: 100%; max-height: 175mm; object-fit: contain;">
+               onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
+               style="filter: grayscale(100%) contrast(300%) brightness(200%); -webkit-filter: grayscale(100%) contrast(300%) brightness(200%); background: #fff; padding: 10px; max-width: 95%; max-height: 175mm; object-fit: contain;">
+          
+          <!-- 이미지 로딩 실패 시 표시 -->
+          <div style="display:none; text-align:center; color:#999; padding:40px;">
+            <div style="font-size:48px; margin-bottom:12px;">🎨</div>
+            <div style="font-size:16px;">${pokemon.name} 이미지를 불러올 수 없어요</div>
+            <div style="font-size:12px; margin-top:8px;">다른 포켓몬을 선택해보세요!</div>
+          </div>
         </div>
         
+        <!-- 하단 -->
         <div class="footer">
           <p>📅 ${new Date().toLocaleDateString('ko-KR')}  |  포켓몬 카드 마스터</p>
         </div>
       </div>
       
-      <div style="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);display:flex;gap:12px;z-index:100;" class="no-print">
-        <button onclick="window.print()" style="padding:12px 32px;font-size:18px;border-radius:12px;border:none;background:#4CAF7D;color:#fff;cursor:pointer;font-weight:700;box-shadow:0 4px 0 #2E7A54;">
+      <!-- 인쇄/닫기 버튼 -->
+      <div style="position:fixed;bottom:24px;left:50%;transform:translateX(-50%);display:flex;gap:12px;z-index:100;background:rgba(255,255,255,.9);padding:10px 20px;border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,.15);" class="no-print">
+        <button onclick="window.print()" style="padding:10px 28px;font-size:16px;border-radius:10px;border:none;background:#4CAF7D;color:#fff;cursor:pointer;font-weight:700;box-shadow:0 3px 0 #2E7A54;">
           🖨️ 인쇄하기
         </button>
-        <button onclick="window.close()" style="padding:12px 32px;font-size:18px;border-radius:12px;border:none;background:#E4614B;color:#fff;cursor:pointer;font-weight:700;box-shadow:0 4px 0 #A04030;">
+        <button onclick="window.close()" style="padding:10px 28px;font-size:16px;border-radius:10px;border:none;background:#E4614B;color:#fff;cursor:pointer;font-weight:700;box-shadow:0 3px 0 #A04030;">
           ✕ 닫기
         </button>
       </div>
