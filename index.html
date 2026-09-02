@@ -5761,31 +5761,57 @@ function renderColoringTab() {
  * - 내부 색 경계도 Sobel 엣지 검출로 처리
  * - 결과: 흰 배경 + 검은 윤곽선 (안은 비어있음 → 색칠 가능)
  */
-async function makeOutlineFromImage(imageUrl, threshold = 60) {
+async function makeOutlineFromImage(imageUrl, threshold = 50, lineThickness = 2, upscale = 2) {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.crossOrigin = 'anonymous'; // CORS 이슈 있으면 서버 프록시 필요할 수 있음
     img.onload = () => {
-      const w = img.naturalWidth;
-      const h = img.naturalHeight;
+      // ⭐ 0) 원본을 upscale배 키워서 작업 → 다운스케일 시 앤티앨리어싱으로 선이 매끈해짐
+      const w = img.naturalWidth * upscale;
+      const h = img.naturalHeight * upscale;
 
       const srcCanvas = document.createElement('canvas');
       srcCanvas.width = w;
       srcCanvas.height = h;
       const sctx = srcCanvas.getContext('2d');
-      sctx.drawImage(img, 0, 0);
+      sctx.imageSmoothingEnabled = true;
+      sctx.imageSmoothingQuality = 'high';
+      sctx.drawImage(img, 0, 0, w, h);
 
       const srcData = sctx.getImageData(0, 0, w, h);
       const src = srcData.data;
 
       // 1) 밝기값(grayscale) + 알파값 별도 배열로 준비
-      const gray = new Float32Array(w * h);
-      const alpha = new Float32Array(w * h);
+      let gray = new Float32Array(w * h);
+      let alpha = new Float32Array(w * h);
       for (let i = 0, p = 0; i < src.length; i += 4, p++) {
         const r = src[i], g = src[i + 1], b = src[i + 2], a = src[i + 3];
         gray[p] = (0.299 * r + 0.587 * g + 0.114 * b);
         alpha[p] = a;
       }
+
+      // ⭐ 1.5) 3x3 박스 블러로 노이즈 제거 (선 끊김 방지)
+      const boxBlur = (arr) => {
+        const out = new Float32Array(w * h);
+        for (let y = 0; y < h; y++) {
+          for (let x = 0; x < w; x++) {
+            let sum = 0, count = 0;
+            for (let ky = -1; ky <= 1; ky++) {
+              for (let kx = -1; kx <= 1; kx++) {
+                const nx = x + kx, ny = y + ky;
+                if (nx >= 0 && nx < w && ny >= 0 && ny < h) {
+                  sum += arr[ny * w + nx];
+                  count++;
+                }
+              }
+            }
+            out[y * w + x] = sum / count;
+          }
+        }
+        return out;
+      };
+      gray = boxBlur(gray);
+      alpha = boxBlur(alpha);
 
       // 2) Sobel 커널로 밝기 엣지 + 알파 엣지 동시 검출
       const outCanvas = document.createElement('canvas');
@@ -5844,11 +5870,78 @@ async function makeOutlineFromImage(imageUrl, threshold = 60) {
       }
 
       octx.putImageData(outData, 0, 0);
-      resolve(outCanvas.toDataURL('image/png'));
+
+      // ⭐ 3) 선 굵기 늘리기 (dilate): 검은 픽셀을 lineThickness만큼 팽창
+      let finalCanvas = outCanvas;
+      if (lineThickness > 0) {
+        finalCanvas = dilateBlackPixels(outCanvas, lineThickness);
+      }
+
+      // ⭐ 4) 원본 해상도로 다운스케일 (upscale로 처리했던 걸 되돌림 → 앤티앨리어싱된 매끈한 선)
+      const finalW = img.naturalWidth;
+      const finalH = img.naturalHeight;
+      const downCanvas = document.createElement('canvas');
+      downCanvas.width = finalW;
+      downCanvas.height = finalH;
+      const dctx = downCanvas.getContext('2d');
+      dctx.imageSmoothingEnabled = true;
+      dctx.imageSmoothingQuality = 'high';
+      dctx.fillStyle = '#ffffff';
+      dctx.fillRect(0, 0, finalW, finalH);
+      dctx.drawImage(finalCanvas, 0, 0, finalW, finalH);
+
+      resolve(downCanvas.toDataURL('image/png'));
     };
     img.onerror = reject;
     img.src = imageUrl;
   });
+}
+
+/**
+ * 검은 픽셀을 주변으로 N픽셀만큼 팽창시켜 선을 굵게 만드는 함수.
+ */
+function dilateBlackPixels(canvas, thickness) {
+  const w = canvas.width;
+  const h = canvas.height;
+  const ctx = canvas.getContext('2d');
+  let data = ctx.getImageData(0, 0, w, h);
+
+  for (let iter = 0; iter < thickness; iter++) {
+    const src = data.data;
+    const outCanvas = document.createElement('canvas');
+    outCanvas.width = w;
+    outCanvas.height = h;
+    const octx = outCanvas.getContext('2d');
+    const outData = octx.createImageData(w, h);
+    const out = outData.data;
+
+    const isBlack = (x, y) => {
+      if (x < 0 || x >= w || y < 0 || y >= h) return false;
+      const i = (y * w + x) * 4;
+      return src[i] < 128; // 검은 픽셀 판정
+    };
+
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        const i = (y * w + x) * 4;
+        const black = isBlack(x, y) || isBlack(x + 1, y) || isBlack(x - 1, y) ||
+                      isBlack(x, y + 1) || isBlack(x, y - 1);
+        if (black) {
+          out[i] = 0; out[i + 1] = 0; out[i + 2] = 0; out[i + 3] = 255;
+        } else {
+          out[i] = 255; out[i + 1] = 255; out[i + 2] = 255; out[i + 3] = 255;
+        }
+      }
+    }
+    octx.putImageData(outData, 0, 0);
+    data = octx.getImageData(0, 0, w, h);
+  }
+
+  const resultCanvas = document.createElement('canvas');
+  resultCanvas.width = w;
+  resultCanvas.height = h;
+  resultCanvas.getContext('2d').putImageData(data, 0, 0);
+  return resultCanvas;
 }
 
 /**
@@ -5872,7 +5965,8 @@ async function generateColoringPage(engName) {
   let outlineDataUrl;
   try {
     // ⭐ 핵심: CSS 필터 대신 실제 엣지 검출로 윤곽선 생성
-    outlineDataUrl = await makeOutlineFromImage(transparentImage, 50);
+    outlineDataUrl = await makeOutlineFromImage(transparentImage, 50, 2, 2);
+    // 매개변수: (이미지 URL, 민감도threshold, 선굵기lineThickness, 업스케일배율upscale)
   } catch (e) {
     console.warn('엣지 검출 실패, 원본 이미지로 대체:', e);
     outlineDataUrl = transparentImage; // 실패 시 원본으로 fallback
@@ -5970,7 +6064,6 @@ async function generateColoringPage(engName) {
     alert('⚠️ 팝업이 차단되었습니다! 팝업 차단을 해제해주세요.');
   }
 }
-
 // ===== 초기화 =====
 async function initGame() {
   document.getElementById('loadingScreen').style.display = 'block';
