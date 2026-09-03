@@ -5657,7 +5657,386 @@ window.openCardDetailFromCraft = function(engName) {
     }, 300);
   }
 };
+/**
+ * ImageTracer.js를 CDN에서 한 번만 로드 (이미 로드됐으면 즉시 resolve).
+ * 순수 JS 라이브러리라 브라우저에서 서버 없이 래스터→벡터 변환 가능.
+ */
+let _imageTracerLoading = null;
+function loadImageTracer() {
+  if (window.ImageTracer) return Promise.resolve(window.ImageTracer);
+  if (_imageTracerLoading) return _imageTracerLoading;
 
+  _imageTracerLoading = new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/npm/imagetracerjs@1.2.6/imagetracer_v1.2.6.js';
+    script.onload = () => resolve(window.ImageTracer);
+    script.onerror = () => reject(new Error('ImageTracer 로드 실패'));
+    document.head.appendChild(script);
+  });
+  return _imageTracerLoading;
+}
+
+/**
+ * 흑백(edge) 캔버스를 SVG 벡터 경로 문자열로 변환.
+ * - 픽셀 계단현상 없이 매끈한 곡선으로 확대/인쇄 가능
+ * - viewBox + style로 컨테이너에 맞춰 자동 스케일되도록 처리
+ */
+function vectorizeCanvas(canvas, tracer) {
+  const w = canvas.width;
+  const h = canvas.height;
+  const ctx = canvas.getContext('2d');
+  const imagedata = ctx.getImageData(0, 0, w, h);
+
+  const options = {
+    ltres: 1,           // 직선 근사 허용 오차 (작을수록 원본에 충실)
+    qtres: 1,            // 곡선(2차 베지어) 근사 허용 오차
+    pathomit: 8,          // 이 픽셀 수보다 작은 자잘한 경로는 제거 (노이즈 방지)
+    rightangleenhance: true,
+    blurradius: 0,         // 블러는 이미 직접 적용했으므로 0
+    numberofcolors: 2,
+    colorsampling: 0,
+    mincolorratio: 0,
+    colorquantcycles: 1,
+    strokewidth: 0,
+    // 팔레트를 흑/백으로 고정 → 임의 색 양자화 없이 정확히 2색만 사용
+    pal: [
+      { r: 0, g: 0, b: 0, a: 255 },
+      { r: 255, g: 255, b: 255, a: 255 }
+    ]
+  };
+
+  let svg = tracer.imagedataToSVG(imagedata, options);
+
+  // 컨테이너 크기에 맞춰 반응형으로 스케일되도록 viewBox/style 주입
+  svg = svg.replace(
+    /<svg([^>]*)>/,
+    `<svg$1 viewBox="0 0 ${w} ${h}" style="width:100%;height:100%;display:block;">`
+  );
+  return svg;
+}
+
+/**
+ * 이미지 URL을 받아서 "윤곽선만 남은 흑백 이미지"의 벡터(SVG) 마크업을 반환.
+ * - 투명 배경(알파) 경계도 윤곽선으로 처리
+ * - 내부 색 경계도 Sobel 엣지 검출로 처리
+ * - 결과: 흰 배경 + 검은 윤곽선 벡터 패스 (계단현상 없이 확대 가능, 안은 비어있음 → 색칠 가능)
+ */
+async function makeOutlineFromImage(imageUrl, threshold = 50, lineThickness = 2, upscale = 2) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous'; // CORS 이슈 있으면 서버 프록시 필요할 수 있음
+    img.onload = () => {
+      // ⭐ 0) 원본을 upscale배 키워서 작업 → 다운스케일 시 앤티앨리어싱으로 선이 매끈해짐
+      const w = img.naturalWidth * upscale;
+      const h = img.naturalHeight * upscale;
+
+      const srcCanvas = document.createElement('canvas');
+      srcCanvas.width = w;
+      srcCanvas.height = h;
+      const sctx = srcCanvas.getContext('2d');
+      sctx.imageSmoothingEnabled = true;
+      sctx.imageSmoothingQuality = 'high';
+      sctx.drawImage(img, 0, 0, w, h);
+
+      const srcData = sctx.getImageData(0, 0, w, h);
+      const src = srcData.data;
+
+      // 1) 밝기값(grayscale) + 알파값 별도 배열로 준비
+      let gray = new Float32Array(w * h);
+      let alpha = new Float32Array(w * h);
+      for (let i = 0, p = 0; i < src.length; i += 4, p++) {
+        const r = src[i], g = src[i + 1], b = src[i + 2], a = src[i + 3];
+        gray[p] = (0.299 * r + 0.587 * g + 0.114 * b);
+        alpha[p] = a;
+      }
+
+      // ⭐ 1.5) 3x3 박스 블러로 노이즈 제거 (선 끊김 방지)
+      const boxBlur = (arr) => {
+        const out = new Float32Array(w * h);
+        for (let y = 0; y < h; y++) {
+          for (let x = 0; x < w; x++) {
+            let sum = 0, count = 0;
+            for (let ky = -1; ky <= 1; ky++) {
+              for (let kx = -1; kx <= 1; kx++) {
+                const nx = x + kx, ny = y + ky;
+                if (nx >= 0 && nx < w && ny >= 0 && ny < h) {
+                  sum += arr[ny * w + nx];
+                  count++;
+                }
+              }
+            }
+            out[y * w + x] = sum / count;
+          }
+        }
+        return out;
+      };
+      gray = boxBlur(gray);
+      alpha = boxBlur(alpha);
+
+      // 2) Sobel 커널로 밝기 엣지 + 알파 엣지 동시 검출
+      const outCanvas = document.createElement('canvas');
+      outCanvas.width = w;
+      outCanvas.height = h;
+      const octx = outCanvas.getContext('2d');
+      const outData = octx.createImageData(w, h);
+      const out = outData.data;
+
+      const gx = [-1, 0, 1, -2, 0, 2, -1, 0, 1];
+      const gy = [-1, -2, -1, 0, 0, 0, 1, 2, 1];
+
+      const idx = (x, y) => y * w + x;
+
+      for (let y = 0; y < h; y++) {
+        for (let x = 0; x < w; x++) {
+          let sumGX = 0, sumGY = 0;
+          let aGX = 0, aGY = 0;
+
+          for (let ky = -1; ky <= 1; ky++) {
+            for (let kx = -1; kx <= 1; kx++) {
+              const px = Math.min(w - 1, Math.max(0, x + kx));
+              const py = Math.min(h - 1, Math.max(0, y + ky));
+              const kIdx = (ky + 1) * 3 + (kx + 1);
+              const gVal = gray[idx(px, py)];
+              const aVal = alpha[idx(px, py)];
+              sumGX += gVal * gx[kIdx];
+              sumGY += gVal * gy[kIdx];
+              aGX += aVal * gx[kIdx];
+              aGY += aVal * gy[kIdx];
+            }
+          }
+
+          const grayMag = Math.sqrt(sumGX * sumGX + sumGY * sumGY);
+          const alphaMag = Math.sqrt(aGX * aGX + aGY * aGY);
+          const mag = Math.max(grayMag, alphaMag * 0.5); // 알파 경계도 반영
+
+          const p = idx(x, y);
+          const isInsideShape = alpha[p] > 10; // 원본이 존재하는 영역인지
+
+          const outIdx = p * 4;
+          if (mag > threshold && isInsideShape) {
+            // 엣지 → 검은 선
+            out[outIdx] = 0;
+            out[outIdx + 1] = 0;
+            out[outIdx + 2] = 0;
+            out[outIdx + 3] = 255;
+          } else {
+            // 나머지 → 완전 흰색 불투명 (색칠 가능한 빈 공간)
+            out[outIdx] = 255;
+            out[outIdx + 1] = 255;
+            out[outIdx + 2] = 255;
+            out[outIdx + 3] = 255;
+          }
+        }
+      }
+
+      octx.putImageData(outData, 0, 0);
+
+      // ⭐ 3) 선 굵기 늘리기 (dilate): 검은 픽셀을 lineThickness만큼 팽창
+      let finalCanvas = outCanvas;
+      if (lineThickness > 0) {
+        finalCanvas = dilateBlackPixels(outCanvas, lineThickness);
+      }
+
+      // ⭐ 4) 래스터→벡터 변환: 픽셀 계단현상 없이 매끈한 SVG 경로로 만듦
+      //     (SVG는 해상도 개념이 없어서 별도의 다운스케일이 필요 없음)
+      loadImageTracer()
+        .then((tracer) => {
+          const svgMarkup = vectorizeCanvas(finalCanvas, tracer);
+          resolve(svgMarkup);
+        })
+        .catch((err) => {
+          console.warn('벡터화 실패, 래스터 PNG로 대체:', err);
+          resolve(finalCanvas.toDataURL('image/png')); // 실패 시 PNG로 폴백
+        });
+    };
+    img.onerror = reject;
+    img.src = imageUrl;
+  });
+}
+
+/**
+ * 검은 픽셀을 주변으로 N픽셀만큼 팽창시켜 선을 굵게 만드는 함수.
+ */
+function dilateBlackPixels(canvas, thickness) {
+  const w = canvas.width;
+  const h = canvas.height;
+  const ctx = canvas.getContext('2d');
+  let data = ctx.getImageData(0, 0, w, h);
+
+  for (let iter = 0; iter < thickness; iter++) {
+    const src = data.data;
+    const outCanvas = document.createElement('canvas');
+    outCanvas.width = w;
+    outCanvas.height = h;
+    const octx = outCanvas.getContext('2d');
+    const outData = octx.createImageData(w, h);
+    const out = outData.data;
+
+    const isBlack = (x, y) => {
+      if (x < 0 || x >= w || y < 0 || y >= h) return false;
+      const i = (y * w + x) * 4;
+      return src[i] < 128; // 검은 픽셀 판정
+    };
+
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        const i = (y * w + x) * 4;
+        const black = isBlack(x, y) || isBlack(x + 1, y) || isBlack(x - 1, y) ||
+                      isBlack(x, y + 1) || isBlack(x, y - 1);
+        if (black) {
+          out[i] = 0; out[i + 1] = 0; out[i + 2] = 0; out[i + 3] = 255;
+        } else {
+          out[i] = 255; out[i + 1] = 255; out[i + 2] = 255; out[i + 3] = 255;
+        }
+      }
+    }
+    octx.putImageData(outData, 0, 0);
+    data = octx.getImageData(0, 0, w, h);
+  }
+
+  const resultCanvas = document.createElement('canvas');
+  resultCanvas.width = w;
+  resultCanvas.height = h;
+  resultCanvas.getContext('2d').putImageData(data, 0, 0);
+  return resultCanvas;
+}
+
+/**
+ * 기존 generateColoringPage 안에서 이렇게 사용하면 됩니다.
+ * (async 함수로 바꿔서 outline 이미지를 먼저 만든 뒤 HTML에 삽입)
+ */
+async function generateColoringPage(engName) {
+  const pokemon = getPokemonByName(engName);
+  if (!pokemon) {
+    alert('⚠️ 포켓몬을 찾을 수 없어요!');
+    return;
+  }
+
+  if (!confirm(`🎨 ${pokemon.name} 색칠 도안을 생성할까요?`)) {
+    return;
+  }
+
+  const transparentImage = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/${pokemon.id}.png`;
+  const colorImage = pokemon.image || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokemon.id}.png`;
+
+  let outlineResult;
+  let isVector = false;
+  try {
+    // ⭐ 핵심: CSS 필터 대신 실제 엣지 검출 + 벡터화로 윤곽선 생성
+    outlineResult = await makeOutlineFromImage(transparentImage, 50, 2, 2);
+    // 매개변수: (이미지 URL, 민감도threshold, 선굵기lineThickness, 업스케일배율upscale)
+    isVector = typeof outlineResult === 'string' && outlineResult.trim().startsWith('<svg');
+  } catch (e) {
+    console.warn('엣지 검출 실패, 원본 이미지로 대체:', e);
+    outlineResult = transparentImage; // 실패 시 원본으로 fallback
+  }
+
+  // ⭐ SVG(벡터)면 마크업을 그대로 삽입, PNG/URL이면 <img> 태그로 삽입
+  const outlineMarkup = isVector
+    ? `<div class="outline-svg-wrap">${outlineResult}</div>`
+    : `<img class="outline-img" src="${outlineResult}" alt="${pokemon.name} 윤곽선">`;
+
+  const coloringHTML = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="UTF-8">
+      <title>${pokemon.name} 색칠놀이 도안</title>
+      <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+          font-family: 'Malgun Gothic', sans-serif;
+          background: #e8e8e8;
+          padding: 20px;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          min-height: 100vh;
+        }
+        .page {
+          width: 210mm;
+          min-height: 297mm;
+          background: #ffffff;
+          padding: 12mm 15mm 10mm;
+          border: 1px solid #ccc;
+          box-shadow: 0 4px 20px rgba(0,0,0,.15);
+          position: relative;
+        }
+        .header { text-align: center; margin-bottom: 8px; padding-bottom: 4px; border-bottom: 2px solid #333; }
+        .header h1 { font-size: 20px; color: #333; }
+        .header .sub { font-size: 10px; color: #888; margin-top: 2px; }
+        .coloring-area {
+          width: 100%; height: 185mm; border: 3px solid #555; border-radius: 6px;
+          background: #ffffff; display: flex; align-items: center; justify-content: center;
+          position: relative; overflow: hidden;
+        }
+        .coloring-area .outline-img {
+          max-width: 95%; max-height: 175mm; object-fit: contain; background: transparent; padding: 10px;
+          /* ⭐ 더 이상 filter 불필요 (이미 순수 흑백 윤곽선) */
+        }
+        .outline-svg-wrap {
+          width: 95%; height: 175mm; padding: 10px;
+          display: flex; align-items: center; justify-content: center;
+        }
+        .outline-svg-wrap svg {
+          max-width: 100%; max-height: 100%; width: auto; height: auto;
+          /* ⭐ 벡터라 인쇄 시 어떤 크기든 계단현상 없이 매끈하게 출력됨 */
+        }
+        .preview {
+          position: absolute; top: 12px; right: 12px; width: 30%; max-width: 150px; min-width: 80px;
+          border: 3px solid #333; border-radius: 8px; background: #fff; padding: 6px;
+          box-shadow: 0 2px 12px rgba(0,0,0,.25); z-index: 10;
+        }
+        .preview img { width: 100%; height: auto; aspect-ratio: 1/1; object-fit: contain; display: block; }
+        .preview .label {
+          position: absolute; bottom: -18px; left: 50%; transform: translateX(-50%);
+          font-size: 9px; color: #555; white-space: nowrap; background: #fff; padding: 0 8px; font-weight: 700;
+        }
+        .footer { text-align: center; margin-top: 8px; padding-top: 4px; border-top: 2px solid #ddd; font-size: 9px; color: #999; }
+        @media print {
+          body { background: #fff; padding: 0; margin: 0; }
+          .page { border: none; box-shadow: none; padding: 8mm 10mm; width: 100%; min-height: 100vh; }
+          .no-print { display: none !important; }
+          .coloring-area { border-color: #333; height: 190mm; }
+          .coloring-area .outline-img { max-height: 180mm; }
+          .outline-svg-wrap { height: 180mm; }
+        }
+      </style>
+    </head>
+    <body>
+      <div class="page">
+        <div class="header">
+          <h1>🎨 ${pokemon.name} 색칠놀이</h1>
+          <div class="sub">큰 윤곽선에 색칠하고, 오른쪽 상단의 컬러 원본을 참고하세요!</div>
+        </div>
+        <div class="coloring-area">
+          <div class="preview">
+            <img src="${colorImage}" alt="원본"
+                 onerror="this.parentElement.innerHTML='<div style=\\'padding:20px;text-align:center;font-size:12px;color:#999;\\'><div style=\\'font-size:30px;\\'>❌</div>이미지 없음</div>'">
+            <div class="label">🎯 원본</div>
+          </div>
+          ${outlineMarkup}
+        </div>
+        <div class="footer">
+          <p>📅 ${new Date().toLocaleDateString('ko-KR')}  |  포켓몬 카드 마스터</p>
+        </div>
+      </div>
+      <div style="position:fixed;bottom:24px;left:50%;transform:translateX(-50%);display:flex;gap:12px;z-index:100;background:rgba(255,255,255,.9);padding:10px 20px;border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,.15);" class="no-print">
+        <button onclick="window.print()" style="padding:10px 28px;font-size:16px;border-radius:10px;border:none;background:#4CAF7D;color:#fff;cursor:pointer;font-weight:700;box-shadow:0 3px 0 #2E7A54;">🖨️ 인쇄하기</button>
+        <button onclick="window.close()" style="padding:10px 28px;font-size:16px;border-radius:10px;border:none;background:#E4614B;color:#fff;cursor:pointer;font-weight:700;box-shadow:0 3px 0 #A04030;">✕ 닫기</button>
+      </div>
+    </body>
+    </html>
+  `;
+
+  const win = window.open('', '_blank', 'width=800,height=600');
+  if (win) {
+    win.document.write(coloringHTML);
+    win.document.close();
+  } else {
+    alert('⚠️ 팝업이 차단되었습니다! 팝업 차단을 해제해주세요.');
+  }
+}
 // ===== 초기화 =====
 async function initGame() {
   document.getElementById('loadingScreen').style.display = 'block';
