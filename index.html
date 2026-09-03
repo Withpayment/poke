@@ -1442,12 +1442,9 @@
   <div class="sub">진화하고, 교환하고, 레이드하자!</div>
   
   <div style="margin-top:8px;display:flex;gap:6px;justify-content:center;flex-wrap:wrap;">
-    <!-- ⭐ 관리자 버튼 (새로 추가) -->
     <button id="adminPanelBtn" style="background:rgba(255,215,0,.15);border:2px solid rgba(255,215,0,.3);color:#FFD700;padding:4px 12px;border-radius:8px;font-size:11px;cursor:pointer;font-family:var(--font-mono);touch-action:manipulation;">
       👑 관리자
     </button>
-    
-    <!-- 기존 버튼들 -->
     <button id="clearCacheBtn" style="background:rgba(255,255,255,.08);border:2px solid rgba(255,201,60,.2);color:#B7AFDE;padding:4px 12px;border-radius:8px;font-size:11px;cursor:pointer;font-family:var(--font-mono);touch-action:manipulation;">
       🗑️ 캐시 삭제
     </button>
@@ -1480,8 +1477,7 @@
   </div>
 
   <main>
-    <!-- 관리자 패널 모달 -->
-<div class="modal-overlay" id="adminModal">
+    <div class="modal-overlay" id="adminModal">
   <div class="modal-content" style="max-width:500px;">
     <button class="modal-close" id="adminModalClose">✕</button>
     <div style="text-align:center;margin-bottom:16px;">
@@ -1490,7 +1486,6 @@
       <div style="font-size:13px;color:#B7AFDE;">카드와 진화의돌을 수동으로 지급합니다</div>
     </div>
     
-    <!-- 비밀번호 입력 -->
     <div id="adminPasswordSection">
       <input class="edit-pw-input" id="adminPasswordInput" type="password" maxlength="4" placeholder="비밀번호 4자리" inputmode="numeric" style="width:100%;padding:12px 16px;border-radius:12px;border:3px solid rgba(255,215,0,.2);background:rgba(255,255,255,.05);color:var(--paper);font-family:var(--font-body);font-size:20px;text-align:center;letter-spacing:8px;margin-bottom:12px;">
       <div class="edit-pw-error" id="adminPwError" style="color:var(--bad);font-size:14px;text-align:center;margin-top:8px;display:none;">❌ 비밀번호가 틀렸어요!</div>
@@ -1500,9 +1495,7 @@
       </div>
     </div>
     
-    <!-- 관리자 컨텐츠 -->
     <div id="adminContentSection" style="display:none;">
-      <!-- 카드 지급 -->
       <div style="margin-bottom:16px;padding:14px;background:rgba(255,255,255,.05);border-radius:12px;border:2px solid rgba(255,215,0,.15);">
         <div style="font-family:var(--font-display);font-size:16px;color:var(--sun-2);margin-bottom:8px;">🎴 카드 지급</div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;">
@@ -1513,7 +1506,6 @@
         <div id="adminCardResult" style="font-size:12px;color:#B7AFDE;margin-top:6px;"></div>
       </div>
       
-      <!-- 진화의돌 지급 -->
       <div style="margin-bottom:16px;padding:14px;background:rgba(255,255,255,.05);border-radius:12px;border:2px solid rgba(255,215,0,.15);">
         <div style="font-family:var(--font-display);font-size:16px;color:var(--sun-2);margin-bottom:8px;">💎 진화의돌 지급</div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;">
@@ -1527,7 +1519,6 @@
         <div id="adminStoneResult" style="font-size:12px;color:#B7AFDE;margin-top:6px;"></div>
       </div>
       
-      <!-- 현재 보유량 -->
       <div style="padding:12px;background:rgba(255,255,255,.03);border-radius:10px;border:1px solid rgba(255,255,255,.05);">
         <div style="font-size:13px;color:#B7AFDE;text-align:center;">
           📊 보유 카드: <b style="color:var(--paper);" id="adminOwnedCount">0</b>장 &nbsp;|&nbsp;
@@ -1837,9 +1828,7 @@ function updateStoneDisplay() {
 }
 
 // ===== 메가/거다이맥스 진화 가능 포켓몬 목록 =====
-// ===== 메가진화 목록 (ID 수정 반영) =====
 const MEGA_EVOLUTIONS = {
-  // 1세대
   'venusaur': { name: '메가이상해꽃', id: 'mega-venusaur' },
   'charizard': { name: '메가리자몽', id: 'mega-charizard' },
   'blastoise': { name: '메가거북왕', id: 'mega-blastoise' },
@@ -1853,16 +1842,12 @@ const MEGA_EVOLUTIONS = {
   'gyarados': { name: '메가갸라도스', id: 'mega-gyarados' },
   'aerodactyl': { name: '메가프테라', id: 'mega-aerodactyl' },
   'mewtwo': { name: '메가뮤츠', id: 'mega-mewtwo' },
-  
-  // 2세대
   'ampharos': { name: '메가전룡', id: 'mega-ampharos' },
   'steelix': { name: '메가강철톤', id: 'mega-steelix' },
   'scizor': { name: '메가핫삼', id: 'mega-scizor' },
   'heracross': { name: '메가헤라크로스', id: 'mega-heracross' },
   'houndoom': { name: '메가헬가', id: 'mega-houndoom' },
   'tyranitar': { name: '메가마기라스', id: 'mega-tyranitar' },
-  
-  // 3세대
   'sceptile': { name: '메가나무킹', id: 'mega-sceptile' },
   'blaziken': { name: '메가번치코', id: 'mega-blaziken' },
   'swampert': { name: '메가대짱이', id: 'mega-swampert' },
@@ -1883,23 +1868,16 @@ const MEGA_EVOLUTIONS = {
   'latias': { name: '메가라티아스', id: 'mega-latias' },
   'latios': { name: '메가라티오스', id: 'mega-latios' },
   'rayquaza': { name: '메가레쿠쟈', id: 'mega-rayquaza' },
-  
-  // 4세대
   'lopunny': { name: '메가이어롭', id: 'mega-lopunny' },
   'garchomp': { name: '메가한카리아스', id: 'mega-garchomp' },
   'lucario': { name: '메가루카리오', id: 'mega-lucario' },
   'abomasnow': { name: '메가눈설왕', id: 'mega-abomasnow' },
   'gallade': { name: '메가엘레이드', id: 'mega-gallade' },
-  
-  // 5세대
   'audino': { name: '메가다부니', id: 'mega-audino' },
-  
-  // 6세대
   'diancie': { name: '메가디안시', id: 'mega-diancie' }
 };
 
 const GIGANTAMAX_EVOLUTIONS = {
-  // 1세대
   'venusaur': { name: '거다이맥스이상해꽃', id: 'gigantamax-venusaur' },
   'charizard': { name: '거다이맥스리자몽', id: 'gigantamax-charizard' },
   'blastoise': { name: '거다이맥스거북왕', id: 'gigantamax-blastoise' },
@@ -1911,8 +1889,6 @@ const GIGANTAMAX_EVOLUTIONS = {
   'gengar': { name: '거다이맥스팬텀', id: 'gigantamax-gengar' },
   'kingler': { name: '거다이맥스킹크라', id: 'gigantamax-kingler' },
   'lapras': { name: '거다이맥스라프라스', id: 'gigantamax-lapras' },
-  
-  // 8세대
   'corviknight': { name: '거다이맥스아머까오', id: 'gigantamax-corviknight' },
   'drednaw': { name: '거다이맥스갈가모크', id: 'gigantamax-drednaw' },
   'coalossal': { name: '거다이맥스석탄산', id: 'gigantamax-coalossal' },
@@ -1933,10 +1909,8 @@ const GIGANTAMAX_EVOLUTIONS = {
   'melmetal': { name: '거다이맥스멜메탈', id: 'gigantamax-melmetal' },
   'urshifu': { name: '거다이맥스우라오스', id: 'gigantamax-urshifu' }
 };
-  // ===== 메가진화 이미지 매핑 =====
-// ===== 메가진화 이미지 매핑 (실제 ID 기준) =====
+
 const MEGA_IMAGE_MAP = {
-  // ===== 1세대 =====
   'mega-venusaur': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10033.png',
   'mega-charizard-x': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10034.png',
   'mega-charizard-y': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10035.png',
@@ -1952,16 +1926,12 @@ const MEGA_IMAGE_MAP = {
   'mega-slowbro': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10071.png',
   'mega-pidgeot': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10073.png',
   'mega-beedrill': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10090.png',
-  
-  // ===== 2세대 =====
   'mega-ampharos': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10045.png',
   'mega-scizor': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10046.png',
   'mega-heracross': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10047.png',
   'mega-houndoom': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10048.png',
   'mega-tyranitar': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10049.png',
   'mega-steelix': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10072.png',
-  
-  // ===== 3세대 =====
   'mega-blaziken': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10050.png',
   'mega-gardevoir': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10051.png',
   'mega-mawile': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10052.png',
@@ -1988,25 +1958,16 @@ const MEGA_IMAGE_MAP = {
   'mega-camerupt': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10087.png',
   'mega-lopunny': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10088.png',
   'mega-salamence': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10089.png',
-  
-  // ===== 6세대 =====
   'mega-diancie': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10075.png'
 };
 
-// ===== 거다이맥스 이미지 매핑 =====
-// ===== 거다이맥스 이미지 매핑 (실제 ID 기준) =====
 const GIGANTAMAX_IMAGE_MAP = {
-  // ===== 1세대 (10186~10196) =====
   'gigantamax-venusaur': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10186.png',
   'gigantamax-charizard': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10187.png',
   'gigantamax-blastoise': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10188.png',
   'gigantamax-butterfree': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10189.png',
-  
-  // ===== 10199~10228 (당신이 알려준 ID) =====
   'gigantamax-pikachu': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10199.png',
   'gigantamax-meowth': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10200.png',
-  // 10201 = 괴력몬 (거다이맥스 없음)
-  // 10202 = 팬텀 (거다이맥스 없음, 10194 사용)
   'gigantamax-gengar': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10194.png',
   'gigantamax-kingler': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10203.png',
   'gigantamax-lapras': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10204.png',
@@ -2033,6 +1994,7 @@ const GIGANTAMAX_IMAGE_MAP = {
   'gigantamax-urshifu': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10226.png',
   'gigantamax-urshifu-rapid': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10227.png'
 };
+
 function getMegaEvo(engName) {
   return MEGA_EVOLUTIONS[engName] || null;
 }
@@ -2053,7 +2015,6 @@ function getEvolutionStoneType(engName) {
   return null;
 }
 
-// ===== 진화의 돌 이미지 생성 =====
 function getStoneImage(type) {
   if (type === 'mega') {
     return 'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><radialGradient id="megaGrad" cx="50%" cy="50%" r="50%"><stop offset="0%" style="stop-color:#FF66FF"/><stop offset="100%" style="stop-color:#990099"/></radialGradient></defs><polygon points="50,10 90,40 80,90 20,90 10,40" fill="url(#megaGrad)" stroke="#FF00FF" stroke-width="3"/><text x="50" y="65" text-anchor="middle" font-size="30" font-weight="bold" fill="white">M</text></svg>`);
@@ -2177,7 +2138,6 @@ function getEvoChain(engName) {
   return [engName];
 }
 
-// ===== loadAllPokemon (개선: 더 많은 포켓몬 로드) =====
 // ===== loadAllPokemon (완전판: 모든 포켓몬 로드) =====
 async function loadAllPokemon() {
   try {
@@ -2192,23 +2152,19 @@ async function loadAllPokemon() {
   } catch(e) {}
   
   try {
-    // ⭐ 1. 전체 포켓몬 수 확인 (실제 API 호출)
     const countRes = await fetch('https://pokeapi.co/api/v2/pokemon?limit=0');
     const countData = await countRes.json();
     const totalCount = countData.count || 1350;
     console.log('📊 PokeAPI 전체 포켓몬 수:', totalCount);
     
-    // ⭐ 2. 모든 포켓몬 ID 수집 (진짜 전체 목록)
     const allUrls = [];
-    const limit = 2000; // 충분히 큰 값으로 설정 (실제로는 1350개)
+    const limit = 2000;
     const listRes = await fetch(`https://pokeapi.co/api/v2/pokemon?limit=${limit}&offset=0`);
     const listData = await listRes.json();
     
-    // 모든 URL 수집
     listData.results.forEach(p => allUrls.push(p.url));
     console.log('📋 수집된 포켓몬 URL:', allUrls.length + '개');
     
-    // ⭐ 3. 30개씩 병렬 처리 (서버 부하 방지)
     let allPokemon = [];
     const batchSize = 30;
     
@@ -2219,7 +2175,6 @@ async function loadAllPokemon() {
           const detailRes = await fetch(url);
           const detail = await detailRes.json();
           
-          // 한글 이름 가져오기
           let koreanName = detail.name;
           try {
             const speciesRes = await fetch(detail.species.url);
@@ -2228,11 +2183,9 @@ async function loadAllPokemon() {
             if (name) koreanName = name.name;
           } catch(e) {}
           
-          // 이미지 URL
           let imageUrl = detail.sprites.other['official-artwork']?.front_default || 
                          detail.sprites.front_default;
           
-          // 특수 포켓몬 이미지 처리
           const specialImages = {
             'koraidon': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1007.png',
             'miraidon': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1008.png',
@@ -2246,7 +2199,6 @@ async function loadAllPokemon() {
             imageUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${detail.id}.png`;
           }
           
-          // ⭐ 4. 타입 정보 (2차 타입 포함)
           const types = detail.types.map(t => t.type.name);
           
           return {
@@ -2272,73 +2224,68 @@ async function loadAllPokemon() {
       const results = await Promise.all(promises);
       allPokemon = allPokemon.concat(results.filter(p => p !== null));
       
-      // 로딩 상태 업데이트
       const progress = Math.round((i + batch.length) / allUrls.length * 100);
       document.getElementById('loadingStatus').textContent = 
         `PokeAPI 로딩 중... ${allPokemon.length}/${allUrls.length} (${progress}%)`;
     }
     
-    // ⭐ 5. 중복 제거 및 정렬
     allPokemon.sort((a, b) => a.id - b.id);
-const uniqueMap = new Map();
-  allPokemon.forEach(p => {
-    // engName 기준으로 중복 체크
-    if (!uniqueMap.has(p.engName)) {
-      uniqueMap.set(p.engName, p);
-    } else {
-      // 이미 있는 경우, 더 나은 데이터로 업데이트
-      const existing = uniqueMap.get(p.engName);
-      if (p.image && !existing.image) {
-        existing.image = p.image;
+    const uniqueMap = new Map();
+    allPokemon.forEach(p => {
+      if (!uniqueMap.has(p.engName)) {
+        uniqueMap.set(p.engName, p);
+      } else {
+        const existing = uniqueMap.get(p.engName);
+        if (p.image && !existing.image) {
+          existing.image = p.image;
+        }
+        if (p.types && p.types.length > existing.types.length) {
+          existing.types = p.types;
+        }
       }
-      if (p.types && p.types.length > existing.types.length) {
-        existing.types = p.types;
-      }
-    }
-  });
+    });
     allPokemon = Array.from(uniqueMap.values());
-     const SPECIAL_POKEMON = {
-    'miraidon': {
-      id: 1008,
-      name: '미라이돈',
-      engName: 'miraidon',
-      type: 'electric',
-      types: ['electric', 'dragon'],
-      hp: 100,
-      atk: 85,
-      def: 100,
-      spd: 135,
-      image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1008.png'
-    },
-    'koraidon': {
-      id: 1007,
-      name: '코라이돈',
-      engName: 'koraidon',
-      type: 'fighting',
-      types: ['fighting', 'dragon'],
-      hp: 100,
-      atk: 130,
-      def: 100,
-      spd: 135,
-      image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1007.png'
-    }
-  };
-  
-  // 특수 포켓몬이 없으면 추가, 있으면 덮어쓰기
-  Object.keys(SPECIAL_POKEMON).forEach(key => {
-    const existingIndex = allPokemon.findIndex(p => p.engName === key);
-    if (existingIndex !== -1) {
-      allPokemon[existingIndex] = SPECIAL_POKEMON[key];
-    } else {
-      allPokemon.push(SPECIAL_POKEMON[key]);
-    }
-  });
+    
+    const SPECIAL_POKEMON = {
+      'miraidon': {
+        id: 1008,
+        name: '미라이돈',
+        engName: 'miraidon',
+        type: 'electric',
+        types: ['electric', 'dragon'],
+        hp: 100,
+        atk: 85,
+        def: 100,
+        spd: 135,
+        image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1008.png'
+      },
+      'koraidon': {
+        id: 1007,
+        name: '코라이돈',
+        engName: 'koraidon',
+        type: 'fighting',
+        types: ['fighting', 'dragon'],
+        hp: 100,
+        atk: 130,
+        def: 100,
+        spd: 135,
+        image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1007.png'
+      }
+    };
+    
+    Object.keys(SPECIAL_POKEMON).forEach(key => {
+      const existingIndex = allPokemon.findIndex(p => p.engName === key);
+      if (existingIndex !== -1) {
+        allPokemon[existingIndex] = SPECIAL_POKEMON[key];
+      } else {
+        allPokemon.push(SPECIAL_POKEMON[key]);
+      }
+    });
     allPokemon.sort((a, b) => a.id - b.id);
     
     console.log('✅ 최종 로드 완료!', allPokemon.length + '마리');
     POKEMON_LIST = allPokemon;
     
-    // ⭐ 6. 캐시 저장
     localStorage.setItem(CACHE_KEY, JSON.stringify(POKEMON_LIST));
     localStorage.setItem(CACHE_TIME_KEY, String(Date.now()));
     
@@ -2355,6 +2302,7 @@ const uniqueMap = new Map();
     return POKEMON_LIST;
   }
 }
+
 function getFallbackData() {
   return [
     {id:1, name:'이상해씨', engName:'bulbasaur', type:'grass', hp:45, atk:49, def:49, spd:45, image:'', types:['grass']},
@@ -2405,12 +2353,11 @@ async function getAllEvolvablePokemon() {
 
 // ===== 유틸리티 =====
 function getPokemonById(id) { return POKEMON_LIST.find(p => p.id === id || p.engName === id); }
+
 function getPokemonByName(name) {
-  // 1. POKEMON_LIST에서 찾기
   let result = POKEMON_LIST.find(p => p.engName === name || p.name === name);
   if (result) return result;
   
-  // 2. 특수 포켓몬 (미라이돈, 코라이돈)
   const SPECIAL_POKEMON = {
     'miraidon': {
       id: 1008,
@@ -2466,7 +2413,6 @@ function getPokemonByName(name) {
     return SPECIAL_POKEMON[name];
   }
   
-  // 3. 거다이맥스 처리 (PokeAPI에 없는 경우)
   if (name && name.startsWith('gigantamax-')) {
     const originalName = name.replace('gigantamax-', '');
     const originalPokemon = getPokemonByName(originalName);
@@ -2509,7 +2455,6 @@ function getPokemonByName(name) {
     };
   }
   
-  // 4. 메가진화 처리
   if (name && name.startsWith('mega-')) {
     const originalName = name.replace('mega-', '');
     const megaEvo = MEGA_EVOLUTIONS[originalName];
@@ -2535,13 +2480,24 @@ function getPokemonByName(name) {
   
   return null;
 }
+
 function clamp(n, lo, hi) { return Math.max(lo, Math.min(hi, n)); }
-function todayKey() { 
+
+// ===== 한국 시간 기준 오전 8시 30분 초기화 =====
+function todayKey() {
   const now = new Date();
   const kstOffset = 9 * 60;
   const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
-  const kstTime = new Date(utc + (kstOffset * 60000));
-  return kstTime.toISOString().slice(0,10);
+  let kstTime = new Date(utc + (kstOffset * 60000));
+  
+  const hours = kstTime.getHours();
+  const minutes = kstTime.getMinutes();
+  
+  if (hours < 8 || (hours === 8 && minutes < 30)) {
+    kstTime.setDate(kstTime.getDate() - 1);
+  }
+  
+  return kstTime.toISOString().slice(0, 10);
 }
 
 function getTypeColor(type) {
@@ -2566,30 +2522,23 @@ function getTypeLabel(type) {
 }
 
 function pokemonImage(pokemon, size = '100%') {
-  // 1. 포켓몬이 없으면 ❓ 표시
   if (!pokemon) {
     return `<div style="width:${size};height:${size};background:rgba(255,255,255,.1);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:32px;">❓</div>`;
   }
   
-  // 2. ⭐ 특수 포켓몬 이미지 직접 지정 (우선 적용)
   const SPECIAL_IMAGES = {
     'miraidon': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1008.png',
     'koraidon': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1007.png',
     'gholdengo': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1000.png',
-    // ⭐ 거다이맥스 모래비단뱀 (수정됨: 10202 → 10218)
     'gigantamax-sandaconda': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10218.png',
-    // ⭐ 거다이맥스 누라레기 (수정됨: 10203 → 10220)
     'gigantamax-centiskorch': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10220.png'
   };
   
-  // engName으로 확인
   let imageUrl = null;
   if (pokemon.engName && SPECIAL_IMAGES[pokemon.engName]) {
     imageUrl = SPECIAL_IMAGES[pokemon.engName];
   }
-  // name으로도 확인 (한글 이름)
   if (!imageUrl && pokemon.name) {
-    // 한글 이름을 영문으로 변환 (필요시)
     const nameMap = {
       '미라이돈': 'miraidon',
       '코라이돈': 'koraidon'
@@ -2600,24 +2549,21 @@ function pokemonImage(pokemon, size = '100%') {
     }
   }
   
-  // 3. pokemon.image 사용
   if (!imageUrl && pokemon.image) {
     imageUrl = pokemon.image;
   }
   
-  // 4. ID로 기본 이미지 생성 (마지막 수단)
   if (!imageUrl && pokemon.id) {
     imageUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokemon.id}.png`;
   }
   
-  // 5. 그래도 없으면 ❓ 표시
   if (!imageUrl) {
     return `<div style="width:${size};height:${size};background:rgba(255,255,255,.1);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:32px;">❓</div>`;
   }
   
-  // 6. 이미지 표시
   return `<img src="${imageUrl}" alt="${pokemon.name || '포켓몬'}" style="width:${size};height:${size};object-fit:contain;display:block;">`;
 }
+
 function formatTime(ms) {
   if (ms <= 0) return '⏳ 준비 완료!';
   const hours = Math.floor(ms / 3600000);
@@ -2741,6 +2687,7 @@ function grantCardReward() {
   renderDex();
   return { target, rarity, isNew };
 }
+
 // ===== 관리자 패널 =====
 const ADMIN_PASSWORD = '4987';
 
@@ -2860,6 +2807,7 @@ function bindAdminEvents() {
     if (e.target === this) closeAdminPanel();
   });
 }
+
 // ===== 게임 초기화 =====
 function resetGame() {
   if (!confirm('⚠️ 정말로 게임을 초기화할까요?\n모든 진행 데이터가 삭제됩니다!')) return;
@@ -2885,14 +2833,11 @@ function resetGame() {
   location.reload();
 }
 
-// ⭐⭐⭐ 여기에 추가! (resetGame 함수 바로 아래) ⭐⭐⭐
-
 // ===== 중복 카드 자동 합치기 =====
 function autoMergeDuplicates() {
   const merged = {};
   let mergedCount = 0;
   
-  // 한글↔영문 매핑
   const nameMap = {
     '미라이돈': 'miraidon',
     '코라이돈': 'koraidon',
@@ -2907,7 +2852,6 @@ function autoMergeDuplicates() {
     const card = state.owned[key];
     let normalizedKey = key.toLowerCase();
     
-    // 한글 이름을 영문으로 변환
     if (nameMap[key]) {
       normalizedKey = nameMap[key];
     }
@@ -2931,7 +2875,6 @@ function autoMergeDuplicates() {
       if (newWeight > currentWeight) {
         merged[normalizedKey].rarity = card.rarity;
       }
-      // originalRarity도 더 높은 등급으로
       const origCurrent = getRarityInfo(merged[normalizedKey].originalRarity || 'common')?.weight || 0;
       const origNew = getRarityInfo(card.originalRarity || card.rarity)?.weight || 0;
       if (origNew > origCurrent) {
@@ -2947,8 +2890,10 @@ function autoMergeDuplicates() {
     console.log(`🔄 중복 카드 ${mergedCount}개 자동 합침!`);
   }
 }
+
 document.getElementById('resetHiddenBtn').addEventListener('click', resetGame);
-  function clearPokeCache() {
+
+function clearPokeCache() {
   if (!confirm('🔄 PokeAPI 캐시를 삭제할까요?\n(포켓몬 데이터를 다시 불러옵니다)')) return;
   
   try {
@@ -2974,7 +2919,6 @@ document.getElementById('resetHiddenBtn').addEventListener('click', resetGame);
   }
 }
 
-// 2. 모든 데이터 삭제
 function clearAllData() {
   if (!confirm('⚠️ 정말로 모든 데이터를 삭제할까요?\n(게임 진행, 카드, 캐시 모두 삭제됩니다!)')) return;
   if (!confirm('⚠️ 마지막 확인입니다! 되돌릴 수 없습니다!')) return;
@@ -3593,7 +3537,7 @@ function checkMathAnswer2(selectedIdx) {
   }, 1500);
 }
 
-// ===== ⚔️ 레이드 (진화의 돌 획득 추가) =====
+// ===== ⚔️ 레이드 =====
 function renderRaidMission() {
   const panel = document.getElementById('missionPanel');
   const key = todayKey();
@@ -3714,7 +3658,6 @@ function collectRaidReward() {
   if (!state.owned[boss.engName]) state.owned[boss.engName] = { count: 1, rarity: rarity };
   else state.owned[boss.engName].count += 1;
   
-  // 진화의 돌 획득 (메가 또는 거다이맥스 중 랜덤)
   const stoneTypes = ['mega', 'gigantamax'];
   const stoneType = stoneTypes[Math.floor(Math.random() * stoneTypes.length)];
   addEvolutionStone(stoneType, 1);
@@ -3778,7 +3721,6 @@ function checkPetLevelUp() {
         if (state.pet.level >= evoLevel && state.pet.evolvedId !== nextId) {
           const nextPokemon = getPokemonByName(nextId);
           if (nextPokemon) {
-            // ⭐⭐⭐ 기존 카드 1장 삭제 ⭐⭐⭐
             const currentPokemon = getPokemonByName(currentId);
             if (currentPokemon && state.owned[currentPokemon.engName]) {
               state.owned[currentPokemon.engName].count -= 1;
@@ -3787,13 +3729,11 @@ function checkPetLevelUp() {
               }
             }
             
-            // ⭐⭐⭐ 진화된 카드 추가 ⭐⭐⭐
             const rarity = rollRarity();
             if (!state.owned[nextPokemon.engName]) {
               state.owned[nextPokemon.engName] = { count: 1, rarity: rarity };
             } else {
               state.owned[nextPokemon.engName].count += 1;
-              // 더 좋은 등급으로 업데이트
               if (getRarityInfo(rarity).weight > getRarityInfo(state.owned[nextPokemon.engName].rarity).weight) {
                 state.owned[nextPokemon.engName].rarity = rarity;
               }
@@ -4018,17 +3958,14 @@ function renderDex() {
   document.getElementById('dexProgress').style.width = (owned / total * 100) + '%';
   document.getElementById('dexProgressText').textContent = owned + ' / ' + total + ' 마리';
   
-  // 1. 필터링
   let list = POKEMON_LIST.filter(c => activeFilter === 'all' || c.type === activeFilter);
   
-  // 2. 보유 필터
   if (ownershipFilter === 'owned') {
     list = list.filter(c => state.owned[c.engName]);
   } else if (ownershipFilter === 'missing') {
     list = list.filter(c => !state.owned[c.engName]);
   }
   
-  // 3. 등급 필터
   if (activeRarity !== 'all') {
     list = list.filter(c => {
       const ownedData = state.owned[c.engName];
@@ -4036,7 +3973,6 @@ function renderDex() {
     });
   }
   
-  // 4. 중복 제거 (engName 기준)
   const uniqueList = [];
   const seenNames = new Set();
   list.forEach(p => {
@@ -4047,7 +3983,6 @@ function renderDex() {
   });
   list = uniqueList;
   
-  // 5. 렌더링
   grid.innerHTML = list.map(c => {
     const ownedData = state.owned[c.engName];
     const has = !!ownedData;
@@ -4101,7 +4036,6 @@ function renderDex() {
     </div>`;
   }).join('');
   
-  // 6. 클릭 이벤트
   grid.querySelectorAll('.card:not(.locked)').forEach(el => {
     el.addEventListener('click', function() {
       const engName = this.dataset.eng;
@@ -4115,7 +4049,7 @@ function renderDex() {
     });
   });
 }
-// ===== 카드 상세 모달 (메가/거다이맥스 진화 추가) =====
+
 // ===== 카드 상세 모달 =====
 let modalCryAudio = null;
 
@@ -4268,7 +4202,6 @@ async function openCardDetail(pokemon) {
   document.getElementById('modalClose').addEventListener('click', closeModal);
 }
 
-// ===== 모달 닫기 =====
 function closeModal() {
   if (window.speechSynthesis) window.speechSynthesis.cancel();
   if (modalCryAudio) { modalCryAudio.pause(); modalCryAudio = null; }
@@ -4357,7 +4290,6 @@ function performMegaEvolution(engName) {
     }
   }
 
-  // ⭐ Pet도 함께 진화!
   if (state.pet) {
     const petCurrentId = state.pet.evolvedId || state.pet.baseId;
     if (petCurrentId === engName) {
@@ -4462,7 +4394,6 @@ function performGigantamaxEvolution(engName) {
     }
   }
 
-  // ⭐ Pet도 함께 진화!
   if (state.pet) {
     const petCurrentId = state.pet.evolvedId || state.pet.baseId;
     if (petCurrentId === engName) {
@@ -4484,6 +4415,7 @@ function performGigantamaxEvolution(engName) {
 
   console.log('🎉 거다이맥스 완료!');
 }
+
 function extractEvoChain(chain) {
   const result = [];
   let current = chain;
@@ -5657,6 +5589,7 @@ window.openCardDetailFromCraft = function(engName) {
     }, 300);
   }
 };
+
 // ===== 초기화 =====
 async function initGame() {
   document.getElementById('loadingScreen').style.display = 'block';
@@ -5723,7 +5656,6 @@ async function initGame() {
     });
   }
 }
-
 
 function renderAll() {
   updateStatline();
