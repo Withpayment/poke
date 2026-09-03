@@ -2294,34 +2294,43 @@ function getEvoChain(engName) {
 }
 
 // ===== loadAllPokemon =====
+// ===== loadAllPokemon (안드로이드 최적화) =====
 async function loadAllPokemon() {
+  // ⭐ 안드로이드면 무조건 캐시 먼저 사용
+  const isAndroid = /android/i.test(navigator.userAgent);
+  
   try {
     const cached = localStorage.getItem(CACHE_KEY);
     const cachedTime = localStorage.getItem(CACHE_TIME_KEY);
-    if (cached && cachedTime && (Date.now() - parseInt(cachedTime)) < CACHE_DURATION) {
+    
+    // ⭐ 안드로이드: 캐시가 있으면 무조건 사용 (네트워크 생략)
+    if (cached && cachedTime) {
       POKEMON_LIST = JSON.parse(cached);
-      console.log('✅ 캐시에서 로드!', POKEMON_LIST.length + '마리');
-      document.getElementById('loadingStatus').textContent = '캐시에서 ' + POKEMON_LIST.length + '마리 로드! ⚡';
+      console.log('✅ 안드로이드 캐시 로드!', POKEMON_LIST.length + '마리');
+      document.getElementById('loadingStatus').textContent = '📱 캐시에서 ' + POKEMON_LIST.length + '마리 로드! ⚡';
+      
+      // ⭐ 백그라운드에서 새로고침 (선택적)
+      if (!isAndroid) {
+        refreshCacheInBackground();
+      }
       return POKEMON_LIST;
     }
-  } catch(e) {}
+  } catch(e) {
+    console.warn('⚠️ 캐시 읽기 실패:', e);
+  }
   
   try {
     const countRes = await fetch('https://pokeapi.co/api/v2/pokemon?limit=0');
     const countData = await countRes.json();
-    const totalCount = countData.count || 1350;
-    console.log('📊 PokeAPI 전체 포켓몬 수:', totalCount);
+    const totalCount = Math.min(countData.count || 1350, 1350);
     
     const allUrls = [];
-    const limit = 2000;
-    const listRes = await fetch(`https://pokeapi.co/api/v2/pokemon?limit=${limit}&offset=0`);
+    const listRes = await fetch(`https://pokeapi.co/api/v2/pokemon?limit=${totalCount}&offset=0`);
     const listData = await listRes.json();
-    
     listData.results.forEach(p => allUrls.push(p.url));
-    console.log('📋 수집된 포켓몬 URL:', allUrls.length + '개');
     
     let allPokemon = [];
-    const batchSize = 30;
+    const batchSize = isAndroid ? 15 : 30; // ⭐ 안드로이드는 배치 크기 감소
     
     for (let i = 0; i < allUrls.length; i += batchSize) {
       const batch = allUrls.slice(i, i + batchSize);
@@ -2371,7 +2380,6 @@ async function loadAllPokemon() {
             cryUrl: detail.cries?.latest || detail.cries?.legacy || null
           };
         } catch(e) { 
-          console.warn('⚠️ 개별 포켓몬 로드 실패:', url, e);
           return null; 
         }
       });
@@ -2381,7 +2389,12 @@ async function loadAllPokemon() {
       
       const progress = Math.round((i + batch.length) / allUrls.length * 100);
       document.getElementById('loadingStatus').textContent = 
-        `PokeAPI 로딩 중... ${allPokemon.length}/${allUrls.length} (${progress}%)`;
+        `📱 로딩 중... ${allPokemon.length}/${allUrls.length} (${progress}%)`;
+      
+      // ⭐ 안드로이드: 중간에 UI 갱신을 위한 딜레이
+      if (isAndroid && i % 100 === 0) {
+        await new Promise(r => setTimeout(r, 50));
+      }
     }
     
     allPokemon.sort((a, b) => a.id - b.id);
@@ -2389,60 +2402,19 @@ async function loadAllPokemon() {
     allPokemon.forEach(p => {
       if (!uniqueMap.has(p.engName)) {
         uniqueMap.set(p.engName, p);
-      } else {
-        const existing = uniqueMap.get(p.engName);
-        if (p.image && !existing.image) {
-          existing.image = p.image;
-        }
-        if (p.types && p.types.length > existing.types.length) {
-          existing.types = p.types;
-        }
       }
     });
     allPokemon = Array.from(uniqueMap.values());
-    
-    const SPECIAL_POKEMON = {
-      'miraidon': {
-        id: 1008,
-        name: '미라이돈',
-        engName: 'miraidon',
-        type: 'electric',
-        types: ['electric', 'dragon'],
-        hp: 100,
-        atk: 85,
-        def: 100,
-        spd: 135,
-        image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1008.png'
-      },
-      'koraidon': {
-        id: 1007,
-        name: '코라이돈',
-        engName: 'koraidon',
-        type: 'fighting',
-        types: ['fighting', 'dragon'],
-        hp: 100,
-        atk: 130,
-        def: 100,
-        spd: 135,
-        image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1007.png'
-      }
-    };
-    
-    Object.keys(SPECIAL_POKEMON).forEach(key => {
-      const existingIndex = allPokemon.findIndex(p => p.engName === key);
-      if (existingIndex !== -1) {
-        allPokemon[existingIndex] = SPECIAL_POKEMON[key];
-      } else {
-        allPokemon.push(SPECIAL_POKEMON[key]);
-      }
-    });
     allPokemon.sort((a, b) => a.id - b.id);
     
-    console.log('✅ 최종 로드 완료!', allPokemon.length + '마리');
     POKEMON_LIST = allPokemon;
     
-    localStorage.setItem(CACHE_KEY, JSON.stringify(POKEMON_LIST));
-    localStorage.setItem(CACHE_TIME_KEY, String(Date.now()));
+    try {
+      localStorage.setItem(CACHE_KEY, JSON.stringify(POKEMON_LIST));
+      localStorage.setItem(CACHE_TIME_KEY, String(Date.now()));
+    } catch(e) {
+      console.warn('⚠️ 캐시 저장 실패:', e);
+    }
     
     document.getElementById('loadingStatus').textContent = 
       `✅ ${POKEMON_LIST.length}마리 로드 완료! 🎉`;
@@ -2452,12 +2424,9 @@ async function loadAllPokemon() {
   } catch(error) {
     console.error('❌ API 로드 실패:', error);
     POKEMON_LIST = getFallbackData();
-    localStorage.setItem(CACHE_KEY, JSON.stringify(POKEMON_LIST));
-    localStorage.setItem(CACHE_TIME_KEY, String(Date.now()));
     return POKEMON_LIST;
   }
 }
-
 function getFallbackData() {
   return [
     {id:1, name:'이상해씨', engName:'bulbasaur', type:'grass', hp:45, atk:49, def:49, spd:45, image:'', types:['grass']},
@@ -3209,17 +3178,24 @@ function clearAllData() {
 }
 
 // ===== 탭 전환 =====
+// ===== 탭 전환 (음악 종료 추가) =====
 document.querySelectorAll('nav.tabbar button').forEach(btn => {
   btn.addEventListener('click', function() {
+    // ⭐ 탭 전환 시 음악 종료
+    if (state.isMusicPlaying) {
+      stopMusic();
+    }
+    
     document.querySelectorAll('nav.tabbar button').forEach(b => b.classList.remove('active'));
     document.querySelectorAll('main section').forEach(s => s.classList.remove('active'));
     this.classList.add('active');
     document.getElementById(this.dataset.tab).classList.add('active');
+    
     if (this.dataset.tab === 'tab-battle') renderBattleSetup();
-    if (this.dataset.tab === 'tab-pet') renderPetTab();
-    if (this.dataset.tab === 'tab-trade') renderTradeTab();
-    if (this.dataset.tab === 'tab-craft') renderCraftTab();
-    if (this.dataset.tab === 'tab-music') renderMusicTab();
+    else if (this.dataset.tab === 'tab-pet') renderPetTab();
+    else if (this.dataset.tab === 'tab-trade') renderTradeTab();
+    else if (this.dataset.tab === 'tab-craft') renderCraftTab();
+    else if (this.dataset.tab === 'tab-music') renderMusicTab();
   });
 });
 
@@ -5866,6 +5842,7 @@ function useTicketAndPlay(musicId) {
   playMusicById(musicId);
 }  
 // ===== 간단한 멜로디 재생 (YouTube API 없을 때 대체) =====
+// ===== 간단한 멜로디 재생 (안드로이드 최적화) =====
 function playSimpleMelody(musicId) {
   const music = MUSIC_LIST.find(m => m.id === musicId);
   if (!music) return;
@@ -5873,18 +5850,24 @@ function playSimpleMelody(musicId) {
   const melodies = {
     'opening_1': [523, 587, 659, 784, 880, 784, 659, 587, 523],
     'ending_1': [440, 494, 523, 587, 659, 587, 523, 494, 440],
+    'opening_ag': [523, 587, 659, 784, 880, 784, 659, 784, 880],
+    'ending_ag': [494, 523, 587, 659, 587, 523, 494, 440],
+    'opening_dp': [587, 659, 784, 880, 784, 659, 587, 659, 784],
+    'opening_dp_promise': [523, 587, 659, 784, 880, 784, 659, 784, 880],
+    'ending_dp': [523, 494, 440, 494, 523, 587, 659, 587, 523],
+    'movie_1': [523, 587, 659, 784, 880, 784, 659, 784, 880],
+    'movie_2_best': [587, 659, 784, 880, 987, 880, 784, 659, 784],
     'only_one_story': [587, 659, 784, 880, 987, 880, 784, 659, 784]
   };
   
   const notes = melodies[musicId] || [523, 587, 659, 784, 880, 784, 659];
   
   try {
-    // ⭐ 안드로이드에서는 사용자 터치 후에만 AudioContext 생성
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
     
-    // ⭐ 안드로이드에서 AudioContext가 suspend 상태면 resume
+    // ⭐ 안드로이드: AudioContext 재개
     if (ctx.state === 'suspended') {
-      ctx.resume();
+      ctx.resume().catch(e => console.warn('⚠️ AudioContext 재개 실패:', e));
     }
     
     notes.forEach((freq, i) => {
@@ -5904,15 +5887,24 @@ function playSimpleMelody(musicId) {
     state.isMusicPlaying = true;
     renderMusicTab();
     
+    // ⭐ 음악 재생 상태 표시
+    const statusEl = document.getElementById('musicPlayerStatus');
+    const titleEl = document.getElementById('nowPlayingTitle');
+    if (statusEl && titleEl) {
+      titleEl.textContent = music.title;
+      statusEl.style.display = 'block';
+    }
+    
     setTimeout(() => {
       state.isMusicPlaying = false;
       state.currentMusic = null;
       renderMusicTab();
+      const statusEl = document.getElementById('musicPlayerStatus');
+      if (statusEl) statusEl.style.display = 'none';
     }, notes.length * 0.15 + 500);
     
   } catch(e) {
-    console.warn('⚠️ 안드로이드 멜로디 재생 실패:', e);
-    // ⭐ 실패해도 UI는 계속 작동하도록
+    console.warn('⚠️ 멜로디 재생 실패:', e);
     state.isMusicPlaying = false;
   }
 }
@@ -6004,14 +5996,17 @@ function createYouTubePlayer(videoId, containerId) {
     }
   });
 }
+// ===== 음악 정지 (안드로이드 강화) =====
 function stopMusic() {
   // YouTube 플레이어 정지
   if (ytPlayer) {
     try {
       ytPlayer.stopVideo();
       ytPlayer.destroy();
-      ytPlayer = null;
-    } catch(e) {}
+    } catch(e) {
+      console.warn('⚠️ YouTube 정지 오류:', e);
+    }
+    ytPlayer = null;
   }
   
   // Web Audio API 정지
@@ -6026,15 +6021,26 @@ function stopMusic() {
     musicContext = null;
   }
   
-  // YouTube 컨테이너 숨기기
+  // ⭐ YouTube 컨테이너 완전 제거 (안드로이드 메모리 해제)
   const container = document.getElementById('musicPlayerContainer');
   if (container) {
+    container.innerHTML = '';
     container.style.display = 'none';
+  }
+  
+  // ⭐ 상태 표시 숨기기
+  const statusEl = document.getElementById('musicPlayerStatus');
+  if (statusEl) {
+    statusEl.style.display = 'none';
   }
   
   state.isMusicPlaying = false;
   state.currentMusic = null;
+  
+  // ⭐ UI 갱신
   renderMusicTab();
+  
+  console.log('🎵 음악 정지 완료');
 }
 // ============================================================
 // 🧩 상성 퀴즈
