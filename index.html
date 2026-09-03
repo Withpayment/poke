@@ -2202,15 +2202,15 @@ let isYouTubeAPIReady = false;
 
 // ===== 음악 목록 =====
 const MUSIC_LIST = [
-  { id: 'opening_1', title: '모험의 시작', artist: '포켓몬스터 1기 오프닝', videoId: '4NDt8hDGZ1Q', emoji: '🎵', rarity: 'common', year: '1999' },
-  { id: 'ending_1', title: '우리는 모두 친구', artist: '포켓몬스터 1기 엔딩', videoId: 'fJ9rUzIMcZQ', emoji: '🎶', rarity: 'common', year: '1999' },
+  { id: 'opening_1', title: '모험의 시작', artist: '포켓몬스터 1기 오프닝', videoId: 'dosnQVuYIi0', emoji: '🎵', rarity: 'common', year: '1999' },
+  { id: 'ending_1', title: '우리는 모두 친구', artist: '포켓몬스터 1기 엔딩', videoId: 'jzYgKjFvbvQ', emoji: '🎶', rarity: 'common', year: '1999' },
   { id: 'opening_ag', title: '포켓몬 AG', artist: 'AG 시리즈 오프닝', videoId: 'Mlyd0YqdC3k', emoji: '🎵', rarity: 'rare', year: '2003' },
   { id: 'ending_ag', title: '행복한 여행', artist: 'AG 시리즈 엔딩', videoId: '_E1f077ldGE', emoji: '🎶', rarity: 'rare', year: '2003' },
   { id: 'opening_dp', title: '웃어봐', artist: 'DP 시리즈 오프닝', videoId: 'tUCP53Qs9-g', emoji: '🎵', rarity: 'rare', year: '2006' },
-  { id: 'opening_dp', title: 'PROMISE', artist: '큐레무vs성검사', videoId: 'wind9u4mo3I', emoji: '🎵', rarity: 'rare', year: '2012' },
+  { id: 'Promise', title: 'PROMISE', artist: '큐레무vs성검사', videoId: 'wind9u4mo3I', emoji: '🎵', rarity: 'rare', year: '2012' },
   { id: 'ending_dp', title: '함께가는 길', artist: 'DP 시리즈 엔딩', videoId: 'IC7DAEDP8pU', emoji: '🎶', rarity: 'rare', year: '2006' },
   { id: 'movie_1', title: '꿈꾸는 아이', artist: '극장판 1기 엔딩', videoId: 'RAuPhcyiUfk', emoji: '🌟', rarity: 'ultra-rare', year: '1998' },
-  { id: 'only_one_story', title: 'The Best', artist: '뮤츠의 역습', videoId: 'mkViL1TfOZY', emoji: '⭐', rarity: 'special', year: '2021' },
+  { id: 'The Best', title: 'The Best', artist: '뮤츠의 역습', videoId: 'mkViL1TfOZY', emoji: '⭐', rarity: 'special', year: '2021' },
   { id: 'only_one_story', title: '온리 원 스토리', artist: 'ZEROBASEONE (2025)', videoId: 'bgE7LMwwUDU', emoji: '⭐', rarity: 'special', year: '2025' }
 ];
 
@@ -5873,18 +5873,20 @@ function playSimpleMelody(musicId) {
   const melodies = {
     'opening_1': [523, 587, 659, 784, 880, 784, 659, 587, 523],
     'ending_1': [440, 494, 523, 587, 659, 587, 523, 494, 440],
-    'opening_ag': [523, 587, 659, 784, 880, 784, 659, 784, 880],
-    'ending_ag': [494, 523, 587, 659, 587, 523, 494, 440],
-    'opening_dp': [587, 659, 784, 880, 784, 659, 587, 659, 784],
-    'ending_dp': [523, 494, 440, 494, 523, 587, 659, 587, 523],
-    'movie_1': [523, 587, 659, 784, 880, 784, 659, 784, 880],
     'only_one_story': [587, 659, 784, 880, 987, 880, 784, 659, 784]
   };
   
   const notes = melodies[musicId] || [523, 587, 659, 784, 880, 784, 659];
   
   try {
+    // ⭐ 안드로이드에서는 사용자 터치 후에만 AudioContext 생성
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    
+    // ⭐ 안드로이드에서 AudioContext가 suspend 상태면 resume
+    if (ctx.state === 'suspended') {
+      ctx.resume();
+    }
+    
     notes.forEach((freq, i) => {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
@@ -5909,17 +5911,25 @@ function playSimpleMelody(musicId) {
     }, notes.length * 0.15 + 500);
     
   } catch(e) {
-    console.warn('⚠️ 멜로디 재생 실패:', e);
+    console.warn('⚠️ 안드로이드 멜로디 재생 실패:', e);
+    // ⭐ 실패해도 UI는 계속 작동하도록
+    state.isMusicPlaying = false;
   }
 }
 // ===== YouTube API 로드 =====
 function loadYouTubeAPI() {
-  if (document.querySelector('script[src*="youtube.com/iframe_api"]')) return;
+  // 안드로이드에서는 API 로드를 2초 지연
+  const isAndroid = /android/i.test(navigator.userAgent);
+  const delay = isAndroid ? 2000 : 0;
   
-  const script = document.createElement('script');
-  script.src = 'https://www.youtube.com/iframe_api';
-  document.head.appendChild(script);
-  console.log('📥 YouTube API 로드 중...');
+  setTimeout(() => {
+    if (document.querySelector('script[src*="youtube.com/iframe_api"]')) return;
+    
+    const script = document.createElement('script');
+    script.src = 'https://www.youtube.com/iframe_api';
+    document.head.appendChild(script);
+    console.log('📥 YouTube API 로드 중... (안드로이드 지연:', delay, 'ms)');
+  }, delay);
 }
 
 // ===== YouTube API 준비 콜백 =====
@@ -6573,8 +6583,15 @@ window.openCardDetailFromCraft = function(engName) {
 // ============================================================
 // 🚀 초기화
 // ============================================================
+// ===== 게임 초기화 (안드로이드 최적화) =====
 async function initGame() {
   console.log('🚀 게임 초기화 시작...');
+  
+  // ⭐ 안드로이드 감지
+  const isAndroid = /android/i.test(navigator.userAgent);
+  if (isAndroid) {
+    console.log('📱 안드로이드 기기 감지됨 - 최적화 모드 활성화');
+  }
   
   // 로딩 화면 표시
   const loadingScreen = document.getElementById('loadingScreen');
@@ -6589,13 +6606,19 @@ async function initGame() {
     autoMergeDuplicates();
     console.log('📊 중복 카드 합치기 완료');
     
-    await loadAllPokemon();
+    // ⭐ 안드로이드: 로드 타임아웃 추가 (15초)
+    const loadPromise = loadAllPokemon();
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('로드 타임아웃 (15초)')), 15000);
+    });
+    
+    await Promise.race([loadPromise, timeoutPromise]);
     console.log('📊 포켓몬 로드 완료:', POKEMON_LIST.length + '마리');
     
     EVOLVABLE_POKEMON_LIST = await getAllEvolvablePokemon();
     console.log('📊 진화 가능 포켓몬:', EVOLVABLE_POKEMON_LIST.length + '종');
     
-    // YouTube API 로드
+    // ⭐ 안드로이드: YouTube API 로드 지연
     loadYouTubeAPI();
     
     if (!hasSavedData) {
@@ -6631,7 +6654,7 @@ async function initGame() {
       statusEl.textContent = '✅ ' + POKEMON_LIST.length + '마리 | 진화: ' + EVOLVABLE_POKEMON_LIST.length + '종 | 보유: ' + Object.keys(state.owned).length + '마리';
     }
     
-    // 로딩 화면 숨기기
+    // ⭐ 로딩 화면 숨기기
     if (loadingScreen) loadingScreen.style.display = 'none';
     
     // ⭐ 나이 확인
@@ -6675,6 +6698,18 @@ async function initGame() {
     
   } catch(e) {
     console.error('❌ 게임 초기화 오류:', e);
+    
+    // ⭐ 오류 시에도 UI 표시 (안드로이드 대응)
+    if (loadingScreen) loadingScreen.style.display = 'none';
+    document.querySelectorAll('section').forEach(s => s.style.display = '');
+    document.getElementById('tab-mission').classList.add('active');
+    
+    try {
+      renderAll();
+    } catch(renderErr) {
+      console.error('❌ 렌더링 오류:', renderErr);
+    }
+    
     alert('게임 초기화 중 오류가 발생했습니다. 페이지를 새로고침해주세요.');
   }
 }
