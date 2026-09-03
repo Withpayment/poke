@@ -4209,6 +4209,7 @@ function closeModal() {
 }
 
 // ===== 메가진화 실행 =====
+// ===== 메가진화 실행 (개선 버전) =====
 function performMegaEvolution(engName) {
   const megaEvo = MEGA_EVOLUTIONS[engName];
   if (!megaEvo) {
@@ -4226,19 +4227,22 @@ function performMegaEvolution(engName) {
     return;
   }
 
+  // ⭐ 1. 기존 카드 확인 (엄격하게)
   const sourceCard = state.owned[engName];
   if (!sourceCard || sourceCard.count < 1) {
-    alert('진화할 카드가 없어요!');
+    alert('⚠️ 진화할 카드가 없어요!');
     return;
   }
 
   const originalRarity = sourceCard.originalRarity || sourceCard.rarity || 'common';
   console.log('🔍 메가진화 시작:', engName, '등급:', originalRarity);
 
+  // ⭐ 2. 메가 이미지
   let megaImage = MEGA_IMAGE_MAP?.[megaEvo.id] ||
                    sourcePokemon.image ||
                    `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${sourcePokemon.id}.png`;
 
+  // ⭐ 3. POKEMON_LIST에 메가 포켓몬 강제 추가 (중복 방지)
   let megaPokemon = getPokemonByName(megaEvo.id);
   if (!megaPokemon) {
     megaPokemon = {
@@ -4260,6 +4264,7 @@ function performMegaEvolution(engName) {
     POKEMON_LIST.push(megaPokemon);
     console.log('✅ POKEMON_LIST에 메가 추가:', megaPokemon.name);
 
+    // 캐시 저장
     try {
       const cache = localStorage.getItem(CACHE_KEY);
       if (cache) {
@@ -4269,27 +4274,31 @@ function performMegaEvolution(engName) {
           localStorage.setItem(CACHE_KEY, JSON.stringify(list));
         }
       }
-    } catch (e) {}
+    } catch (e) {
+      console.warn('⚠️ 캐시 저장 실패:', e);
+    }
+  } else {
+    // 이미 있으면 이미지 업데이트
+    megaPokemon.image = megaImage;
+    megaPokemon.originalRarity = originalRarity;
   }
 
+  // ⭐ 4. 기존 카드 1장 삭제
   sourceCard.count -= 1;
   if (sourceCard.count <= 0) {
     delete state.owned[engName];
   }
+  console.log('🗑️ 기존 카드 삭제 후:', state.owned[engName] || '없음');
 
-  if (!state.owned[megaEvo.id]) {
-    state.owned[megaEvo.id] = {
-      count: 1,
-      rarity: 'mega',
-      originalRarity: originalRarity
-    };
-  } else {
-    state.owned[megaEvo.id].count += 1;
-    if (getRarityInfo(originalRarity).weight > getRarityInfo(state.owned[megaEvo.id].originalRarity || 'common').weight) {
-      state.owned[megaEvo.id].originalRarity = originalRarity;
-    }
-  }
+  // ⭐ 5. 메가 카드 추가 (강제로 count=1 설정, 중복 방지)
+  state.owned[megaEvo.id] = {
+    count: (state.owned[megaEvo.id]?.count || 0) + 1,
+    rarity: 'mega',
+    originalRarity: originalRarity
+  };
+  console.log('✅ 메가 카드 추가 완료:', state.owned[megaEvo.id]);
 
+  // ⭐ 6. Pet도 함께 진화!
   if (state.pet) {
     const petCurrentId = state.pet.evolvedId || state.pet.baseId;
     if (petCurrentId === engName) {
@@ -4301,6 +4310,7 @@ function performMegaEvolution(engName) {
     }
   }
 
+  // ⭐ 7. 저장 및 UI 갱신
   saveState();
   SFX.megaEvolution();
   closeModal();
@@ -4311,8 +4321,8 @@ function performMegaEvolution(engName) {
 
   console.log('🎉 메가진화 완료!');
 }
-
 // ===== 거다이맥스 실행 =====
+// ===== 거다이맥스 실행 (개선 버전) =====
 function performGigantamaxEvolution(engName) {
   const gigaEvo = GIGANTAMAX_EVOLUTIONS[engName];
   if (!gigaEvo) {
@@ -4330,19 +4340,22 @@ function performGigantamaxEvolution(engName) {
     return;
   }
 
+  // ⭐ 1. 기존 카드 확인 (엄격하게)
   const sourceCard = state.owned[engName];
   if (!sourceCard || sourceCard.count < 1) {
-    alert('진화할 카드가 없어요!');
+    alert('⚠️ 진화할 카드가 없어요!');
     return;
   }
 
   const originalRarity = sourceCard.originalRarity || sourceCard.rarity || 'common';
   console.log('🔍 거다이맥스 진화 시작:', engName, '등급:', originalRarity);
 
+  // ⭐ 2. 거다이맥스 이미지
   let gigaImage = GIGANTAMAX_IMAGE_MAP?.[gigaEvo.id] ||
                    sourcePokemon.image ||
                    `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${sourcePokemon.id}.png`;
 
+  // ⭐ 3. POKEMON_LIST에 거다이맥스 포켓몬 강제 추가 (중복 방지)
   let gigaPokemon = getPokemonByName(gigaEvo.id);
   if (!gigaPokemon) {
     gigaPokemon = {
@@ -4364,6 +4377,7 @@ function performGigantamaxEvolution(engName) {
     POKEMON_LIST.push(gigaPokemon);
     console.log('✅ POKEMON_LIST에 거다이맥스 추가:', gigaPokemon.name);
 
+    // 캐시 저장
     try {
       const cache = localStorage.getItem(CACHE_KEY);
       if (cache) {
@@ -4373,27 +4387,31 @@ function performGigantamaxEvolution(engName) {
           localStorage.setItem(CACHE_KEY, JSON.stringify(list));
         }
       }
-    } catch (e) {}
+    } catch (e) {
+      console.warn('⚠️ 캐시 저장 실패:', e);
+    }
+  } else {
+    // 이미 있으면 이미지 업데이트
+    gigaPokemon.image = gigaImage;
+    gigaPokemon.originalRarity = originalRarity;
   }
 
+  // ⭐ 4. 기존 카드 1장 삭제
   sourceCard.count -= 1;
   if (sourceCard.count <= 0) {
     delete state.owned[engName];
   }
+  console.log('🗑️ 기존 카드 삭제 후:', state.owned[engName] || '없음');
 
-  if (!state.owned[gigaEvo.id]) {
-    state.owned[gigaEvo.id] = {
-      count: 1,
-      rarity: 'gigantamax',
-      originalRarity: originalRarity
-    };
-  } else {
-    state.owned[gigaEvo.id].count += 1;
-    if (getRarityInfo(originalRarity).weight > getRarityInfo(state.owned[gigaEvo.id].originalRarity || 'common').weight) {
-      state.owned[gigaEvo.id].originalRarity = originalRarity;
-    }
-  }
+  // ⭐ 5. 거다이맥스 카드 추가 (강제로 count=1 설정, 중복 방지)
+  state.owned[gigaEvo.id] = {
+    count: (state.owned[gigaEvo.id]?.count || 0) + 1,
+    rarity: 'gigantamax',
+    originalRarity: originalRarity
+  };
+  console.log('✅ 거다이맥스 카드 추가 완료:', state.owned[gigaEvo.id]);
 
+  // ⭐ 6. Pet도 함께 진화!
   if (state.pet) {
     const petCurrentId = state.pet.evolvedId || state.pet.baseId;
     if (petCurrentId === engName) {
@@ -4405,6 +4423,7 @@ function performGigantamaxEvolution(engName) {
     }
   }
 
+  // ⭐ 7. 저장 및 UI 갱신
   saveState();
   SFX.megaEvolution();
   closeModal();
@@ -4970,6 +4989,7 @@ function leaveBattleRoom() {
 }
 
 // ===== 교환 시스템 =====
+// ===== 교환 탭 (한글/영문 검색 지원) =====
 function renderTradeTab() {
   const container = document.getElementById('tradeContent');
   const ownedCards = Object.keys(state.owned).filter(key => state.owned[key].count > 0);
@@ -4999,18 +5019,23 @@ function renderTradeTab() {
     </div>
     
     <div style="margin-top:12px;padding:12px;background:rgba(255,255,255,.05);border-radius:10px;">
-      <div style="font-size:13px;color:#B7AFDE;margin-bottom:4px;">🔍 보낼 카드 검색</div>
+      <div style="font-size:13px;color:#B7AFDE;margin-bottom:4px;">🔍 보낼 카드 검색 (한글/영문 모두 가능)</div>
       <input type="text" id="tradeCardSearch" placeholder="포켓몬 이름 검색..." style="width:100%;padding:10px 14px;border-radius:8px;background:rgba(255,255,255,.05);color:var(--paper);border:2px solid rgba(255,201,60,.2);font-size:16px;margin-bottom:8px;box-sizing:border-box;">
       <div id="tradeCardList" style="max-height:150px;overflow-y:auto;display:flex;flex-wrap:wrap;gap:4px;padding:4px;">
         ${ownedCards.map(key => {
           const c = getPokemonByName(key);
+          if (!c) return '';
           const info = state.owned[key];
           const rInfo = getRarityInfo(info.rarity);
-          return `<div class="trade-card-item" data-eng="${key}" style="padding:4px 10px;border-radius:6px;border:2px solid ${rInfo.color};background:rgba(255,255,255,.04);cursor:pointer;font-size:13px;display:flex;align-items:center;gap:4px;transition:all .2s;" onclick="selectTradeCard('${key}')">
-            ${pokemonImage(c, '20px')}
-            <span style="font-family:var(--font-display);">${c?.name}</span>
-            <span style="font-size:10px;color:${rInfo.color};">${rInfo.emoji} ×${info.count}</span>
-          </div>`;
+          return `
+            <div class="trade-card-item" data-eng="${key}" data-name="${c.name || key}" 
+                 style="padding:4px 10px;border-radius:6px;border:2px solid ${rInfo.color};background:rgba(255,255,255,.04);cursor:pointer;font-size:13px;display:flex;align-items:center;gap:4px;transition:all .2s;" 
+                 onclick="selectTradeCard('${key}')">
+              ${pokemonImage(c, '20px')}
+              <span style="font-family:var(--font-display);">${c.name || key}</span>
+              <span style="font-size:10px;color:${rInfo.color};">${rInfo.emoji} ×${info.count}</span>
+            </div>
+          `;
         }).join('')}
       </div>
       <div style="font-size:11px;color:#6b6395;text-align:center;margin-top:4px;">💡 카드 클릭하면 선택되고, 검색으로 필터링 가능</div>
@@ -5028,12 +5053,15 @@ function renderTradeTab() {
     <button class="btn small ghost block" style="margin-top:10px;" onclick="leaveTradeRoom();">🚪 방 나가기</button>
   `;
   
+  // ⭐⭐⭐ 수정된 검색 기능 (한글 + 영문 모두 지원) ⭐⭐⭐
   document.getElementById('tradeCardSearch')?.addEventListener('input', function() {
-    const query = this.value.toLowerCase();
+    const query = this.value.trim().toLowerCase();
     const items = document.querySelectorAll('.trade-card-item');
     items.forEach(item => {
-      const name = item.dataset.eng.toLowerCase();
-      item.style.display = name.includes(query) ? '' : 'none';
+      const engName = item.dataset.eng?.toLowerCase() || '';
+      const korName = item.dataset.name?.toLowerCase() || '';
+      const match = engName.includes(query) || korName.includes(query);
+      item.style.display = match ? '' : 'none';
     });
   });
   
