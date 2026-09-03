@@ -1518,42 +1518,74 @@
       </div>
     </div>
     
-    <div id="adminContentSection" style="display:none;">
-      <div style="margin-bottom:16px;padding:14px;background:rgba(255,255,255,.05);border-radius:12px;border:2px solid rgba(255,215,0,.15);">
-        <div style="font-family:var(--font-display);font-size:16px;color:var(--sun-2);margin-bottom:8px;">🎴 카드 지급</div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;">
-          <input id="adminCardSearch" placeholder="포켓몬 이름 검색..." style="flex:2;min-width:120px;padding:10px 14px;border-radius:8px;border:2px solid rgba(255,201,60,.2);background:rgba(255,255,255,.05);color:var(--paper);font-size:14px;">
-          <input id="adminCardCount" type="number" value="1" min="1" max="99" style="width:60px;padding:10px 8px;border-radius:8px;border:2px solid rgba(255,201,60,.2);background:rgba(255,255,255,.05);color:var(--paper);font-size:14px;text-align:center;">
-          <button class="btn small" id="adminGiveCardBtn" style="font-size:14px;padding:8px 16px;min-height:40px;">🎁 지급</button>
-        </div>
-        <div id="adminCardResult" style="font-size:12px;color:#B7AFDE;margin-top:6px;"></div>
-      </div>
-      
-      <div style="margin-bottom:16px;padding:14px;background:rgba(255,255,255,.05);border-radius:12px;border:2px solid rgba(255,215,0,.15);">
-        <div style="font-family:var(--font-display);font-size:16px;color:var(--sun-2);margin-bottom:8px;">💎 진화의돌 지급</div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;">
-          <select id="adminStoneType" style="flex:1;min-width:100px;padding:10px 14px;border-radius:8px;border:2px solid rgba(255,201,60,.2);background:rgba(255,255,255,.05);color:var(--paper);font-size:14px;">
-            <option value="mega">💎 메가진화의돌</option>
-            <option value="gigantamax">🔥 거다이맥스돌</option>
-          </select>
-          <input id="adminStoneCount" type="number" value="1" min="1" max="99" style="width:60px;padding:10px 8px;border-radius:8px;border:2px solid rgba(255,201,60,.2);background:rgba(255,255,255,.05);color:var(--paper);font-size:14px;text-align:center;">
-          <button class="btn small" id="adminGiveStoneBtn" style="font-size:14px;padding:8px 16px;min-height:40px;">💎 지급</button>
-        </div>
-        <div id="adminStoneResult" style="font-size:12px;color:#B7AFDE;margin-top:6px;"></div>
-      </div>
-      
-      <div style="padding:12px;background:rgba(255,255,255,.03);border-radius:10px;border:1px solid rgba(255,255,255,.05);">
-        <div style="font-size:13px;color:#B7AFDE;text-align:center;">
-          📊 보유 카드: <b style="color:var(--paper);" id="adminOwnedCount">0</b>장 &nbsp;|&nbsp;
-          💎 메가돌: <b style="color:#FF00FF;" id="adminMegaCount">0</b>개 &nbsp;|&nbsp;
-          🔥 거다이돌: <b style="color:#00D4FF;" id="adminGigaCount">0</b>개
-        </div>
-      </div>
-      
-      <div style="display:flex;gap:10px;margin-top:12px;">
-        <button class="btn ghost" id="adminCloseBtn" style="flex:1;">닫기</button>
-      </div>
+<div id="adminContentSection" style="display:none;">
+  <!-- 카드 지급 -->
+  <div style="margin-bottom:16px;padding:14px;background:rgba(255,255,255,.05);border-radius:12px;border:2px solid rgba(255,215,0,.15);">
+    <div style="font-family:var(--font-display);font-size:16px;color:var(--sun-2);margin-bottom:8px;">🎴 카드 지급</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <input id="adminCardSearch" placeholder="포켓몬 이름 검색..." style="flex:2;min-width:120px;padding:10px 14px;border-radius:8px;border:2px solid rgba(255,201,60,.2);background:rgba(255,255,255,.05);color:var(--paper);font-size:14px;">
+      <input id="adminCardCount" type="number" value="1" min="1" max="99" style="width:60px;padding:10px 8px;border-radius:8px;border:2px solid rgba(255,201,60,.2);background:rgba(255,255,255,.05);color:var(--paper);font-size:14px;text-align:center;">
+      <button class="btn small" id="adminGiveCardBtn" style="font-size:14px;padding:8px 16px;min-height:40px;">🎁 지급</button>
     </div>
+    <div id="adminCardResult" style="font-size:12px;color:#B7AFDE;margin-top:6px;"></div>
+  </div>
+  
+  <!-- 진화의돌 지급 -->
+  <div style="margin-bottom:16px;padding:14px;background:rgba(255,255,255,.05);border-radius:12px;border:2px solid rgba(255,215,0,.15);">
+    <div style="font-family:var(--font-display);font-size:16px;color:var(--sun-2);margin-bottom:8px;">💎 진화의돌 지급</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <select id="adminStoneType" style="flex:1;min-width:100px;padding:10px 14px;border-radius:8px;border:2px solid rgba(255,201,60,.2);background:rgba(255,255,255,.05);color:var(--paper);font-size:14px;">
+        <option value="mega">💎 메가진화의돌</option>
+        <option value="gigantamax">🔥 거다이맥스돌</option>
+      </select>
+      <input id="adminStoneCount" type="number" value="1" min="1" max="99" style="width:60px;padding:10px 8px;border-radius:8px;border:2px solid rgba(255,201,60,.2);background:rgba(255,255,255,.05);color:var(--paper);font-size:14px;text-align:center;">
+      <button class="btn small" id="adminGiveStoneBtn" style="font-size:14px;padding:8px 16px;min-height:40px;">💎 지급</button>
+    </div>
+    <div id="adminStoneResult" style="font-size:12px;color:#B7AFDE;margin-top:6px;"></div>
+  </div>
+  
+  <!-- ⭐⭐⭐ 음악 감상권 지급 (신규) ⭐⭐⭐ -->
+  <div style="margin-bottom:16px;padding:14px;background:rgba(255,201,60,.08);border-radius:12px;border:2px solid rgba(255,201,60,.2);">
+    <div style="font-family:var(--font-display);font-size:16px;color:var(--sun-2);margin-bottom:8px;">🎵 음악 감상권 지급</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <input id="adminMusicTicketCount" type="number" value="1" min="1" max="99" style="width:80px;padding:10px 8px;border-radius:8px;border:2px solid rgba(255,201,60,.2);background:rgba(255,255,255,.05);color:var(--paper);font-size:14px;text-align:center;">
+      <button class="btn small" id="adminGiveMusicTicketBtn" style="font-size:14px;padding:8px 16px;min-height:40px;background:var(--electric);box-shadow:0 4px 0 #C99414;color:#2A2440;">
+        🎫 지급
+      </button>
+    </div>
+    <div id="adminMusicTicketResult" style="font-size:12px;color:#B7AFDE;margin-top:6px;"></div>
+  </div>
+  
+  <!-- ⭐⭐⭐ 랜덤 노래 지급 (신규) ⭐⭐⭐ -->
+  <div style="margin-bottom:16px;padding:14px;background:rgba(255,107,53,.06);border-radius:12px;border:2px solid rgba(255,107,53,.15);">
+    <div style="font-family:var(--font-display);font-size:16px;color:var(--special);margin-bottom:8px;">🎶 랜덤 노래 획득</div>
+    <div style="font-size:12px;color:#B7AFDE;margin-bottom:6px;">
+      현재 보유: <b style="color:var(--paper);" id="adminMusicCount">0</b>곡
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="btn small" id="adminGiveRandomMusicBtn" style="font-size:14px;padding:8px 16px;min-height:40px;background:var(--special);box-shadow:0 4px 0 #C94A1F;color:#fff;">
+        🎲 랜덤 노래 지급
+      </button>
+      <button class="btn small ghost" id="adminGiveAllMusicBtn" style="font-size:14px;padding:8px 16px;min-height:40px;">
+        📦 모든 노래 지급
+      </button>
+    </div>
+    <div id="adminMusicResult" style="font-size:12px;color:#B7AFDE;margin-top:6px;"></div>
+  </div>
+  
+  <!-- 현재 보유량 -->
+  <div style="padding:12px;background:rgba(255,255,255,.03);border-radius:10px;border:1px solid rgba(255,255,255,.05);">
+    <div style="font-size:13px;color:#B7AFDE;text-align:center;">
+      📊 보유 카드: <b style="color:var(--paper);" id="adminOwnedCount">0</b>장 &nbsp;|&nbsp;
+      💎 메가돌: <b style="color:#FF00FF;" id="adminMegaCount">0</b>개 &nbsp;|&nbsp;
+      🔥 거다이돌: <b style="color:#00D4FF;" id="adminGigaCount">0</b>개 &nbsp;|&nbsp;
+      🎫 감상권: <b style="color:var(--sun-2);" id="adminTicketCount">0</b>개 &nbsp;|&nbsp;
+      🎵 노래: <b style="color:var(--special);" id="adminMusicCount">0</b>곡
+    </div>
+  </div>
+  
+  <div style="display:flex;gap:10px;margin-top:12px;">
+    <button class="btn ghost" id="adminCloseBtn" style="flex:1;">닫기</button>
   </div>
 </div>
     <div id="loadingScreen" class="loading-spinner">
@@ -2776,9 +2808,14 @@ function checkAdminPassword() {
 function updateAdminStats() {
   const owned = Object.keys(state.owned).length;
   const stones = getEvolutionStones();
+  const tickets = state.musicTickets || 0;
+  const musicCount = state.unlockedMusic?.length || 0;
+  
   document.getElementById('adminOwnedCount').textContent = owned;
   document.getElementById('adminMegaCount').textContent = stones.mega || 0;
   document.getElementById('adminGigaCount').textContent = stones.gigantamax || 0;
+  document.getElementById('adminTicketCount').textContent = tickets;
+  document.getElementById('adminMusicCount').textContent = musicCount;
 }
 
 function adminGiveCard() {
@@ -2842,7 +2879,78 @@ function adminGiveStone() {
   resultEl.style.color = 'var(--good)';
   SFX.missionDone();
 }
-
+// ===== 음악 감상권 지급 =====
+function adminGiveMusicTicket() {
+  const countInput = document.getElementById('adminMusicTicketCount');
+  const resultEl = document.getElementById('adminMusicTicketResult');
+  
+  const count = parseInt(countInput.value) || 1;
+  
+  state.musicTickets = (state.musicTickets || 0) + count;
+  saveState();
+  updateAdminStats();
+  updateStatline();
+  
+  resultEl.textContent = `✅ 음악 감상권 ${count}개 지급 완료! (현재: ${state.musicTickets}개)`;
+  resultEl.style.color = 'var(--good)';
+  SFX.missionDone();
+}
+// ===== 랜덤 노래 지급 =====
+function adminGiveRandomMusic() {
+  const resultEl = document.getElementById('adminMusicResult');
+  
+  const lockedMusic = MUSIC_LIST.filter(m => !state.unlockedMusic.includes(m.id));
+  
+  if (lockedMusic.length === 0) {
+    resultEl.textContent = '🎉 모든 노래를 이미 획득했어요!';
+    resultEl.style.color = 'var(--sun-2)';
+    return;
+  }
+  
+  const randomMusic = lockedMusic[Math.floor(Math.random() * lockedMusic.length)];
+  state.unlockedMusic.push(randomMusic.id);
+  saveState();
+  updateAdminStats();
+  updateStatline();
+  
+  const rInfo = getRarityInfo(randomMusic.rarity);
+  resultEl.innerHTML = `🎵 <b>${randomMusic.title}</b> (${rInfo.emoji} ${rInfo.label}) 획득 완료!<br><span style="font-size:11px;color:#6b6395;">${randomMusic.artist}</span>`;
+  resultEl.style.color = 'var(--good)';
+  SFX.cardReward();
+  
+  // 음악 재생 (미리보기)
+  playSimpleMelody(randomMusic.id);
+}
+  // ===== 모든 노래 지급 =====
+function adminGiveAllMusic() {
+  const resultEl = document.getElementById('adminMusicResult');
+  
+  if (!confirm('📦 모든 포켓몬 노래를 지급할까요?')) return;
+  
+  const allMusicIds = MUSIC_LIST.map(m => m.id);
+  let newCount = 0;
+  
+  allMusicIds.forEach(id => {
+    if (!state.unlockedMusic.includes(id)) {
+      state.unlockedMusic.push(id);
+      newCount++;
+    }
+  });
+  
+  if (newCount === 0) {
+    resultEl.textContent = '🎉 이미 모든 노래를 보유하고 있어요!';
+    resultEl.style.color = 'var(--sun-2)';
+    return;
+  }
+  
+  saveState();
+  updateAdminStats();
+  updateStatline();
+  
+  resultEl.textContent = `✅ ${newCount}곡의 노래를 모두 획득했어요! 🎉`;
+  resultEl.style.color = 'var(--good)';
+  SFX.victory();
+}
 function bindAdminEvents() {
   document.getElementById('adminPanelBtn').addEventListener('click', openAdminPanel);
   document.getElementById('adminModalClose').addEventListener('click', closeAdminPanel);
@@ -2852,11 +2960,27 @@ function bindAdminEvents() {
   document.getElementById('adminPasswordInput').addEventListener('keydown', function(e) {
     if (e.key === 'Enter') checkAdminPassword();
   });
+  
+  // 카드 지급
   document.getElementById('adminGiveCardBtn').addEventListener('click', adminGiveCard);
   document.getElementById('adminCardSearch').addEventListener('keydown', function(e) {
     if (e.key === 'Enter') adminGiveCard();
   });
+  
+  // 진화의돌 지급
   document.getElementById('adminGiveStoneBtn').addEventListener('click', adminGiveStone);
+  
+  // ⭐⭐⭐ 음악 감상권 지급 ⭐⭐⭐
+  document.getElementById('adminGiveMusicTicketBtn').addEventListener('click', adminGiveMusicTicket);
+  document.getElementById('adminMusicTicketCount').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') adminGiveMusicTicket();
+  });
+  
+  // ⭐⭐⭐ 랜덤 노래 지급 ⭐⭐⭐
+  document.getElementById('adminGiveRandomMusicBtn').addEventListener('click', adminGiveRandomMusic);
+  document.getElementById('adminGiveAllMusicBtn').addEventListener('click', adminGiveAllMusic);
+  
+  // 모달 외부 클릭 시 닫기
   document.getElementById('adminModal').addEventListener('click', function(e) {
     if (e.target === this) closeAdminPanel();
   });
@@ -5543,9 +5667,10 @@ function renderMusicTab() {
             </div>
             <div style="display:flex;gap:6px;align-items:center;">
               ${isUnlocked ? `
-                <button class="btn small" onclick="playMusicById('${music.id}')" 
-                        style="font-size:12px;padding:4px 14px;min-height:32px;${isPlayingNow ? 'background:var(--good);box-shadow:0 3px 0 #2E7A54;' : ''}">
-                  ${isPlayingNow ? '⏹️ 정지' : '▶️ 재생'}
+                <button class="btn small" onclick="useTicketAndPlay('${music.id}')" 
+                        style="font-size:12px;padding:4px 14px;min-height:32px;${isPlayingNow ? 'background:var(--good);box-shadow:0 3px 0 #2E7A54;' : ''}"
+                        ${(tickets || 0) < 1 ? 'disabled' : ''}>
+                  ${isPlayingNow ? '⏹️ 정지' : `🎫 감상 (${tickets || 0}개)`}
                 </button>
               ` : `
                 <span style="font-size:12px;color:#6b6395;">🔒 미획득</span>
@@ -5590,6 +5715,7 @@ function playMusicById(musicId) {
     return;
   }
   
+  // 이미 재생 중이면 정지
   if (state.isMusicPlaying && state.currentMusic === musicId) {
     stopMusic();
     return;
@@ -5597,49 +5723,199 @@ function playMusicById(musicId) {
   
   stopMusic();
   
-  try {
-    musicContext = new (window.AudioContext || window.webkitAudioContext)();
-    const notes = getMelodyForMusicId(musicId);
-    
-    musicOscillators = notes.map((freq, i) => {
-      const osc = musicContext.createOscillator();
-      const gain = musicContext.createGain();
+  // YouTube 플레이어로 재생 시도
+  if (state.isYouTubeReady && music.videoId) {
+    let container = document.getElementById('musicPlayerContainer');
+    if (!container) {
+      container = document.createElement('div');
+      container.id = 'musicPlayerContainer';
+      container.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);width:90%;max-width:400px;z-index:100;background:#000;border-radius:12px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.8);';
+      document.body.appendChild(container);
       
+      const closeBtn = document.createElement('button');
+      closeBtn.textContent = '✕';
+      closeBtn.style.cssText = 'position:absolute;top:4px;right:8px;z-index:101;background:rgba(0,0,0,.6);border:none;color:#fff;font-size:18px;cursor:pointer;padding:2px 8px;border-radius:50%;';
+      closeBtn.onclick = function() {
+        if (ytPlayer) { ytPlayer.stopVideo(); ytPlayer.destroy(); ytPlayer = null; }
+        container.style.display = 'none';
+        state.isMusicPlaying = false;
+        state.currentMusic = null;
+        renderMusicTab();
+      };
+      container.appendChild(closeBtn);
+    }
+    container.style.display = 'block';
+    
+    createYouTubePlayer(music.videoId, 'musicPlayerContainer');
+    state.currentMusic = musicId;
+    state.isMusicPlaying = true;
+    renderMusicTab();
+  } else {
+    // YouTube API가 없으면 멜로디 재생
+    playSimpleMelody(musicId);
+  }
+}
+// ===== 감상권 사용 후 음악 재생 =====
+function useTicketAndPlay(musicId) {
+  const music = MUSIC_LIST.find(m => m.id === musicId);
+  if (!music) {
+    alert('⚠️ 음악을 찾을 수 없어요!');
+    return;
+  }
+  
+  if (!state.unlockedMusic.includes(musicId)) {
+    alert('⚠️ 아직 해금되지 않은 음악이에요!');
+    return;
+  }
+  
+  if ((state.musicTickets || 0) < 1) {
+    alert('⚠️ 감상권이 부족합니다! 레이드를 클리어해서 감상권을 획득하세요.');
+    return;
+  }
+  
+  // ⭐ 이미 재생 중이면 정지
+  if (state.isMusicPlaying && state.currentMusic === musicId) {
+    stopMusic();
+    return;
+  }
+  
+  // ⭐ 감상권 1개 소비
+  state.musicTickets = (state.musicTickets || 0) - 1;
+  saveState();
+  updateStatline();
+  
+  // ⭐ 음악 재생
+  playMusicById(musicId);
+}  
+// ===== 간단한 멜로디 재생 (YouTube API 없을 때 대체) =====
+function playSimpleMelody(musicId) {
+  const music = MUSIC_LIST.find(m => m.id === musicId);
+  if (!music) return;
+  
+  const melodies = {
+    'opening_1': [523, 587, 659, 784, 880, 784, 659, 587, 523],
+    'ending_1': [440, 494, 523, 587, 659, 587, 523, 494, 440],
+    'opening_ag': [523, 587, 659, 784, 880, 784, 659, 784, 880],
+    'ending_ag': [494, 523, 587, 659, 587, 523, 494, 440],
+    'opening_dp': [587, 659, 784, 880, 784, 659, 587, 659, 784],
+    'ending_dp': [523, 494, 440, 494, 523, 587, 659, 587, 523],
+    'movie_1': [523, 587, 659, 784, 880, 784, 659, 784, 880],
+    'only_one_story': [587, 659, 784, 880, 987, 880, 784, 659, 784]
+  };
+  
+  const notes = melodies[musicId] || [523, 587, 659, 784, 880, 784, 659];
+  
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    notes.forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
       osc.type = 'square';
       osc.frequency.value = freq;
-      
       gain.gain.value = 0.08;
-      gain.gain.exponentialRampToValueAtTime(0.001, musicContext.currentTime + i * 0.15 + 0.1);
-      
       osc.connect(gain);
-      gain.connect(musicContext.destination);
-      
-      const startTime = musicContext.currentTime + i * 0.15;
+      gain.connect(ctx.destination);
+      const startTime = ctx.currentTime + i * 0.15;
       osc.start(startTime);
-      osc.stop(startTime + 0.12);
-      
-      return { osc, gain };
+      osc.stop(startTime + 0.1);
     });
     
     state.currentMusic = musicId;
     state.isMusicPlaying = true;
-    console.log('🎵 음악 재생 중:', music.title);
-    
-    // 자동 정지 (음악 길이만큼)
-    setTimeout(() => {
-      if (state.isMusicPlaying && state.currentMusic === musicId) {
-        stopMusic();
-      }
-    }, notes.length * 0.15 + 1000);
-    
     renderMusicTab();
     
+    setTimeout(() => {
+      state.isMusicPlaying = false;
+      state.currentMusic = null;
+      renderMusicTab();
+    }, notes.length * 0.15 + 500);
+    
   } catch(e) {
-    console.warn('⚠️ 음악 재생 실패:', e);
+    console.warn('⚠️ 멜로디 재생 실패:', e);
   }
 }
+// ===== YouTube API 로드 =====
+function loadYouTubeAPI() {
+  if (document.querySelector('script[src*="youtube.com/iframe_api"]')) return;
+  
+  const script = document.createElement('script');
+  script.src = 'https://www.youtube.com/iframe_api';
+  document.head.appendChild(script);
+  console.log('📥 YouTube API 로드 중...');
+}
 
+// ===== YouTube API 준비 콜백 =====
+let ytPlayer = null;
+
+function onYouTubeIframeAPIReady() {
+  console.log('✅ YouTube API 준비 완료!');
+  state.isYouTubeReady = true;
+}
+
+// ===== YouTube 플레이어 생성 =====
+function createYouTubePlayer(videoId, containerId) {
+  if (!state.isYouTubeReady) {
+    console.warn('⚠️ YouTube API가 아직 준비되지 않음');
+    return;
+  }
+  
+  if (ytPlayer) {
+    try {
+      ytPlayer.destroy();
+    } catch(e) {}
+    ytPlayer = null;
+  }
+  
+  const container = document.getElementById(containerId);
+  if (!container) {
+    console.warn('⚠️ 컨테이너를 찾을 수 없음:', containerId);
+    return;
+  }
+  
+  // 기존 iframe 제거
+  const oldIframe = container.querySelector('iframe');
+  if (oldIframe) oldIframe.remove();
+  
+  ytPlayer = new YT.Player(containerId, {
+    height: '180',
+    width: '100%',
+    videoId: videoId,
+    playerVars: {
+      'autoplay': 1,
+      'controls': 1,
+      'rel': 0,
+      'modestbranding': 1,
+      'playsinline': 1
+    },
+    events: {
+      'onReady': function(event) {
+        console.log('🎵 플레이어 준비 완료');
+        event.target.playVideo();
+      },
+      'onStateChange': function(event) {
+        if (event.data === YT.PlayerState.ENDED) {
+          console.log('🎵 음악 재생 종료');
+          const container = document.getElementById('musicPlayerContainer');
+          if (container) container.style.display = 'none';
+          state.isMusicPlaying = false;
+          state.currentMusic = null;
+          renderMusicTab();
+        }
+      }
+    }
+  });
+}
 function stopMusic() {
+  // YouTube 플레이어 정지
+  if (ytPlayer) {
+    try {
+      ytPlayer.stopVideo();
+      ytPlayer.destroy();
+      ytPlayer = null;
+    } catch(e) {}
+  }
+  
+  // Web Audio API 정지
   if (musicOscillators.length > 0) {
     musicOscillators.forEach(({ osc }) => {
       try { osc.stop(); } catch(e) {}
@@ -5650,11 +5926,17 @@ function stopMusic() {
     try { musicContext.close(); } catch(e) {}
     musicContext = null;
   }
+  
+  // YouTube 컨테이너 숨기기
+  const container = document.getElementById('musicPlayerContainer');
+  if (container) {
+    container.style.display = 'none';
+  }
+  
   state.isMusicPlaying = false;
   state.currentMusic = null;
   renderMusicTab();
 }
-
 // ============================================================
 // 🧩 상성 퀴즈
 // ============================================================
@@ -6211,6 +6493,9 @@ async function initGame() {
   await loadAllPokemon();
   EVOLVABLE_POKEMON_LIST = await getAllEvolvablePokemon();
   
+  // ⭐ YouTube API 로드 추가
+  loadYouTubeAPI();
+  
   if (!hasSavedData) {
     state.owned = {};
     state.wins = 0;
@@ -6233,6 +6518,7 @@ async function initGame() {
     state.evolutionStones = { mega: 0, gigantamax: 0 };
     state.unlockedMusic = [];
     state.musicTickets = 0;
+    state.isYouTubeReady = false;
     saveState();
   }
   
