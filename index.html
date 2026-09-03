@@ -1457,17 +1457,16 @@
   </div>
 </header>
 
-<div class="statline">
-  <div class="pill">📖 <b id="collectedCount">0</b>/<span id="totalCount">0</span></div>
-  <div class="pill">⭐ <b id="specialCount">0</b> 스페셜</div>
-  <div class="pill">✅ 미션 <b id="missionCount">0</b></div>
-  <div class="pill">🏆 <b id="winCount">0</b>승</div>
-  <div class="pill">🎯 퀴즈 <b id="quizCount">0</b></div>
-  <div class="pill">🧮 수학 <b id="mathCount">0</b></div>
-  <div class="pill">⚔️ 레이드 <b id="raidCount">0</b></div>
-  <div class="pill">💎 <b id="stoneCount">0</b></div>
-  <div class="pill">🎮 <b id="gameChances">0</b>회</div>
-</div>
+  <div class="statline">
+    <div class="pill">📖 <b id="collectedCount">0</b>/<span id="totalCount">0</span></div>
+    <div class="pill">⭐ <b id="specialCount">0</b> 스페셜</div>
+    <div class="pill">✅ 미션 <b id="missionCount">0</b></div>
+    <div class="pill">🏆 <b id="winCount">0</b>승</div>
+    <div class="pill">🎯 퀴즈 <b id="quizCount">0</b></div>
+    <div class="pill">🧮 수학 <b id="mathCount">0</b></div>
+    <div class="pill">⚔️ 레이드 <b id="raidCount">0</b></div>
+    <div class="pill">💎 <b id="stoneCount">0</b></div>
+  </div>
 
   <div class="battle-picker-overlay" id="battlePicker" style="display:none;">
     <div class="battle-picker-box">
@@ -2086,8 +2085,7 @@ let state = {
   raidSelectedCard: null,
   battleChances: 0,
   pvpChances: 0,
-  evolutionStones: { mega: 0, gigantamax: 0 },
-  gameChances: 0
+  evolutionStones: { mega: 0, gigantamax: 0 }
 };
 
 let ownershipFilter = 'all';
@@ -2538,25 +2536,12 @@ function getPokemonByName(name) {
   return null;
 }
 function clamp(n, lo, hi) { return Math.max(lo, Math.min(hi, n)); }
-// ===== 한국 시간 기준 오전 8시 30분 초기화 =====
-function todayKey() {
+function todayKey() { 
   const now = new Date();
-  const kstOffset = 9 * 60; // 한국은 UTC+9
-  
-  // UTC 시간 계산
+  const kstOffset = 9 * 60;
   const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
-  let kstTime = new Date(utc + (kstOffset * 60000));
-  
-  // ⭐ 오전 8시 30분 이전이면 전날로 처리
-  const hours = kstTime.getHours();
-  const minutes = kstTime.getMinutes();
-  
-  if (hours < 8 || (hours === 8 && minutes < 30)) {
-    // 8:30 이전이면 하루 빼기
-    kstTime.setDate(kstTime.getDate() - 1);
-  }
-  
-  return kstTime.toISOString().slice(0, 10);
+  const kstTime = new Date(utc + (kstOffset * 60000));
+  return kstTime.toISOString().slice(0,10);
 }
 
 function getTypeColor(type) {
@@ -2710,7 +2695,6 @@ function updateStatline() {
   }
   document.getElementById('specialCount').textContent = specialCount;
   updateStoneDisplay();
-  document.getElementById('gameChances').textContent = state.gameChances || 0;
 }
 
 // ===== 나이 설정 =====
@@ -3323,7 +3307,6 @@ function renderLifeMissions() {
         <br><span style="font-size:12px;color:#6b6395;">미션 완료 시 키우는 포켓몬 경험치 +10%!</span>
         <br><span style="font-size:12px;color:#6b6395;">미션 완료 시 레이드 공격 기회 +1!</span>
         <br><span style="font-size:12px;color:#6b6395;">미션 완료 시 AI 배틀 +1, PVP 배틀 +1 (누적 가능)</span>
-        <br><span style="font-size:12px;color:#6b6395;">미션 완료 시 🎮 게임 횟수 +1</span>
       </div>
       <button class="btn small ghost" onclick="openMissionEditor()" style="font-size:14px;padding:6px 12px;min-height:32px;flex-shrink:0;margin-left:8px;">⚙️</button>
     </div>
@@ -3332,7 +3315,6 @@ function renderLifeMissions() {
       <span>🤖 AI 배틀: <b>${state.battleChances || 0}</b>회</span>
       <span>🌐 PVP 배틀: <b>${state.pvpChances || 0}</b>회</span>
       <span>💎 진화의돌: <b>${(state.evolutionStones?.mega || 0) + (state.evolutionStones?.gigantamax || 0)}</b>개</span>
-      <span>🎮 게임 횟수: <b>${state.gameChances || 0}</b>회</span>
     </div>
     <div class="life-mission-list">
       ${sortedMissions.map(m => {
@@ -3382,10 +3364,6 @@ function renderLifeMissions() {
       }
       state.battleChances = (state.battleChances || 0) + 1;
       state.pvpChances = (state.pvpChances || 0) + 1;
-      
-      // ⭐ 게임 횟수 +1
-      state.gameChances = (state.gameChances || 0) + 1;
-      
       saveState();
       
       if (state.pet) {
@@ -3397,8 +3375,6 @@ function renderLifeMissions() {
       }
       
       renderLifeMissions();
-      updateStatline();
-      
       const reveal = document.getElementById('lifeReveal');
       
       if (rewards.length > 0) {
@@ -3419,7 +3395,6 @@ function renderLifeMissions() {
             <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:6px;">${cardHTML}</div>
             ${state.pet ? `<div style="font-family:var(--font-mono);font-size:12px;color:var(--sun-2);margin-top:4px;">✨ 키우는 포켓몬 경험치 +10%!</div>` : ''}
             ${state.raid?.boss ? `<div style="font-family:var(--font-mono);font-size:12px;color:var(--good);margin-top:4px;">⚔️ 레이드 공격 기회 +1!</div>` : ''}
-            <div style="font-family:var(--font-mono);font-size:12px;color:var(--good);margin-top:4px;">🎮 게임 횟수 +1!</div>
           </div>
         `;
       }
@@ -4144,7 +4119,6 @@ function renderDex() {
 // ===== 카드 상세 모달 =====
 let modalCryAudio = null;
 
-// ===== 카드 상세 모달 (전체 교체) =====
 async function openCardDetail(pokemon) {
   const modal = document.getElementById('cardModal');
   const body = document.getElementById('modalBody');
@@ -4266,21 +4240,6 @@ async function openCardDetail(pokemon) {
       `;
     }
   }
-
-  // ⭐⭐⭐ 색칠 도안 출력 버튼 (추가!) ⭐⭐⭐
-  const coloringButtonHTML = `
-    <div style="margin-top:8px;padding:10px;background:rgba(255,201,60,.06);border-radius:10px;border:1px solid rgba(255,201,60,.15);">
-      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
-        <div style="font-size:13px;color:#B7AFDE;">
-          🎨 ${pokemon.name} 색칠 도안 출력
-          <br><span style="font-size:11px;color:#6b6395;">A4 용지에 원본 + 윤곽선 도안을 출력합니다</span>
-        </div>
-        <button class="btn small" onclick="generateColoringPage('${pokemon.engName}')" style="font-size:14px;padding:8px 18px;min-height:36px;background:var(--electric);box-shadow:0 4px 0 #C99414;color:#2A2440;">
-          🖨️ 출력
-        </button>
-      </div>
-    </div>
-  `;
   
   body.innerHTML = `
     <div class="modal-art">${pokemonImage(pokemon, '160px')}</div>
@@ -4294,7 +4253,6 @@ async function openCardDetail(pokemon) {
     ${evolutionButtonHTML ? `<div class="modal-section" style="border-left-color:var(--special);"><h4>⭐ 추가 진화</h4><div style="display:flex;gap:8px;flex-wrap:wrap;">${evolutionButtonHTML}</div></div>` : ''}
     <div class="modal-section" style="border-left-color:${rInfo.color};"><h4>✨ ${rInfo.label} 등급 보너스</h4><p style="font-size:14px;color:#B7AFDE;">HP +${bonus.hp} / 공격 +${bonus.atk} / 방어 +${bonus.def} / 속도 +${bonus.spd}</p></div>
     ${craftButtonHTML}
-    ${coloringButtonHTML}  <!-- ⭐ 색칠 출력 버튼 -->
     <div style="text-align:center;margin-top:12px;"><button class="btn small" id="closeModalBtn">닫기</button></div>
   `;
   
@@ -4309,6 +4267,7 @@ async function openCardDetail(pokemon) {
   document.getElementById('closeModalBtn').addEventListener('click', closeModal);
   document.getElementById('modalClose').addEventListener('click', closeModal);
 }
+
 // ===== 모달 닫기 =====
 function closeModal() {
   if (window.speechSynthesis) window.speechSynthesis.cancel();
@@ -4625,24 +4584,22 @@ function renderBattleSetup() {
     const teamNames2 = state.team.map(eng => { const p = getPokemonByName(eng); return p ? p.name : '?'; }).join(' · ');
     const aiChances = state.battleChances || 0;
     const pvpChances = state.pvpChances || 0;
-    const gameChances = state.gameChances || 0;
     
     body.innerHTML = `
       <div style="text-align:center;padding:16px 0;">
         <div style="font-family:var(--font-display);font-size:22px;color:var(--sun-2);margin-bottom:4px;">⚔️ ${teamNames2}</div>
         <div style="font-family:var(--font-mono);font-size:13px;color:#B7AFDE;margin:6px 0;">
-          🤖 AI 배틀: <b style="color:${aiChances > 0 ? 'var(--good)' : '#8d84b0'};">${aiChances}</b>회 &nbsp;|&nbsp; 
-          🌐 PVP 배틀: <b style="color:${pvpChances > 0 ? 'var(--good)' : '#8d84b0'};">${pvpChances}</b>회 &nbsp;|&nbsp;
-          🎮 게임 횟수: <b style="color:${gameChances > 0 ? 'var(--good)' : '#8d84b0'};">${gameChances}</b>회
+          🤖 AI 배틀: <b style="color:${aiChances > 0 ? 'var(--good)' : '#8d84b0'};">${aiChances}</b>회 &nbsp;|&nbsp; 🌐 PVP 배틀: <b style="color:${pvpChances > 0 ? 'var(--good)' : '#8d84b0'};">${pvpChances}</b>회
         </div>
         <div style="font-size:11px;color:#6b6395;margin-bottom:12px;">※ 생활미션 완료 시 +1회 (누적)</div>
         <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
           <button class="btn small" onclick="clearTeam()" style="font-size:15px;padding:8px 18px;min-height:40px;">🔄 팀 초기화</button>
           <button class="btn small" onclick="autoFillTeam()" style="font-size:15px;padding:8px 18px;min-height:40px;">🤖 자동 구성</button>
           ${battleMode === 'pvp' 
-            ? `<button class="btn" onclick="renderPvpIntro()" style="font-size:15px;padding:10px 22px;min-height:48px;${pvpChances <= 0 ? 'opacity:0.4;cursor:not-allowed;' : ''}" ${pvpChances <= 0 ? 'disabled' : ''}>🌐 PVP (${pvpChances}회)</button>` 
-            : `<button class="btn" onclick="startAiBattle()" style="font-size:15px;padding:10px 22px;min-height:48px;${aiChances <= 0 ? 'opacity:0.4;cursor:not-allowed;' : ''}" ${aiChances <= 0 ? 'disabled' : ''}>🤖 AI (${aiChances}회)</button>`
+            ? `<button class="btn" onclick="renderPvpIntro()" style="font-size:15px;padding:10px 22px;min-height:48px;${pvpChances <= 0 ? 'opacity:0.4;cursor:not-allowed;' : ''}" ${pvpChances <= 0 ? 'disabled' : ''}>🌐 실시간 배틀 (${pvpChances}회)</button>` 
+            : `<button class="btn" id="aiBattleBtn" onclick="startAiBattle()" style="font-size:15px;padding:10px 22px;min-height:48px;${aiChances <= 0 ? 'opacity:0.4;cursor:not-allowed;' : ''}" ${aiChances <= 0 ? 'disabled' : ''}>🤖 AI 배틀 (${aiChances}회)</button>`
           }
+        </div>
         ${(battleMode === 'ai' && aiChances <= 0) || (battleMode === 'pvp' && pvpChances <= 0) 
           ? `<div style="font-size:13px;color:var(--bad);margin-top:10px;">⚠️ 생활미션을 완료하면 배틀 횟수가 지급됩니다!</div>` 
           : ''}
@@ -4658,6 +4615,7 @@ function renderBattleSetup() {
     `;
   }
 }
+
 function openBattlePicker(slotIndex) {
   const overlay = document.getElementById('battlePicker');
   overlay.style.display = 'flex';
@@ -5700,117 +5658,6 @@ window.openCardDetailFromCraft = function(engName) {
   }
 };
 
-// ===== 색칠놀이 =====
-// ===== 가장 깔끔한 방법 =====
-async function generateColoringPage(engName) {
-  const pokemon = getPokemonByName(engName);
-  if (!pokemon) {
-    alert('⚠️ 포켓몬을 찾을 수 없어요!');
-    return;
-  }
-
-  if (!confirm(`🎨 ${pokemon.name} 색칠 도안을 생성할까요?`)) {
-    return;
-  }
-
-  // ⭐ 투명 배경 이미지 (가장 깔끔함)
-  const outlineImage = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/${pokemon.id}.png`;
-  const colorImage = pokemon.image || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokemon.id}.png`;
-
-  const coloringHTML = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="UTF-8">
-      <title>${pokemon.name} 색칠놀이 도안</title>
-      <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-          font-family: 'Malgun Gothic', sans-serif; 
-          background: #e8e8e8; 
-          padding: 20px;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          min-height: 100vh;
-        }
-        .page {
-          width: 210mm;
-          min-height: 297mm;
-          background: #ffffff;
-          padding: 12mm 15mm 10mm;
-          border: 1px solid #ccc;
-          box-shadow: 0 4px 20px rgba(0,0,0,.15);
-          position: relative;
-        }
-        .header { text-align: center; margin-bottom: 8px; padding-bottom: 4px; border-bottom: 2px solid #333; }
-        .header h1 { font-size: 20px; color: #333; }
-        .header .sub { font-size: 10px; color: #888; margin-top: 2px; }
-        .coloring-area {
-          width: 100%; height: 185mm; border: 3px solid #555; border-radius: 6px;
-          background: #ffffff; display: flex; align-items: center; justify-content: center;
-          position: relative; overflow: hidden;
-        }
-        .coloring-area .outline-img {
-          max-width: 95%; max-height: 175mm; object-fit: contain;
-          background: transparent; padding: 10px;
-          /* 투명 배경 + 선명하게 */
-          filter: contrast(1.2) brightness(0.95);
-          -webkit-filter: contrast(1.2) brightness(0.95);
-        }
-        .preview {
-          position: absolute; top: 12px; right: 12px; width: 30%; max-width: 150px; min-width: 80px;
-          border: 3px solid #333; border-radius: 8px; background: #fff; padding: 6px;
-          box-shadow: 0 2px 12px rgba(0,0,0,.25); z-index: 10;
-        }
-        .preview img { width: 100%; height: auto; aspect-ratio: 1/1; object-fit: contain; display: block; }
-        .preview .label {
-          position: absolute; bottom: -18px; left: 50%; transform: translateX(-50%);
-          font-size: 9px; color: #555; white-space: nowrap; background: #fff; padding: 0 8px; font-weight: 700;
-        }
-        .footer { text-align: center; margin-top: 8px; padding-top: 4px; border-top: 2px solid #ddd; font-size: 9px; color: #999; }
-        @media print {
-          body { background: #fff; padding: 0; margin: 0; }
-          .page { border: none; box-shadow: none; padding: 8mm 10mm; width: 100%; min-height: 100vh; }
-          .no-print { display: none !important; }
-          .coloring-area { border-color: #333; height: 190mm; }
-          .coloring-area .outline-img { max-height: 180mm; }
-        }
-      </style>
-    </head>
-    <body>
-      <div class="page">
-        <div class="header">
-          <h1>🎨 ${pokemon.name} 색칠놀이</h1>
-          <div class="sub">큰 윤곽선에 색칠하고, 오른쪽 상단의 컬러 원본을 참고하세요!</div>
-        </div>
-        <div class="coloring-area">
-          <div class="preview">
-            <img src="${colorImage}" alt="원본" onerror="this.parentElement.innerHTML='<div style=\\'padding:20px;text-align:center;font-size:12px;color:#999;\\'><div style=\\'font-size:30px;\\'>❌</div>이미지 없음</div>'">
-            <div class="label">🎯 원본</div>
-          </div>
-          <img class="outline-img" src="${outlineImage}" alt="${pokemon.name} 윤곽선">
-        </div>
-        <div class="footer">
-          <p>📅 ${new Date().toLocaleDateString('ko-KR')}  |  포켓몬 카드 마스터</p>
-        </div>
-      </div>
-      <div style="position:fixed;bottom:24px;left:50%;transform:translateX(-50%);display:flex;gap:12px;z-index:100;background:rgba(255,255,255,.9);padding:10px 20px;border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,.15);" class="no-print">
-        <button onclick="window.print()" style="padding:10px 28px;font-size:16px;border-radius:10px;border:none;background:#4CAF7D;color:#fff;cursor:pointer;font-weight:700;box-shadow:0 3px 0 #2E7A54;">🖨️ 인쇄하기</button>
-        <button onclick="window.close()" style="padding:10px 28px;font-size:16px;border-radius:10px;border:none;background:#E4614B;color:#fff;cursor:pointer;font-weight:700;box-shadow:0 3px 0 #A04030;">✕ 닫기</button>
-      </div>
-    </body>
-    </html>
-  `;
-
-  const win = window.open('', '_blank', 'width=800,height=600');
-  if (win) {
-    win.document.write(coloringHTML);
-    win.document.close();
-  } else {
-    alert('⚠️ 팝업이 차단되었습니다! 팝업 차단을 해제해주세요.');
-  }
-}
 // ===== 초기화 =====
 async function initGame() {
   document.getElementById('loadingScreen').style.display = 'block';
@@ -5877,6 +5724,7 @@ async function initGame() {
     });
   }
 }
+
 
 function renderAll() {
   updateStatline();
