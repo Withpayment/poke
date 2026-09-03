@@ -1588,6 +1588,8 @@
     <button class="btn ghost" id="adminCloseBtn" style="flex:1;">닫기</button>
   </div>
 </div>
+</div>
+</div>
     <div id="loadingScreen" class="loading-spinner">
       <div class="spinner"></div>
       <div style="font-family:var(--font-display);font-size:22px;">포켓몬 데이터를 불러오는 중...</div>
@@ -6485,74 +6487,108 @@ window.openCardDetailFromCraft = function(engName) {
 // 🚀 초기화
 // ============================================================
 async function initGame() {
-  document.getElementById('loadingScreen').style.display = 'block';
+  console.log('🚀 게임 초기화 시작...');
+  
+  // 로딩 화면 표시
+  const loadingScreen = document.getElementById('loadingScreen');
+  if (loadingScreen) loadingScreen.style.display = 'block';
+  
   document.querySelectorAll('section').forEach(s => s.style.display = 'none');
   
-  const hasSavedData = loadState();
-  autoMergeDuplicates();
-  await loadAllPokemon();
-  EVOLVABLE_POKEMON_LIST = await getAllEvolvablePokemon();
-  
-  // ⭐ YouTube API 로드 추가
-  loadYouTubeAPI();
-  
-  if (!hasSavedData) {
-    state.owned = {};
-    state.wins = 0;
-    state.losses = 0;
-    state.missionsWon = 0;
-    state.team = [];
-    state.dailyMissions = {};
-    state.customMissions = [];
-    state.pet = null;
-    state.quizStats = { total: 0, correct: 0 };
-    state.quizDoneToday = null;
-    state.playerAge = null;
-    state.mathQuiz = { today: null, questions: [], currentIndex: 0, results: [], completed: false };
-    state.mathStats = { total: 0, correct: 0 };
-    state.raid = { boss: null, hp: 0, maxHp: 0, completed: false, today: null, rewardCollected: false, attackChance: 0 };
-    state.raidSelectedType = null;
-    state.raidSelectedCard = null;
-    state.battleChances = 0;
-    state.pvpChances = 0;
-    state.evolutionStones = { mega: 0, gigantamax: 0 };
-    state.unlockedMusic = [];
-    state.musicTickets = 0;
-    state.isYouTubeReady = false;
-    saveState();
-  }
-  
-  document.getElementById('loadingStatus').textContent = '✅ ' + POKEMON_LIST.length + '마리 | 진화: ' + EVOLVABLE_POKEMON_LIST.length + '종 | 보유: ' + Object.keys(state.owned).length + '마리';
-  
-  document.getElementById('loadingScreen').style.display = 'none';
-  
-  if (!state.playerAge) {
-    document.getElementById('ageScreen').style.display = 'block';
-    document.querySelectorAll('section').forEach(s => s.style.display = 'none');
-  } else {
-    document.querySelectorAll('section').forEach(s => s.style.display = '');
-    document.getElementById('tab-mission').classList.add('active');
-    renderAll();
-  }
-  bindAdminEvents();
-  bindMissionEditEvents();
-  updateStoneDisplay();
-  const clearCacheBtn = document.getElementById('clearCacheBtn');
-  if (clearCacheBtn) {
-    clearCacheBtn.addEventListener('click', clearPokeCache);
-    clearCacheBtn.addEventListener('touchend', function(e) {
-      e.preventDefault();
-      clearPokeCache();
-    });
-  }
-  
-  const clearAllBtn = document.getElementById('clearAllDataBtn');
-  if (clearAllBtn) {
-    clearAllBtn.addEventListener('click', clearAllData);
-    clearAllBtn.addEventListener('touchend', function(e) {
-      e.preventDefault();
-      clearAllData();
-    });
+  try {
+    const hasSavedData = loadState();
+    console.log('📊 상태 로드 완료:', hasSavedData);
+    
+    autoMergeDuplicates();
+    console.log('📊 중복 카드 합치기 완료');
+    
+    await loadAllPokemon();
+    console.log('📊 포켓몬 로드 완료:', POKEMON_LIST.length + '마리');
+    
+    EVOLVABLE_POKEMON_LIST = await getAllEvolvablePokemon();
+    console.log('📊 진화 가능 포켓몬:', EVOLVABLE_POKEMON_LIST.length + '종');
+    
+    // YouTube API 로드
+    loadYouTubeAPI();
+    
+    if (!hasSavedData) {
+      console.log('📊 새 게임 데이터 생성');
+      state.owned = {};
+      state.wins = 0;
+      state.losses = 0;
+      state.missionsWon = 0;
+      state.team = [];
+      state.dailyMissions = {};
+      state.customMissions = [];
+      state.pet = null;
+      state.quizStats = { total: 0, correct: 0 };
+      state.quizDoneToday = null;
+      state.playerAge = null;
+      state.mathQuiz = { today: null, questions: [], currentIndex: 0, results: [], completed: false };
+      state.mathStats = { total: 0, correct: 0 };
+      state.raid = { boss: null, hp: 0, maxHp: 0, completed: false, today: null, rewardCollected: false, attackChance: 0 };
+      state.raidSelectedType = null;
+      state.raidSelectedCard = null;
+      state.battleChances = 0;
+      state.pvpChances = 0;
+      state.evolutionStones = { mega: 0, gigantamax: 0 };
+      state.unlockedMusic = [];
+      state.musicTickets = 0;
+      state.isYouTubeReady = false;
+      saveState();
+    }
+    
+    // 로딩 상태 업데이트
+    const statusEl = document.getElementById('loadingStatus');
+    if (statusEl) {
+      statusEl.textContent = '✅ ' + POKEMON_LIST.length + '마리 | 진화: ' + EVOLVABLE_POKEMON_LIST.length + '종 | 보유: ' + Object.keys(state.owned).length + '마리';
+    }
+    
+    // 로딩 화면 숨기기
+    if (loadingScreen) loadingScreen.style.display = 'none';
+    
+    // ⭐ 나이 확인
+    if (!state.playerAge) {
+      console.log('📊 나이 입력 필요');
+      document.getElementById('ageScreen').style.display = 'block';
+      document.querySelectorAll('section').forEach(s => s.style.display = 'none');
+    } else {
+      console.log('📊 나이 설정됨:', state.playerAge);
+      document.querySelectorAll('section').forEach(s => s.style.display = '');
+      document.getElementById('tab-mission').classList.add('active');
+      
+      // ⭐ 모든 UI 렌더링
+      renderAll();
+    }
+    
+    bindAdminEvents();
+    bindMissionEditEvents();
+    updateStoneDisplay();
+    
+    // 캐시 삭제 버튼
+    const clearCacheBtn = document.getElementById('clearCacheBtn');
+    if (clearCacheBtn) {
+      clearCacheBtn.addEventListener('click', clearPokeCache);
+      clearCacheBtn.addEventListener('touchend', function(e) {
+        e.preventDefault();
+        clearPokeCache();
+      });
+    }
+    
+    const clearAllBtn = document.getElementById('clearAllDataBtn');
+    if (clearAllBtn) {
+      clearAllBtn.addEventListener('click', clearAllData);
+      clearAllBtn.addEventListener('touchend', function(e) {
+        e.preventDefault();
+        clearAllData();
+      });
+    }
+    
+    console.log('✅ 게임 초기화 완료!');
+    
+  } catch(e) {
+    console.error('❌ 게임 초기화 오류:', e);
+    alert('게임 초기화 중 오류가 발생했습니다. 페이지를 새로고침해주세요.');
   }
 }
 
