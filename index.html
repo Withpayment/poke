@@ -4,7 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>포켓몬 카드 마스터 v8.0</title>
-
+<script>
+window.onerror = function(msg, url, line, col, error) {
+  alert('❌ 에러 발생!\n' + msg + '\n위치: 줄 ' + line + '\n' + (error ? error.stack : ''));
+  return false;
+};
+window.addEventListener('unhandledrejection', function(e) {
+  alert('❌ Promise 에러!\n' + e.reason);
+});
+</script>
 <script>
   const MY_CONFIG = {
     FIREBASE_API_KEY: "AIzaSyAnNMf2GxcLs7abmetxwWmoxBkIrFy1jQQ",
