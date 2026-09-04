@@ -2695,10 +2695,10 @@ function grantCardReward() {
 
 // ===== 시간제한 관리 =====
 function checkTimeLimit() {
-  const today = todayKey();
   const timeLimit = state.timeLimitMinutes || 15;
   const maxMs = timeLimit * 60 * 1000;
   
+  // 🔒 잠금 상태 확인
   if (state.lockUntil) {
     const lockTime = new Date(state.lockUntil);
     if (Date.now() < lockTime.getTime()) {
@@ -2711,6 +2711,7 @@ function checkTimeLimit() {
     }
   }
   
+  // ⏰ 사용시간 초과 확인
   if (state.dailyPlayTime >= maxMs) {
     const lockUntil = new Date();
     lockUntil.setHours(24, 0, 0, 0);
@@ -2763,7 +2764,7 @@ function updateLockTimer() {
 function addPlayTime(ms) {
   state.dailyPlayTime = (state.dailyPlayTime || 0) + ms;
   saveState();
-  checkTimeLimit();
+  checkTimeLimit(); // ⭐ 시간 초과 시 즉시 체크
 }
 
 // ===== 관리자 패널 =====
@@ -2911,33 +2912,60 @@ function adminGiveTicket() {
   SFX.ticket();
 }
 function bindAdminEvents() {
-  document.getElementById('adminPanelBtn').addEventListener('click', openAdminPanel);
-  document.getElementById('adminModalClose').addEventListener('click', closeAdminPanel);
-  document.getElementById('adminCloseBtn').addEventListener('click', closeAdminPanel);
-  document.getElementById('adminPwCancelBtn').addEventListener('click', closeAdminPanel);
-  document.getElementById('adminPwConfirmBtn').addEventListener('click', checkAdminPassword);
-  document.getElementById('adminPasswordInput').addEventListener('keydown', function(e) {
-    if (e.key === 'Enter') checkAdminPassword();
-  });
-  document.getElementById('adminGiveCardBtn').addEventListener('click', adminGiveCard);
-  document.getElementById('adminCardSearch').addEventListener('keydown', function(e) {
-    if (e.key === 'Enter') adminGiveCard();
-  });
-  document.getElementById('adminGiveStoneBtn').addEventListener('click', adminGiveStone);
-  document.getElementById('adminSetTimeBtn').addEventListener('click', adminSetTimeLimit);
+  // 안전하게 요소가 존재하는지 확인 후 이벤트 바인딩
+  const adminPanelBtn = document.getElementById('adminPanelBtn');
+  if (adminPanelBtn) adminPanelBtn.addEventListener('click', openAdminPanel);
   
-  // ⭐ 음악감상권 지급 이벤트 (제대로 연결되었는지 확인)
-  const ticketBtn = document.getElementById('adminGiveTicketBtn');
-  if (ticketBtn) {
-    ticketBtn.addEventListener('click', adminGiveTicket);
-    console.log('✅ adminGiveTicketBtn 이벤트 연결됨');
-  } else {
-    console.error('❌ adminGiveTicketBtn 요소를 찾을 수 없음');
+  const adminModalClose = document.getElementById('adminModalClose');
+  if (adminModalClose) adminModalClose.addEventListener('click', closeAdminPanel);
+  
+  const adminCloseBtn = document.getElementById('adminCloseBtn');
+  if (adminCloseBtn) adminCloseBtn.addEventListener('click', closeAdminPanel);
+  
+  const adminPwCancelBtn = document.getElementById('adminPwCancelBtn');
+  if (adminPwCancelBtn) adminPwCancelBtn.addEventListener('click', closeAdminPanel);
+  
+  const adminPwConfirmBtn = document.getElementById('adminPwConfirmBtn');
+  if (adminPwConfirmBtn) adminPwConfirmBtn.addEventListener('click', checkAdminPassword);
+  
+  const adminPasswordInput = document.getElementById('adminPasswordInput');
+  if (adminPasswordInput) {
+    adminPasswordInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') checkAdminPassword();
+    });
   }
   
-  document.getElementById('adminModal').addEventListener('click', function(e) {
-    if (e.target === this) closeAdminPanel();
-  });
+  const adminGiveCardBtn = document.getElementById('adminGiveCardBtn');
+  if (adminGiveCardBtn) adminGiveCardBtn.addEventListener('click', adminGiveCard);
+  
+  const adminCardSearch = document.getElementById('adminCardSearch');
+  if (adminCardSearch) {
+    adminCardSearch.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') adminGiveCard();
+    });
+  }
+  
+  const adminGiveStoneBtn = document.getElementById('adminGiveStoneBtn');
+  if (adminGiveStoneBtn) adminGiveStoneBtn.addEventListener('click', adminGiveStone);
+  
+  const adminSetTimeBtn = document.getElementById('adminSetTimeBtn');
+  if (adminSetTimeBtn) adminSetTimeBtn.addEventListener('click', adminSetTimeLimit);
+  
+  // ⭐ 음악감상권 지급 이벤트 (요소가 있을 때만 연결)
+  const adminGiveTicketBtn = document.getElementById('adminGiveTicketBtn');
+  if (adminGiveTicketBtn) {
+    adminGiveTicketBtn.addEventListener('click', adminGiveTicket);
+    console.log('✅ adminGiveTicketBtn 이벤트 연결됨');
+  } else {
+    console.warn('⚠️ adminGiveTicketBtn 요소 없음 (음악감상권 UI가 추가되지 않음)');
+  }
+  
+  const adminModal = document.getElementById('adminModal');
+  if (adminModal) {
+    adminModal.addEventListener('click', function(e) {
+      if (e.target === this) closeAdminPanel();
+    });
+  }
 }
 
 // ===== 게임 초기화 =====
@@ -5254,10 +5282,12 @@ function resetDailyContent() {
   for (const dateKey in state.dailyMissions) { if (dateKey !== today) delete state.dailyMissions[dateKey]; }
   if (!state.dailyMissions[today]) state.dailyMissions[today] = {};
   state.mathQuiz = { today: null, questions: [], currentIndex: 0, results: [], completed: false };
-  // 하루 사용시간 초기화
+  
+  // ⭐⭐⭐ 중요: 하루 사용시간 초기화 (이 부분이 누락되었을 수 있음)
   state.dailyPlayTime = 0;
   state.lockUntil = null;
   hideLockScreen();
+  
   const shouldResetRaid = !state.raid || state.raid.today !== today || state.raid.completed === true;
   if (shouldResetRaid) {
     const finalForms = POKEMON_LIST.filter(p => { const evoChain = getEvoChain(p.engName); return evoChain && evoChain.length >= 2 && evoChain[evoChain.length-1] === p.engName; });
@@ -5268,7 +5298,6 @@ function resetDailyContent() {
   saveState();
   renderAll();
 }
-
 let lastCheckedDate = todayKey();
 setInterval(function() {
   const currentDate = todayKey();
