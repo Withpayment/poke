@@ -2603,7 +2603,7 @@ function speakText(text, lang = 'ko-KR') {
 // ===== 저장/로드 =====
 function loadState() {
   try {
-    const saved = localStorage.getItem('pkmn-state-v9');
+    const saved = localStorage.getItem('pkmn-state-v7');
     if (saved) {
       const parsed = JSON.parse(saved);
       state = Object.assign(state, parsed);
@@ -2623,7 +2623,7 @@ function loadState() {
 
 function saveState() {
   try {
-    localStorage.setItem('pkmn-state-v9', JSON.stringify(state));
+    localStorage.setItem('pkmn-state-v7', JSON.stringify(state));
   } catch(e) { console.error('저장 실패:', e); }
 }
 
