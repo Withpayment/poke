@@ -1399,27 +1399,6 @@
   .evolution-stone-badge.mega { background: var(--mega); color: #fff; }
   .evolution-stone-badge.gigantamax { background: var(--gigantamax); color: #fff; }
   
-  /* YouTube 플레이어 컨테이너 */
-  .music-player-container {
-    position: relative;
-    padding-bottom: 56.25%;
-    height: 0;
-    overflow: hidden;
-    max-width: 100%;
-    background: #000;
-    border-radius: 12px;
-    margin: 12px 0;
-  }
-  .music-player-container iframe {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    border: none;
-    border-radius: 12px;
-  }
-  
   @media (max-width: 400px) {
     .grid { gap: 6px; }
     .card.mini { padding: 6px; }
@@ -1442,7 +1421,6 @@
     .raid-pokemon-card .rpc-art { font-size: 20px; }
     .raid-pokemon-card .rpc-name { font-size: 9px; }
     .raid-pokemon-card .rpc-atk { font-size: 7px; }
-    .music-player-container { margin: 8px 0; }
   }
   #clearCacheBtn, #clearAllDataBtn {
   -webkit-tap-highlight-color: transparent;
@@ -1454,70 +1432,7 @@
   transform: scale(0.95);
   opacity: 0.7;
 }
-/* ===== 유튜브 플레이어 숨기기 (음악 전용) ===== */
-#musicPlayerContainer {
-  position: fixed !important;
-  bottom: 70px !important;
-  left: 50% !important;
-  transform: translateX(-50%) !important;
-  width: 1px !important;
-  height: 1px !important;
-  overflow: hidden !important;
-  opacity: 0 !important;
-  pointer-events: none !important;
-  z-index: -1 !important;
-}
-
-#musicPlayerContainer iframe {
-  width: 1px !important;
-  height: 1px !important;
-  opacity: 0 !important;
-}
-
-/* ===== 음악 재생 상태 표시 ===== */
-#musicPlayerStatus {
-  position: fixed;
-  bottom: 80px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(0,0,0,.85);
-  padding: 10px 20px;
-  border-radius: 30px;
-  z-index: 100;
-  text-align: center;
-  border: 2px solid rgba(255,201,60,.3);
-  backdrop-filter: blur(10px);
-  display: none;
-  min-width: 200px;
-  box-shadow: 0 4px 20px rgba(0,0,0,.5);
-}
-
-#musicPlayerStatus .status-text {
-  color: #fff;
-  font-size: 14px;
-  font-family: var(--font-body);
-}
-
-#musicPlayerStatus .status-text b {
-  color: var(--sun-2);
-  font-weight: 700;
-}
-
-#musicPlayerStatus .stop-btn {
-  background: none;
-  border: none;
-  color: var(--bad);
-  font-size: 18px;
-  cursor: pointer;
-  margin-left: 12px;
-  padding: 0 4px;
-}
-
-#musicPlayerStatus .stop-btn:hover {
-  color: #ff6b6b;
-}
 </style>
-
 </head>
 <body>
 <div class="app">
@@ -1548,7 +1463,6 @@
     <div class="pill">🧮 수학 <b id="mathCount">0</b></div>
     <div class="pill">⚔️ 레이드 <b id="raidCount">0</b></div>
     <div class="pill">💎 <b id="stoneCount">0</b></div>
-    <div class="pill">🎵 <b id="musicCount">0</b>곡</div>
   </div>
 
   <div class="battle-picker-overlay" id="battlePicker" style="display:none;">
@@ -1581,77 +1495,43 @@
       </div>
     </div>
     
-<div id="adminContentSection" style="display:none;">
-  <!-- 카드 지급 -->
-  <div style="margin-bottom:16px;padding:14px;background:rgba(255,255,255,.05);border-radius:12px;border:2px solid rgba(255,215,0,.15);">
-    <div style="font-family:var(--font-display);font-size:16px;color:var(--sun-2);margin-bottom:8px;">🎴 카드 지급</div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;">
-      <input id="adminCardSearch" placeholder="포켓몬 이름 검색..." style="flex:2;min-width:120px;padding:10px 14px;border-radius:8px;border:2px solid rgba(255,201,60,.2);background:rgba(255,255,255,.05);color:var(--paper);font-size:14px;">
-      <input id="adminCardCount" type="number" value="1" min="1" max="99" style="width:60px;padding:10px 8px;border-radius:8px;border:2px solid rgba(255,201,60,.2);background:rgba(255,255,255,.05);color:var(--paper);font-size:14px;text-align:center;">
-      <button class="btn small" id="adminGiveCardBtn" style="font-size:14px;padding:8px 16px;min-height:40px;">🎁 지급</button>
-    </div>
-    <div id="adminCardResult" style="font-size:12px;color:#B7AFDE;margin-top:6px;"></div>
-  </div>
-  
-  <!-- 진화의돌 지급 -->
-  <div style="margin-bottom:16px;padding:14px;background:rgba(255,255,255,.05);border-radius:12px;border:2px solid rgba(255,215,0,.15);">
-    <div style="font-family:var(--font-display);font-size:16px;color:var(--sun-2);margin-bottom:8px;">💎 진화의돌 지급</div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;">
-      <select id="adminStoneType" style="flex:1;min-width:100px;padding:10px 14px;border-radius:8px;border:2px solid rgba(255,201,60,.2);background:rgba(255,255,255,.05);color:var(--paper);font-size:14px;">
-        <option value="mega">💎 메가진화의돌</option>
-        <option value="gigantamax">🔥 거다이맥스돌</option>
-      </select>
-      <input id="adminStoneCount" type="number" value="1" min="1" max="99" style="width:60px;padding:10px 8px;border-radius:8px;border:2px solid rgba(255,201,60,.2);background:rgba(255,255,255,.05);color:var(--paper);font-size:14px;text-align:center;">
-      <button class="btn small" id="adminGiveStoneBtn" style="font-size:14px;padding:8px 16px;min-height:40px;">💎 지급</button>
-    </div>
-    <div id="adminStoneResult" style="font-size:12px;color:#B7AFDE;margin-top:6px;"></div>
-  </div>
-  
-  <!-- ⭐⭐⭐ 음악 감상권 지급 (신규) ⭐⭐⭐ -->
-  <div style="margin-bottom:16px;padding:14px;background:rgba(255,201,60,.08);border-radius:12px;border:2px solid rgba(255,201,60,.2);">
-    <div style="font-family:var(--font-display);font-size:16px;color:var(--sun-2);margin-bottom:8px;">🎵 음악 감상권 지급</div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;">
-      <input id="adminMusicTicketCount" type="number" value="1" min="1" max="99" style="width:80px;padding:10px 8px;border-radius:8px;border:2px solid rgba(255,201,60,.2);background:rgba(255,255,255,.05);color:var(--paper);font-size:14px;text-align:center;">
-      <button class="btn small" id="adminGiveMusicTicketBtn" style="font-size:14px;padding:8px 16px;min-height:40px;background:var(--electric);box-shadow:0 4px 0 #C99414;color:#2A2440;">
-        🎫 지급
-      </button>
-    </div>
-    <div id="adminMusicTicketResult" style="font-size:12px;color:#B7AFDE;margin-top:6px;"></div>
-  </div>
-  
-  <!-- ⭐⭐⭐ 랜덤 노래 지급 (신규) ⭐⭐⭐ -->
-  <div style="margin-bottom:16px;padding:14px;background:rgba(255,107,53,.06);border-radius:12px;border:2px solid rgba(255,107,53,.15);">
-    <div style="font-family:var(--font-display);font-size:16px;color:var(--special);margin-bottom:8px;">🎶 랜덤 노래 획득</div>
-    <div style="font-size:12px;color:#B7AFDE;margin-bottom:6px;">
-      현재 보유: <b style="color:var(--paper);" id="adminMusicCount">0</b>곡
-    </div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;">
-      <button class="btn small" id="adminGiveRandomMusicBtn" style="font-size:14px;padding:8px 16px;min-height:40px;background:var(--special);box-shadow:0 4px 0 #C94A1F;color:#fff;">
-        🎲 랜덤 노래 지급
-      </button>
-      <button class="btn small ghost" id="adminGiveAllMusicBtn" style="font-size:14px;padding:8px 16px;min-height:40px;">
-        📦 모든 노래 지급
-      </button>
-    </div>
-    <div id="adminMusicResult" style="font-size:12px;color:#B7AFDE;margin-top:6px;"></div>
-  </div>
-  
-  <!-- 현재 보유량 -->
-  <div style="padding:12px;background:rgba(255,255,255,.03);border-radius:10px;border:1px solid rgba(255,255,255,.05);">
-    <div style="font-size:13px;color:#B7AFDE;text-align:center;">
-      📊 보유 카드: <b style="color:var(--paper);" id="adminOwnedCount">0</b>장 &nbsp;|&nbsp;
-      💎 메가돌: <b style="color:#FF00FF;" id="adminMegaCount">0</b>개 &nbsp;|&nbsp;
-      🔥 거다이돌: <b style="color:#00D4FF;" id="adminGigaCount">0</b>개 &nbsp;|&nbsp;
-      🎫 감상권: <b style="color:var(--sun-2);" id="adminTicketCount">0</b>개 &nbsp;|&nbsp;
-      🎵 노래: <b style="color:var(--special);" id="adminMusicCount">0</b>곡
+    <div id="adminContentSection" style="display:none;">
+      <div style="margin-bottom:16px;padding:14px;background:rgba(255,255,255,.05);border-radius:12px;border:2px solid rgba(255,215,0,.15);">
+        <div style="font-family:var(--font-display);font-size:16px;color:var(--sun-2);margin-bottom:8px;">🎴 카드 지급</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <input id="adminCardSearch" placeholder="포켓몬 이름 검색..." style="flex:2;min-width:120px;padding:10px 14px;border-radius:8px;border:2px solid rgba(255,201,60,.2);background:rgba(255,255,255,.05);color:var(--paper);font-size:14px;">
+          <input id="adminCardCount" type="number" value="1" min="1" max="99" style="width:60px;padding:10px 8px;border-radius:8px;border:2px solid rgba(255,201,60,.2);background:rgba(255,255,255,.05);color:var(--paper);font-size:14px;text-align:center;">
+          <button class="btn small" id="adminGiveCardBtn" style="font-size:14px;padding:8px 16px;min-height:40px;">🎁 지급</button>
+        </div>
+        <div id="adminCardResult" style="font-size:12px;color:#B7AFDE;margin-top:6px;"></div>
+      </div>
+      
+      <div style="margin-bottom:16px;padding:14px;background:rgba(255,255,255,.05);border-radius:12px;border:2px solid rgba(255,215,0,.15);">
+        <div style="font-family:var(--font-display);font-size:16px;color:var(--sun-2);margin-bottom:8px;">💎 진화의돌 지급</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <select id="adminStoneType" style="flex:1;min-width:100px;padding:10px 14px;border-radius:8px;border:2px solid rgba(255,201,60,.2);background:rgba(255,255,255,.05);color:var(--paper);font-size:14px;">
+            <option value="mega">💎 메가진화의돌</option>
+            <option value="gigantamax">🔥 거다이맥스돌</option>
+          </select>
+          <input id="adminStoneCount" type="number" value="1" min="1" max="99" style="width:60px;padding:10px 8px;border-radius:8px;border:2px solid rgba(255,201,60,.2);background:rgba(255,255,255,.05);color:var(--paper);font-size:14px;text-align:center;">
+          <button class="btn small" id="adminGiveStoneBtn" style="font-size:14px;padding:8px 16px;min-height:40px;">💎 지급</button>
+        </div>
+        <div id="adminStoneResult" style="font-size:12px;color:#B7AFDE;margin-top:6px;"></div>
+      </div>
+      
+      <div style="padding:12px;background:rgba(255,255,255,.03);border-radius:10px;border:1px solid rgba(255,255,255,.05);">
+        <div style="font-size:13px;color:#B7AFDE;text-align:center;">
+          📊 보유 카드: <b style="color:var(--paper);" id="adminOwnedCount">0</b>장 &nbsp;|&nbsp;
+          💎 메가돌: <b style="color:#FF00FF;" id="adminMegaCount">0</b>개 &nbsp;|&nbsp;
+          🔥 거다이돌: <b style="color:#00D4FF;" id="adminGigaCount">0</b>개
+        </div>
+      </div>
+      
+      <div style="display:flex;gap:10px;margin-top:12px;">
+        <button class="btn ghost" id="adminCloseBtn" style="flex:1;">닫기</button>
+      </div>
     </div>
   </div>
-  
-  <div style="display:flex;gap:10px;margin-top:12px;">
-    <button class="btn ghost" id="adminCloseBtn" style="flex:1;">닫기</button>
-  </div>
-</div>
-</div>
 </div>
     <div id="loadingScreen" class="loading-spinner">
       <div class="spinner"></div>
@@ -1689,7 +1569,6 @@
         <button data-mmode="math">🧮 수학퀴즈</button>
         <button data-mmode="life">🌟 생활미션</button>
         <button data-mmode="raid">⚔️ 레이드</button>
-        <button data-mmode="type-quiz">🧩 상성퀴즈</button>
       </div>
       <div class="panel" id="missionPanel"></div>
     </section>
@@ -1750,19 +1629,6 @@
         <div id="craftContent"></div>
       </div>
     </section>
-
-    <section id="tab-music">
-      <h2 class="section-title">🎵 포켓몬 뮤직</h2>
-      <div class="panel" id="musicPanel">
-        <div id="musicContent"></div>
-      </div>
-    </section>
-        <!-- ⭐ 음악 재생 상태 표시 (추가) ⭐ -->
-    <div id="musicPlayerStatus">
-      <span class="status-text">🎵 현재 재생 중: <b id="nowPlayingTitle">-</b></span>
-      <button class="stop-btn" onclick="stopMusic()">✕</button>
-    </div>
-  </main>
   </main>
 
   <div class="mission-edit-overlay" id="missionEditOverlay">
@@ -1799,7 +1665,6 @@
     <button data-tab="tab-battle"><span class="ic">⚔️</span>배틀</button>
     <button data-tab="tab-trade"><span class="ic">🔄</span>교환</button>
     <button data-tab="tab-craft"><span class="ic">🔮</span>합성</button>
-    <button data-tab="tab-music"><span class="ic">🎵</span>음악</button>
   </nav>
 </div>
 
@@ -2181,12 +2046,7 @@ let state = {
   raidSelectedCard: null,
   battleChances: 0,
   pvpChances: 0,
-  evolutionStones: { mega: 0, gigantamax: 0 },
-  // 음악 관련
-  unlockedMusic: [],
-  musicTickets: 0,
-  currentMusic: null,
-  isMusicPlaying: false
+  evolutionStones: { mega: 0, gigantamax: 0 }
 };
 
 let ownershipFilter = 'all';
@@ -2198,22 +2058,6 @@ let myBattleRoom = null;
 let battleListener = null;
 let myTradeRoom = null;
 let tradeListener = null;
-let musicPlayer = null;
-let isYouTubeAPIReady = false;
-
-// ===== 음악 목록 =====
-const MUSIC_LIST = [
-  { id: 'opening_1', title: '모험의 시작', artist: '포켓몬스터 1기 오프닝', videoId: 'dosnQVuYIi0', emoji: '🎵', rarity: 'common', year: '1999' },
-  { id: 'ending_1', title: '우리는 모두 친구', artist: '포켓몬스터 1기 엔딩', videoId: 'jzYgKjFvbvQ', emoji: '🎶', rarity: 'common', year: '1999' },
-  { id: 'opening_ag', title: '포켓몬 AG', artist: 'AG 시리즈 오프닝', videoId: 'Mlyd0YqdC3k', emoji: '🎵', rarity: 'rare', year: '2003' },
-  { id: 'ending_ag', title: '행복한 여행', artist: 'AG 시리즈 엔딩', videoId: '_E1f077ldGE', emoji: '🎶', rarity: 'rare', year: '2003' },
-  { id: 'opening_dp', title: '웃어봐', artist: 'DP 시리즈 오프닝', videoId: 'tUCP53Qs9-g', emoji: '🎵', rarity: 'rare', year: '2006' },
-  { id: 'Promise', title: 'PROMISE', artist: '큐레무vs성검사', videoId: 'wind9u4mo3I', emoji: '🎵', rarity: 'rare', year: '2012' },
-  { id: 'ending_dp', title: '함께가는 길', artist: 'DP 시리즈 엔딩', videoId: 'IC7DAEDP8pU', emoji: '🎶', rarity: 'rare', year: '2006' },
-  { id: 'movie_1', title: '꿈꾸는 아이', artist: '극장판 1기 엔딩', videoId: 'RAuPhcyiUfk', emoji: '🌟', rarity: 'ultra-rare', year: '1998' },
-  { id: 'The Best', title: 'The Best', artist: '뮤츠의 역습', videoId: 'mkViL1TfOZY', emoji: '⭐', rarity: 'special', year: '2021' },
-  { id: 'only_one_story', title: '온리 원 스토리', artist: 'ZEROBASEONE (2025)', videoId: 'bgE7LMwwUDU', emoji: '⭐', rarity: 'special', year: '2025' }
-];
 
 const DEFAULT_LIFE_MISSIONS = [
   { id:'go-out', label:'등원하기', emoji:'🎒' },
@@ -2294,61 +2138,54 @@ function getEvoChain(engName) {
   return [engName];
 }
 
-// ===== loadAllPokemon =====
-// ===== loadAllPokemon (안드로이드 최적화) =====
+// ===== loadAllPokemon (완전판: 모든 포켓몬 로드) =====
 async function loadAllPokemon() {
-  const isAndroid = /android/i.test(navigator.userAgent);
-
   try {
     const cached = localStorage.getItem(CACHE_KEY);
     const cachedTime = localStorage.getItem(CACHE_TIME_KEY);
-
-    // 캐시가 있으면 무조건 사용 (네트워크 생략)
-    if (cached && cachedTime) {
+    if (cached && cachedTime && (Date.now() - parseInt(cachedTime)) < CACHE_DURATION) {
       POKEMON_LIST = JSON.parse(cached);
-      console.log('✅ 캐시 로드!', POKEMON_LIST.length + '마리');
-      document.getElementById('loadingStatus').textContent =
-        '📱 캐시에서 ' + POKEMON_LIST.length + '마리 로드! ⚡';
-
-      // ⭐ 존재하지 않던 refreshCacheInBackground() 호출 제거.
-      //    (필요하면 나중에 별도 함수로 안전하게 구현해서 추가)
+      console.log('✅ 캐시에서 로드!', POKEMON_LIST.length + '마리');
+      document.getElementById('loadingStatus').textContent = '캐시에서 ' + POKEMON_LIST.length + '마리 로드! ⚡';
       return POKEMON_LIST;
     }
-  } catch (e) {
-    console.warn('⚠️ 캐시 읽기 실패:', e);
-  }
-
+  } catch(e) {}
+  
   try {
     const countRes = await fetch('https://pokeapi.co/api/v2/pokemon?limit=0');
     const countData = await countRes.json();
-    const totalCount = Math.min(countData.count || 1350, 1350);
-
+    const totalCount = countData.count || 1350;
+    console.log('📊 PokeAPI 전체 포켓몬 수:', totalCount);
+    
     const allUrls = [];
-    const listRes = await fetch(`https://pokeapi.co/api/v2/pokemon?limit=${totalCount}&offset=0`);
+    const limit = 2000;
+    const listRes = await fetch(`https://pokeapi.co/api/v2/pokemon?limit=${limit}&offset=0`);
     const listData = await listRes.json();
+    
     listData.results.forEach(p => allUrls.push(p.url));
-
+    console.log('📋 수집된 포켓몬 URL:', allUrls.length + '개');
+    
     let allPokemon = [];
-    const batchSize = isAndroid ? 15 : 30;
-
+    const batchSize = 30;
+    
     for (let i = 0; i < allUrls.length; i += batchSize) {
       const batch = allUrls.slice(i, i + batchSize);
       const promises = batch.map(async (url) => {
         try {
           const detailRes = await fetch(url);
           const detail = await detailRes.json();
-
+          
           let koreanName = detail.name;
           try {
             const speciesRes = await fetch(detail.species.url);
             const speciesData = await speciesRes.json();
             const name = speciesData.names.find(n => n.language.name === 'ko');
             if (name) koreanName = name.name;
-          } catch (e) {}
-
-          let imageUrl = detail.sprites.other['official-artwork']?.front_default ||
+          } catch(e) {}
+          
+          let imageUrl = detail.sprites.other['official-artwork']?.front_default || 
                          detail.sprites.front_default;
-
+          
           const specialImages = {
             'koraidon': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1007.png',
             'miraidon': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1008.png',
@@ -2357,13 +2194,13 @@ async function loadAllPokemon() {
           if (specialImages[detail.name]) {
             imageUrl = specialImages[detail.name];
           }
-
+          
           if (!imageUrl) {
             imageUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${detail.id}.png`;
           }
-
+          
           const types = detail.types.map(t => t.type.name);
-
+          
           return {
             id: detail.id,
             name: koreanName,
@@ -2378,53 +2215,94 @@ async function loadAllPokemon() {
             speciesUrl: detail.species.url,
             cryUrl: detail.cries?.latest || detail.cries?.legacy || null
           };
-        } catch (e) {
-          return null;
+        } catch(e) { 
+          console.warn('⚠️ 개별 포켓몬 로드 실패:', url, e);
+          return null; 
         }
       });
-
+      
       const results = await Promise.all(promises);
       allPokemon = allPokemon.concat(results.filter(p => p !== null));
-
+      
       const progress = Math.round((i + batch.length) / allUrls.length * 100);
-      document.getElementById('loadingStatus').textContent =
-        `📱 로딩 중... ${allPokemon.length}/${allUrls.length} (${progress}%)`;
-
-      if (isAndroid && i % 100 === 0) {
-        await new Promise(r => setTimeout(r, 50));
-      }
+      document.getElementById('loadingStatus').textContent = 
+        `PokeAPI 로딩 중... ${allPokemon.length}/${allUrls.length} (${progress}%)`;
     }
-
+    
     allPokemon.sort((a, b) => a.id - b.id);
     const uniqueMap = new Map();
     allPokemon.forEach(p => {
       if (!uniqueMap.has(p.engName)) {
         uniqueMap.set(p.engName, p);
+      } else {
+        const existing = uniqueMap.get(p.engName);
+        if (p.image && !existing.image) {
+          existing.image = p.image;
+        }
+        if (p.types && p.types.length > existing.types.length) {
+          existing.types = p.types;
+        }
       }
     });
     allPokemon = Array.from(uniqueMap.values());
+    
+    const SPECIAL_POKEMON = {
+      'miraidon': {
+        id: 1008,
+        name: '미라이돈',
+        engName: 'miraidon',
+        type: 'electric',
+        types: ['electric', 'dragon'],
+        hp: 100,
+        atk: 85,
+        def: 100,
+        spd: 135,
+        image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1008.png'
+      },
+      'koraidon': {
+        id: 1007,
+        name: '코라이돈',
+        engName: 'koraidon',
+        type: 'fighting',
+        types: ['fighting', 'dragon'],
+        hp: 100,
+        atk: 130,
+        def: 100,
+        spd: 135,
+        image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1007.png'
+      }
+    };
+    
+    Object.keys(SPECIAL_POKEMON).forEach(key => {
+      const existingIndex = allPokemon.findIndex(p => p.engName === key);
+      if (existingIndex !== -1) {
+        allPokemon[existingIndex] = SPECIAL_POKEMON[key];
+      } else {
+        allPokemon.push(SPECIAL_POKEMON[key]);
+      }
+    });
     allPokemon.sort((a, b) => a.id - b.id);
-
+    
+    console.log('✅ 최종 로드 완료!', allPokemon.length + '마리');
     POKEMON_LIST = allPokemon;
-
-    try {
-      localStorage.setItem(CACHE_KEY, JSON.stringify(POKEMON_LIST));
-      localStorage.setItem(CACHE_TIME_KEY, String(Date.now()));
-    } catch (e) {
-      console.warn('⚠️ 캐시 저장 실패:', e);
-    }
-
-    document.getElementById('loadingStatus').textContent =
+    
+    localStorage.setItem(CACHE_KEY, JSON.stringify(POKEMON_LIST));
+    localStorage.setItem(CACHE_TIME_KEY, String(Date.now()));
+    
+    document.getElementById('loadingStatus').textContent = 
       `✅ ${POKEMON_LIST.length}마리 로드 완료! 🎉`;
-
+    
     return POKEMON_LIST;
-
-  } catch (error) {
+    
+  } catch(error) {
     console.error('❌ API 로드 실패:', error);
     POKEMON_LIST = getFallbackData();
+    localStorage.setItem(CACHE_KEY, JSON.stringify(POKEMON_LIST));
+    localStorage.setItem(CACHE_TIME_KEY, String(Date.now()));
     return POKEMON_LIST;
   }
 }
+
 function getFallbackData() {
   return [
     {id:1, name:'이상해씨', engName:'bulbasaur', type:'grass', hp:45, atk:49, def:49, spd:45, image:'', types:['grass']},
@@ -2443,63 +2321,31 @@ async function getAllEvolvablePokemon() {
     const listRes = await fetch('https://pokeapi.co/api/v2/evolution-chain?limit=1000');
     const listData = await listRes.json();
     const allEvolvable = [];
-
-    const isAndroid = /android/i.test(navigator.userAgent);
-    const batchSize = isAndroid ? 20 : 40;
-
-    function extractAllNames(chainLink) {
-      const names = [];
-      names.push(chainLink.species.name);
-      if (chainLink.evolves_to && chainLink.evolves_to.length > 0) {
-        for (const nextLink of chainLink.evolves_to) {
-          names.push(...extractAllNames(nextLink));
-        }
-      }
-      return names;
-    }
-
-    // ⭐ 요청 하나당 8초 넘으면 강제로 포기하고 다음으로 넘어감
-    async function fetchWithTimeout(url, ms = 8000) {
-      const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), ms);
+    for (const chainRef of listData.results) {
       try {
-        const res = await fetch(url, { signal: controller.signal });
-        return await res.json();
-      } finally {
-        clearTimeout(timer);
-      }
-    }
-
-    for (let i = 0; i < listData.results.length; i += batchSize) {
-      const batch = listData.results.slice(i, i + batchSize);
-      const promises = batch.map(async (chainRef) => {
-        try {
-          const chainData = await fetchWithTimeout(chainRef.url);
-          const chain = extractAllNames(chainData.chain);
-          if (chain.length > 0) {
-            for (const name of chain) { _evoChainCache[name] = chain; }
+        const chainRes = await fetch(chainRef.url);
+        const chainData = await chainRes.json();
+        function extractAllNames(chainLink) {
+          const names = [];
+          names.push(chainLink.species.name);
+          if (chainLink.evolves_to && chainLink.evolves_to.length > 0) {
+            for (const nextLink of chainLink.evolves_to) {
+              names.push(...extractAllNames(nextLink));
+            }
           }
-          return chain;
-        } catch (e) {
-          // 타임아웃/실패한 요청은 그냥 건너뜀 (전체를 막지 않음)
-          return [];
+          return names;
         }
-      });
-
-      const results = await Promise.all(promises);
-      results.forEach(chain => allEvolvable.push(...chain));
-
-      const statusEl = document.getElementById('loadingStatus');
-      if (statusEl) {
-        const progress = Math.round((i + batch.length) / listData.results.length * 100);
-        statusEl.textContent = `🔄 진화 정보 불러오는 중... (${progress}%)`;
-      }
+        const chain = extractAllNames(chainData.chain);
+        allEvolvable.push(...chain);
+        if (chain.length > 0) {
+          for (const name of chain) { _evoChainCache[name] = chain; }
+        }
+      } catch(e) {}
     }
-
     const unique = [...new Set(allEvolvable)].sort();
     console.log('✅ 진화 가능 포켓몬', unique.length + '종');
     return unique;
-  } catch (error) {
+  } catch(error) {
     console.error('진화 가능 포켓몬 로드 실패:', error);
     return ['bulbasaur','charmander','squirtle','pikachu','eevee','magikarp','riolu'];
   }
@@ -2762,8 +2608,6 @@ function loadState() {
       const parsed = JSON.parse(saved);
       state = Object.assign(state, parsed);
       if (!state.evolutionStones) state.evolutionStones = { mega: 0, gigantamax: 0 };
-      if (!state.unlockedMusic) state.unlockedMusic = [];
-      if (state.musicTickets === undefined) state.musicTickets = 0;
       console.log('✅ 저장된 상태 로드 완료!', Object.keys(state.owned).length + '마리 보유');
       updateStoneDisplay();
       return true;
@@ -2797,7 +2641,6 @@ function updateStatline() {
   }
   document.getElementById('specialCount').textContent = specialCount;
   updateStoneDisplay();
-  document.getElementById('musicCount').textContent = state.unlockedMusic?.length || 0;
 }
 
 // ===== 나이 설정 =====
@@ -2879,14 +2722,9 @@ function checkAdminPassword() {
 function updateAdminStats() {
   const owned = Object.keys(state.owned).length;
   const stones = getEvolutionStones();
-  const tickets = state.musicTickets || 0;
-  const musicCount = state.unlockedMusic?.length || 0;
-  
   document.getElementById('adminOwnedCount').textContent = owned;
   document.getElementById('adminMegaCount').textContent = stones.mega || 0;
   document.getElementById('adminGigaCount').textContent = stones.gigantamax || 0;
-  document.getElementById('adminTicketCount').textContent = tickets;
-  document.getElementById('adminMusicCount').textContent = musicCount;
 }
 
 function adminGiveCard() {
@@ -2950,78 +2788,7 @@ function adminGiveStone() {
   resultEl.style.color = 'var(--good)';
   SFX.missionDone();
 }
-// ===== 음악 감상권 지급 =====
-function adminGiveMusicTicket() {
-  const countInput = document.getElementById('adminMusicTicketCount');
-  const resultEl = document.getElementById('adminMusicTicketResult');
-  
-  const count = parseInt(countInput.value) || 1;
-  
-  state.musicTickets = (state.musicTickets || 0) + count;
-  saveState();
-  updateAdminStats();
-  updateStatline();
-  
-  resultEl.textContent = `✅ 음악 감상권 ${count}개 지급 완료! (현재: ${state.musicTickets}개)`;
-  resultEl.style.color = 'var(--good)';
-  SFX.missionDone();
-}
-// ===== 랜덤 노래 지급 =====
-function adminGiveRandomMusic() {
-  const resultEl = document.getElementById('adminMusicResult');
-  
-  const lockedMusic = MUSIC_LIST.filter(m => !state.unlockedMusic.includes(m.id));
-  
-  if (lockedMusic.length === 0) {
-    resultEl.textContent = '🎉 모든 노래를 이미 획득했어요!';
-    resultEl.style.color = 'var(--sun-2)';
-    return;
-  }
-  
-  const randomMusic = lockedMusic[Math.floor(Math.random() * lockedMusic.length)];
-  state.unlockedMusic.push(randomMusic.id);
-  saveState();
-  updateAdminStats();
-  updateStatline();
-  
-  const rInfo = getRarityInfo(randomMusic.rarity);
-  resultEl.innerHTML = `🎵 <b>${randomMusic.title}</b> (${rInfo.emoji} ${rInfo.label}) 획득 완료!<br><span style="font-size:11px;color:#6b6395;">${randomMusic.artist}</span>`;
-  resultEl.style.color = 'var(--good)';
-  SFX.cardReward();
-  
-  // 음악 재생 (미리보기)
-  playSimpleMelody(randomMusic.id);
-}
-  // ===== 모든 노래 지급 =====
-function adminGiveAllMusic() {
-  const resultEl = document.getElementById('adminMusicResult');
-  
-  if (!confirm('📦 모든 포켓몬 노래를 지급할까요?')) return;
-  
-  const allMusicIds = MUSIC_LIST.map(m => m.id);
-  let newCount = 0;
-  
-  allMusicIds.forEach(id => {
-    if (!state.unlockedMusic.includes(id)) {
-      state.unlockedMusic.push(id);
-      newCount++;
-    }
-  });
-  
-  if (newCount === 0) {
-    resultEl.textContent = '🎉 이미 모든 노래를 보유하고 있어요!';
-    resultEl.style.color = 'var(--sun-2)';
-    return;
-  }
-  
-  saveState();
-  updateAdminStats();
-  updateStatline();
-  
-  resultEl.textContent = `✅ ${newCount}곡의 노래를 모두 획득했어요! 🎉`;
-  resultEl.style.color = 'var(--good)';
-  SFX.victory();
-}
+
 function bindAdminEvents() {
   document.getElementById('adminPanelBtn').addEventListener('click', openAdminPanel);
   document.getElementById('adminModalClose').addEventListener('click', closeAdminPanel);
@@ -3031,27 +2798,11 @@ function bindAdminEvents() {
   document.getElementById('adminPasswordInput').addEventListener('keydown', function(e) {
     if (e.key === 'Enter') checkAdminPassword();
   });
-  
-  // 카드 지급
   document.getElementById('adminGiveCardBtn').addEventListener('click', adminGiveCard);
   document.getElementById('adminCardSearch').addEventListener('keydown', function(e) {
     if (e.key === 'Enter') adminGiveCard();
   });
-  
-  // 진화의돌 지급
   document.getElementById('adminGiveStoneBtn').addEventListener('click', adminGiveStone);
-  
-  // ⭐⭐⭐ 음악 감상권 지급 ⭐⭐⭐
-  document.getElementById('adminGiveMusicTicketBtn').addEventListener('click', adminGiveMusicTicket);
-  document.getElementById('adminMusicTicketCount').addEventListener('keydown', function(e) {
-    if (e.key === 'Enter') adminGiveMusicTicket();
-  });
-  
-  // ⭐⭐⭐ 랜덤 노래 지급 ⭐⭐⭐
-  document.getElementById('adminGiveRandomMusicBtn').addEventListener('click', adminGiveRandomMusic);
-  document.getElementById('adminGiveAllMusicBtn').addEventListener('click', adminGiveAllMusic);
-  
-  // 모달 외부 클릭 시 닫기
   document.getElementById('adminModal').addEventListener('click', function(e) {
     if (e.target === this) closeAdminPanel();
   });
@@ -3078,8 +2829,6 @@ function resetGame() {
   state.raidSelectedType = null;
   state.raidSelectedCard = null;
   state.evolutionStones = { mega: 0, gigantamax: 0 };
-  state.unlockedMusic = [];
-  state.musicTickets = 0;
   saveState();
   location.reload();
 }
@@ -3208,24 +2957,16 @@ function clearAllData() {
 }
 
 // ===== 탭 전환 =====
-// ===== 탭 전환 (음악 종료 추가) =====
 document.querySelectorAll('nav.tabbar button').forEach(btn => {
   btn.addEventListener('click', function() {
-    // ⭐ 탭 전환 시 음악 종료
-    if (state.isMusicPlaying) {
-      stopMusic();
-    }
-    
     document.querySelectorAll('nav.tabbar button').forEach(b => b.classList.remove('active'));
     document.querySelectorAll('main section').forEach(s => s.classList.remove('active'));
     this.classList.add('active');
     document.getElementById(this.dataset.tab).classList.add('active');
-    
     if (this.dataset.tab === 'tab-battle') renderBattleSetup();
-    else if (this.dataset.tab === 'tab-pet') renderPetTab();
-    else if (this.dataset.tab === 'tab-trade') renderTradeTab();
-    else if (this.dataset.tab === 'tab-craft') renderCraftTab();
-    else if (this.dataset.tab === 'tab-music') renderMusicTab();
+    if (this.dataset.tab === 'tab-pet') renderPetTab();
+    if (this.dataset.tab === 'tab-trade') renderTradeTab();
+    if (this.dataset.tab === 'tab-craft') renderCraftTab();
   });
 });
 
@@ -3239,13 +2980,10 @@ document.querySelectorAll('#tab-mission .mode-toggle button').forEach(btn => {
     else if (missionMode === 'math') renderMathQuiz();
     else if (missionMode === 'life') renderLifeMissions();
     else if (missionMode === 'raid') renderRaidMission();
-    else if (missionMode === 'type-quiz') renderTypeQuiz();
   });
 });
 
-// ============================================================
-// 🎯 퀴즈 미션
-// ============================================================
+// ===== 🎯 퀴즈 미션 =====
 function renderQuizMission() {
   const panel = document.getElementById('missionPanel');
   const key = todayKey();
@@ -3267,23 +3005,7 @@ function renderQuizMission() {
     const gotCard = Math.random() * 100 < rewardChance;
     state.quizDoneToday = key;
     saveState();
-    
-    let musicReward = '';
-    // ⭐⭐⭐ 퀴즈 100% 정답 시 음악 획득 ⭐⭐⭐
-    if (currentQuiz.correctCount === currentQuiz.totalQuestions) {
-      const lockedMusic = MUSIC_LIST.filter(m => !state.unlockedMusic.includes(m.id));
-      if (lockedMusic.length > 0) {
-        const randomMusic = lockedMusic[Math.floor(Math.random() * lockedMusic.length)];
-        state.unlockedMusic.push(randomMusic.id);
-        musicReward = `<br><br>🎵 <b>${randomMusic.title}</b> 음악을 획득했어요!`;
-        saveState();
-        updateStatline();
-      } else {
-        musicReward = `<br><br>🎵 모든 음악을 이미 획득했어요!`;
-      }
-    }
-    
-    panel.innerHTML = `<div class="mission-intro"><div class="big-emoji">📊</div><div class="title-text">퀴즈 완료!</div><div style="font-size:18px;color:#B7AFDE;margin:8px 0;">${currentQuiz.totalQuestions}문제 중 ${currentQuiz.correctCount}문제 정답!</div>${gotCard ? `<div style="background:rgba(255,201,60,.15);border-radius:12px;padding:14px;margin:12px 0;border:2px solid var(--sun);">🎉 축하합니다! 10% 확률로 카드 획득!</div>` : `<div style="color:#8d84b0;font-size:14px;margin:10px 0;">💡 정답 시 10% 확률로 카드 획득</div>`}${musicReward}<button class="btn small" id="resetQuizBtn">새 퀴즈 (내일)</button></div>`;
+    panel.innerHTML = `<div class="mission-intro"><div class="big-emoji">📊</div><div class="title-text">퀴즈 완료!</div><div style="font-size:18px;color:#B7AFDE;margin:8px 0;">${currentQuiz.totalQuestions}문제 중 ${currentQuiz.correctCount}문제 정답!</div>${gotCard ? `<div style="background:rgba(255,201,60,.15);border-radius:12px;padding:14px;margin:12px 0;border:2px solid var(--sun);">🎉 축하합니다! 10% 확률로 카드 획득!</div>` : `<div style="color:#8d84b0;font-size:14px;margin:10px 0;">💡 정답 시 10% 확률로 카드 획득</div>`}<button class="btn small" id="resetQuizBtn">새 퀴즈 (내일)</button></div>`;
     if (gotCard) grantCardReward();
     document.getElementById('resetQuizBtn')?.addEventListener('click', function() {
       currentQuiz = { questions: [], currentIndex: 0, correctCount: 0, isFinished: false };
@@ -3377,9 +3099,7 @@ function handleQuizAnswer(isCorrect) {
   setTimeout(() => { currentQuiz.currentIndex++; renderQuizMission(); }, 1500);
 }
 
-// ============================================================
-// 🌟 생활미션
-// ============================================================
+// ===== 🌟 생활미션 =====
 const MISSION_PASSWORD = '4987';
 
 function openMissionEditor() {
@@ -3666,9 +3386,7 @@ function renderLifeMissions() {
   });
 }
 
-// ============================================================
-// 🧮 수학퀴즈 (난이도 상향)
-// ============================================================
+// ===== 🧮 수학퀴즈 =====
 function renderPokemonIcons(pokemon, count, size = '40px') {
   const pokemonImg = pokemon && pokemon.image ? `<img src="${pokemon.image}" alt="${pokemon.name}" style="width:${size};height:${size};object-fit:contain;display:inline-block;margin:2px;">` : '❓';
   return Array(count).fill(pokemonImg).join('');
@@ -3689,114 +3407,52 @@ function generateVisualMathQuestion(age) {
   const pokemon1 = POKEMON_LIST[Math.floor(Math.random() * POKEMON_LIST.length)];
   const pokemon2 = POKEMON_LIST[Math.floor(Math.random() * POKEMON_LIST.length)];
   let num1, num2, operation, answer;
-  
-  if (age <= 8) {
-    num1 = Math.floor(Math.random() * 8) + 2;
-    num2 = Math.floor(Math.random() * 8) + 2;
+  if (age <= 7) {
+    num1 = Math.floor(Math.random() * 5) + 1;
+    num2 = Math.floor(Math.random() * num1) + 1;
     operation = Math.random() < 0.5 ? '+' : '-';
-    if (operation === '-' && num1 < num2) [num1, num2] = [num2, num1];
-    answer = operation === '+' ? num1 + num2 : num1 - num2;
-    
-    return {
-      question: `${pokemon1.name} ${num1}마리 ${operation} ${pokemon2.name} ${num2}마리 = ?`,
-      visualLeft: renderPokemonIcons(pokemon1, num1),
-      visualRight: renderPokemonIcons(pokemon2, num2),
-      num1, num2, operation, answer,
-      options: generateOptions(answer),
-      pokemonName: pokemon1.name,
-      pokemonType: pokemon1.type,
-      pokemonEngName: pokemon1.engName,
-      isVisual: true
-    };
+    if (operation === '+') {
+      answer = num1 + num2;
+      return { question: `${pokemon1.name} ${num1}마리 + ${pokemon2.name} ${num2}마리 = ?`, visualLeft: renderPokemonIcons(pokemon1, num1), visualRight: renderPokemonIcons(pokemon2, num2), num1, num2, operation: '+', answer, options: generateOptions(answer), pokemonName: pokemon1.name, pokemonType: pokemon1.type, pokemonEngName: pokemon1.engName, isVisual: true };
+    } else {
+      answer = num1 - num2;
+      return { question: `${pokemon1.name} ${num1}마리 - ${pokemon2.name} ${num2}마리 = ?`, visualLeft: renderPokemonIcons(pokemon1, num1), visualRight: renderPokemonIcons(pokemon2, num2), num1, num2, operation: '-', answer, options: generateOptions(answer), pokemonName: pokemon1.name, pokemonType: pokemon1.type, pokemonEngName: pokemon1.engName, isVisual: true };
+    }
   }
-  
   return generateSingleMathQuestion(age);
 }
 
 function generateSingleMathQuestion(age) {
   let num1, num2, operation, answer, question, options;
-  
   if (age <= 7) {
-    num1 = Math.floor(Math.random() * 20) + 1;
-    num2 = Math.floor(Math.random() * 20) + 1;
-    operation = Math.random() < 0.5 ? '+' : '-';
+    num1 = Math.floor(Math.random() * 9) + 1;
+    num2 = Math.floor(Math.random() * 9) + 1;
+    operation = Math.random() < 0.6 ? '+' : '-';
     if (operation === '-' && num1 < num2) [num1, num2] = [num2, num1];
     answer = operation === '+' ? num1 + num2 : num1 - num2;
     question = `${num1} ${operation} ${num2} = ?`;
-    
-  } else if (age <= 9) {
+  } else if (age <= 10) {
     const opType = Math.random();
-    if (opType < 0.5) {
-      num1 = Math.floor(Math.random() * 100) + 1;
-      num2 = Math.floor(Math.random() * 100) + 1;
-      operation = Math.random() < 0.5 ? '+' : '-';
-      if (operation === '-' && num1 < num2) [num1, num2] = [num2, num1];
-      answer = operation === '+' ? num1 + num2 : num1 - num2;
-      question = `${num1} ${operation} ${num2} = ?`;
-    } else {
-      const a = Math.floor(Math.random() * 5) + 2;
-      const b = Math.floor(Math.random() * 9) + 1;
-      operation = '×';
-      answer = a * b;
-      question = `${a} × ${b} = ?`;
-    }
-    
-  } else if (age <= 11) {
-    const opType = Math.random();
-    if (opType < 0.4) {
-      num1 = Math.floor(Math.random() * 200) + 50;
-      num2 = Math.floor(Math.random() * 150) + 10;
-      operation = Math.random() < 0.5 ? '+' : '-';
-      if (operation === '-' && num1 < num2) [num1, num2] = [num2, num1];
-      answer = operation === '+' ? num1 + num2 : num1 - num2;
-      question = `${num1} ${operation} ${num2} = ?`;
-    } else if (opType < 0.7) {
-      const a = Math.floor(Math.random() * 9) + 2;
-      const b = Math.floor(Math.random() * 9) + 1;
-      operation = '×';
-      answer = a * b;
-      question = `${a} × ${b} = ?`;
-    } else {
-      const b = Math.floor(Math.random() * 9) + 1;
-      answer = Math.floor(Math.random() * 9) + 1;
-      num1 = b * answer;
-      operation = '÷';
-      question = `${num1} ÷ ${b} = ?`;
-    }
-    
+    if (opType < 0.4) { num1 = Math.floor(Math.random() * 19) + 1; num2 = Math.floor(Math.random() * 19) + 1; operation = '+'; answer = num1 + num2; }
+    else if (opType < 0.7) { num1 = Math.floor(Math.random() * 19) + 1; num2 = Math.floor(Math.random() * 19) + 1; if (num1 < num2) [num1, num2] = [num2, num1]; operation = '-'; answer = num1 - num2; }
+    else { num1 = Math.floor(Math.random() * 9) + 1; num2 = Math.floor(Math.random() * 9) + 1; operation = '×'; answer = num1 * num2; }
+    question = `${num1} ${operation} ${num2} = ?`;
   } else {
     const opType = Math.random();
-    if (opType < 0.4) {
-      num1 = Math.floor(Math.random() * 500) + 200;
-      num2 = Math.floor(Math.random() * 300) + 50;
-      operation = Math.random() < 0.5 ? '+' : '-';
-      if (operation === '-' && num1 < num2) [num1, num2] = [num2, num1];
-      answer = operation === '+' ? num1 + num2 : num1 - num2;
-      question = `${num1} ${operation} ${num2} = ?`;
-    } else if (opType < 0.7) {
-      const den = Math.floor(Math.random() * 4) + 2;
-      const n1 = Math.floor(Math.random() * den) + 1;
-      const n2 = Math.floor(Math.random() * den) + 1;
-      const sumNum = n1 + n2;
-      answer = sumNum + '/' + den;
-      question = `${n1}/${den} + ${n2}/${den} = ?`;
-    } else {
-      const a = Math.floor(Math.random() * 9) + 1;
-      const b = Math.floor(Math.random() * 9) + 1;
-      answer = (a * b / 10).toFixed(1);
-      question = `${a} × 0.${b} = ?`;
-    }
+    if (opType < 0.3) { num1 = Math.floor(Math.random() * 29) + 1; num2 = Math.floor(Math.random() * 29) + 1; operation = '+'; answer = num1 + num2; }
+    else if (opType < 0.55) { num1 = Math.floor(Math.random() * 29) + 1; num2 = Math.floor(Math.random() * 29) + 1; if (num1 < num2) [num1, num2] = [num2, num1]; operation = '-'; answer = num1 - num2; }
+    else if (opType < 0.8) { num1 = Math.floor(Math.random() * 12) + 1; num2 = Math.floor(Math.random() * 12) + 1; operation = '×'; answer = num1 * num2; }
+    else { num2 = Math.floor(Math.random() * 9) + 1; answer = Math.floor(Math.random() * 9) + 1; num1 = num2 * answer; operation = '÷'; question = `${num1} ÷ ${num2} = ?`; answer = num1 / num2; }
+    question = `${num1} ${operation} ${num2} = ?`;
   }
-  
   options = [answer];
   while (options.length < 4) {
     let offset = Math.floor(Math.random() * 10) + 1;
     if (Math.random() < 0.5) offset = -offset;
-    const wrong = typeof answer === 'string' ? answer : answer + offset;
-    if (!options.includes(wrong) && wrong !== answer) options.push(wrong);
+    const wrong = answer + offset;
+    if (wrong >= 0 && !options.includes(wrong) && wrong !== answer) options.push(wrong);
   }
   options.sort(() => Math.random() - 0.5);
-  
   const randomPokemon = POKEMON_LIST[Math.floor(Math.random() * POKEMON_LIST.length)];
   return { question, options, answer, pokemonName: randomPokemon.name, pokemonType: randomPokemon.type, pokemonEngName: randomPokemon.engName, answered: false };
 }
@@ -3881,9 +3537,7 @@ function checkMathAnswer2(selectedIdx) {
   }, 1500);
 }
 
-// ============================================================
-// ⚔️ 레이드
-// ============================================================
+// ===== ⚔️ 레이드 =====
 function renderRaidMission() {
   const panel = document.getElementById('missionPanel');
   const key = todayKey();
@@ -4009,22 +3663,16 @@ function collectRaidReward() {
   addEvolutionStone(stoneType, 1);
   const stoneLabel = stoneType === 'mega' ? '메가' : '거다이맥스';
   
-  // ⭐⭐⭐ 레이드 클리어 시 음악 감상권 2개 지급 ⭐⭐⭐
-  state.musicTickets = (state.musicTickets || 0) + 2;
-  console.log('🎵 음악 감상권 +2 (현재:', state.musicTickets, '개)');
-  
   raid.rewardCollected = true;
   saveState();
   SFX.victory();
-  showRewardPopup(boss, '🎉 레이드 보상 획득!', `스페셜 등급 + ${stoneLabel}진화의돌 1개 + 🎵 감상권 2개!`);
+  showRewardPopup(boss, '🎉 레이드 보상 획득!', `스페셜 등급 + ${stoneLabel}진화의돌 1개!`);
   updateStatline();
   renderDex();
   renderRaidMission();
 }
 
-// ============================================================
-// 🐣 키우기
-// ============================================================
+// ===== 🐣 키우기 =====
 function petCreature() {
   if (!state.pet) return null;
   const id = state.pet.evolvedId || state.pet.baseId;
@@ -4287,9 +3935,7 @@ function getCooldownRemaining(lastAction, cooldownMs) {
   return Math.max(0, cooldownMs - elapsed);
 }
 
-// ============================================================
-// 📖 도감
-// ============================================================
+// ===== 도감 =====
 function renderFilters() {
   const row = document.getElementById('filterRow');
   const typeSet = new Set(POKEMON_LIST.map(p => p.type));
@@ -4404,9 +4050,7 @@ function renderDex() {
   });
 }
 
-// ============================================================
-// 🃏 카드 상세 모달
-// ============================================================
+// ===== 카드 상세 모달 =====
 let modalCryAudio = null;
 
 async function openCardDetail(pokemon) {
@@ -4531,21 +4175,6 @@ async function openCardDetail(pokemon) {
     }
   }
   
-  // ⭐⭐⭐ 색칠 도안 출력 버튼 (간단 버전) ⭐⭐⭐
-  const coloringButtonHTML = `
-    <div style="margin-top:8px;padding:10px;background:rgba(255,201,60,.06);border-radius:10px;border:1px solid rgba(255,201,60,.15);">
-      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
-        <div style="font-size:13px;color:#B7AFDE;">
-          🎨 ${pokemon.name} 색칠 도안 출력
-          <br><span style="font-size:11px;color:#6b6395;">A4 용지에 원본 + 윤곽선 도안을 출력합니다</span>
-        </div>
-        <button class="btn small" onclick="generateColoringPage('${pokemon.engName}')" style="font-size:14px;padding:8px 18px;min-height:36px;background:var(--electric);box-shadow:0 4px 0 #C99414;color:#2A2440;">
-          🖨️ 출력
-        </button>
-      </div>
-    </div>
-  `;
-  
   body.innerHTML = `
     <div class="modal-art">${pokemonImage(pokemon, '160px')}</div>
     <div class="modal-name">${pokemon.name}</div>
@@ -4558,7 +4187,6 @@ async function openCardDetail(pokemon) {
     ${evolutionButtonHTML ? `<div class="modal-section" style="border-left-color:var(--special);"><h4>⭐ 추가 진화</h4><div style="display:flex;gap:8px;flex-wrap:wrap;">${evolutionButtonHTML}</div></div>` : ''}
     <div class="modal-section" style="border-left-color:${rInfo.color};"><h4>✨ ${rInfo.label} 등급 보너스</h4><p style="font-size:14px;color:#B7AFDE;">HP +${bonus.hp} / 공격 +${bonus.atk} / 방어 +${bonus.def} / 속도 +${bonus.spd}</p></div>
     ${craftButtonHTML}
-    ${coloringButtonHTML}
     <div style="text-align:center;margin-top:12px;"><button class="btn small" id="closeModalBtn">닫기</button></div>
   `;
   
@@ -4580,9 +4208,8 @@ function closeModal() {
   document.getElementById('cardModal').classList.remove('open');
 }
 
-// ============================================================
-// 💎 메가진화 실행 (개선 버전)
-// ============================================================
+// ===== 메가진화 실행 =====
+// ===== 메가진화 실행 (개선 버전) =====
 function performMegaEvolution(engName) {
   const megaEvo = MEGA_EVOLUTIONS[engName];
   if (!megaEvo) {
@@ -4600,6 +4227,7 @@ function performMegaEvolution(engName) {
     return;
   }
 
+  // ⭐ 1. 기존 카드 확인 (엄격하게)
   const sourceCard = state.owned[engName];
   if (!sourceCard || sourceCard.count < 1) {
     alert('⚠️ 진화할 카드가 없어요!');
@@ -4609,10 +4237,12 @@ function performMegaEvolution(engName) {
   const originalRarity = sourceCard.originalRarity || sourceCard.rarity || 'common';
   console.log('🔍 메가진화 시작:', engName, '등급:', originalRarity);
 
+  // ⭐ 2. 메가 이미지
   let megaImage = MEGA_IMAGE_MAP?.[megaEvo.id] ||
                    sourcePokemon.image ||
                    `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${sourcePokemon.id}.png`;
 
+  // ⭐ 3. POKEMON_LIST에 메가 포켓몬 강제 추가 (중복 방지)
   let megaPokemon = getPokemonByName(megaEvo.id);
   if (!megaPokemon) {
     megaPokemon = {
@@ -4634,6 +4264,7 @@ function performMegaEvolution(engName) {
     POKEMON_LIST.push(megaPokemon);
     console.log('✅ POKEMON_LIST에 메가 추가:', megaPokemon.name);
 
+    // 캐시 저장
     try {
       const cache = localStorage.getItem(CACHE_KEY);
       if (cache) {
@@ -4647,16 +4278,19 @@ function performMegaEvolution(engName) {
       console.warn('⚠️ 캐시 저장 실패:', e);
     }
   } else {
+    // 이미 있으면 이미지 업데이트
     megaPokemon.image = megaImage;
     megaPokemon.originalRarity = originalRarity;
   }
 
+  // ⭐ 4. 기존 카드 1장 삭제
   sourceCard.count -= 1;
   if (sourceCard.count <= 0) {
     delete state.owned[engName];
   }
   console.log('🗑️ 기존 카드 삭제 후:', state.owned[engName] || '없음');
 
+  // ⭐ 5. 메가 카드 추가 (강제로 count=1 설정, 중복 방지)
   state.owned[megaEvo.id] = {
     count: (state.owned[megaEvo.id]?.count || 0) + 1,
     rarity: 'mega',
@@ -4664,6 +4298,7 @@ function performMegaEvolution(engName) {
   };
   console.log('✅ 메가 카드 추가 완료:', state.owned[megaEvo.id]);
 
+  // ⭐ 6. Pet도 함께 진화!
   if (state.pet) {
     const petCurrentId = state.pet.evolvedId || state.pet.baseId;
     if (petCurrentId === engName) {
@@ -4675,6 +4310,7 @@ function performMegaEvolution(engName) {
     }
   }
 
+  // ⭐ 7. 저장 및 UI 갱신
   saveState();
   SFX.megaEvolution();
   closeModal();
@@ -4685,10 +4321,8 @@ function performMegaEvolution(engName) {
 
   console.log('🎉 메가진화 완료!');
 }
-
-// ============================================================
-// 🔥 거다이맥스 실행 (개선 버전)
-// ============================================================
+// ===== 거다이맥스 실행 =====
+// ===== 거다이맥스 실행 (개선 버전) =====
 function performGigantamaxEvolution(engName) {
   const gigaEvo = GIGANTAMAX_EVOLUTIONS[engName];
   if (!gigaEvo) {
@@ -4706,6 +4340,7 @@ function performGigantamaxEvolution(engName) {
     return;
   }
 
+  // ⭐ 1. 기존 카드 확인 (엄격하게)
   const sourceCard = state.owned[engName];
   if (!sourceCard || sourceCard.count < 1) {
     alert('⚠️ 진화할 카드가 없어요!');
@@ -4715,10 +4350,12 @@ function performGigantamaxEvolution(engName) {
   const originalRarity = sourceCard.originalRarity || sourceCard.rarity || 'common';
   console.log('🔍 거다이맥스 진화 시작:', engName, '등급:', originalRarity);
 
+  // ⭐ 2. 거다이맥스 이미지
   let gigaImage = GIGANTAMAX_IMAGE_MAP?.[gigaEvo.id] ||
                    sourcePokemon.image ||
                    `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${sourcePokemon.id}.png`;
 
+  // ⭐ 3. POKEMON_LIST에 거다이맥스 포켓몬 강제 추가 (중복 방지)
   let gigaPokemon = getPokemonByName(gigaEvo.id);
   if (!gigaPokemon) {
     gigaPokemon = {
@@ -4740,6 +4377,7 @@ function performGigantamaxEvolution(engName) {
     POKEMON_LIST.push(gigaPokemon);
     console.log('✅ POKEMON_LIST에 거다이맥스 추가:', gigaPokemon.name);
 
+    // 캐시 저장
     try {
       const cache = localStorage.getItem(CACHE_KEY);
       if (cache) {
@@ -4753,16 +4391,19 @@ function performGigantamaxEvolution(engName) {
       console.warn('⚠️ 캐시 저장 실패:', e);
     }
   } else {
+    // 이미 있으면 이미지 업데이트
     gigaPokemon.image = gigaImage;
     gigaPokemon.originalRarity = originalRarity;
   }
 
+  // ⭐ 4. 기존 카드 1장 삭제
   sourceCard.count -= 1;
   if (sourceCard.count <= 0) {
     delete state.owned[engName];
   }
   console.log('🗑️ 기존 카드 삭제 후:', state.owned[engName] || '없음');
 
+  // ⭐ 5. 거다이맥스 카드 추가 (강제로 count=1 설정, 중복 방지)
   state.owned[gigaEvo.id] = {
     count: (state.owned[gigaEvo.id]?.count || 0) + 1,
     rarity: 'gigantamax',
@@ -4770,6 +4411,7 @@ function performGigantamaxEvolution(engName) {
   };
   console.log('✅ 거다이맥스 카드 추가 완료:', state.owned[gigaEvo.id]);
 
+  // ⭐ 6. Pet도 함께 진화!
   if (state.pet) {
     const petCurrentId = state.pet.evolvedId || state.pet.baseId;
     if (petCurrentId === engName) {
@@ -4781,6 +4423,7 @@ function performGigantamaxEvolution(engName) {
     }
   }
 
+  // ⭐ 7. 저장 및 UI 갱신
   saveState();
   SFX.megaEvolution();
   closeModal();
@@ -4819,9 +4462,7 @@ function showRewardPopup(pokemon, title, subtitle) {
   setTimeout(() => { if (popup.parentNode) popup.remove(); }, 5000);
 }
 
-// ============================================================
-// ⚔️ 배틀 시스템
-// ============================================================
+// ===== 배틀 =====
 let battleMode = 'pvp';
 let battlePickerStep = 'type';
 let selectedSlotIndex = 0;
@@ -5347,9 +4988,8 @@ function leaveBattleRoom() {
   setTimeout(() => renderBattleSetup(), 500);
 }
 
-// ============================================================
-// 🔄 교환 시스템 (한글 검색 지원)
-// ============================================================
+// ===== 교환 시스템 =====
+// ===== 교환 탭 (한글/영문 검색 지원) =====
 function renderTradeTab() {
   const container = document.getElementById('tradeContent');
   const ownedCards = Object.keys(state.owned).filter(key => state.owned[key].count > 0);
@@ -5691,696 +5331,58 @@ function leaveTradeRoom() {
   renderTradeTab();
 }
 
-// ============================================================
-// 🎵 음악 도감
-// ============================================================
-function renderMusicTab() {
-  const container = document.getElementById('musicContent');
-  
-  const total = MUSIC_LIST.length;
-  const unlocked = state.unlockedMusic || [];
-  const tickets = state.musicTickets || 0;
-  const isPlaying = state.isMusicPlaying;
-  const currentId = state.currentMusic;
-  
-  container.innerHTML = `
-    <div style="text-align:center;margin-bottom:16px;">
-      <div style="font-size:20px;font-family:var(--font-display);color:var(--sun-2);">🎵 포켓몬 뮤직</div>
-      <div style="font-size:14px;color:#B7AFDE;margin-top:4px;">
-        수집: <b style="color:var(--paper);">${unlocked.length}</b> / ${total}곡
-        &nbsp;|&nbsp; 🎫 감상권: <b style="color:var(--paper);">${tickets}</b>개
-      </div>
-      <div style="font-size:12px;color:#6b6395;margin-top:2px;">
-        💡 퀴즈 100% 정답 시 음악 획득 &nbsp;|&nbsp; ⚔️ 레이드 클리어 시 감상권 +2
-      </div>
-      ${isPlaying ? `<div style="margin-top:6px;font-size:13px;color:var(--good);">▶️ 현재 재생 중: ${MUSIC_LIST.find(m => m.id === currentId)?.title || ''}</div>` : ''}
-    </div>
-    
-    <div style="display:flex;flex-direction:column;gap:8px;max-height:350px;overflow-y:auto;padding:4px 0;">
-      ${MUSIC_LIST.map(music => {
-        const isUnlocked = unlocked.includes(music.id);
-        const rInfo = getRarityInfo(music.rarity);
-        const isPlayingNow = isPlaying && currentId === music.id;
-        
-        return `
-          <div class="music-item" style="
-            display:flex;align-items:center;justify-content:space-between;
-            padding:12px 16px;border-radius:12px;
-            background:${isUnlocked ? 'rgba(255,255,255,.05)' : 'rgba(255,255,255,.02)'};
-            border:2px solid ${isUnlocked ? rInfo.color : 'rgba(255,255,255,.08)'};
-            opacity:${isUnlocked ? 1 : 0.4};
-            transition:all .2s;
-          ">
-            <div style="display:flex;align-items:center;gap:12px;flex:1;">
-              <span style="font-size:28px;">${isUnlocked ? music.emoji : '🔒'}</span>
-              <div>
-                <div style="font-family:var(--font-display);font-size:16px;color:${isUnlocked ? 'var(--paper)' : '#6b6395'};">
-                  ${isUnlocked ? music.title : '???'}
-                </div>
-                <div style="font-size:12px;color:#6b6395;">
-                  ${isUnlocked ? music.artist : '??? (미획득)'}
-                  ${isUnlocked ? `<span style="margin-left:8px;color:${rInfo.color};">${rInfo.emoji} ${rInfo.label}</span>` : ''}
-                </div>
-              </div>
-            </div>
-            <div style="display:flex;gap:6px;align-items:center;">
-              ${isUnlocked ? `
-                <button class="btn small" onclick="useTicketAndPlay('${music.id}')" 
-                        style="font-size:12px;padding:4px 14px;min-height:32px;${isPlayingNow ? 'background:var(--good);box-shadow:0 3px 0 #2E7A54;' : ''}"
-                        ${(tickets || 0) < 1 ? 'disabled' : ''}>
-                  ${isPlayingNow ? '⏹️ 정지' : `🎫 감상 (${tickets || 0}개)`}
-                </button>
-              ` : `
-                <span style="font-size:12px;color:#6b6395;">🔒 미획득</span>
-              `}
-            </div>
-          </div>
-        `;
-      }).join('')}
-    </div>
-    
-    <div style="margin-top:12px;padding:10px;background:rgba(255,201,60,.06);border-radius:10px;border:2px solid rgba(255,201,60,.15);text-align:center;">
-      <div style="font-size:12px;color:#6b6395;">
-        🎵 포켓몬 노래를 수집하고 들어보세요!
-        <br>퀴즈 100% 정답 시 음악 획득, 레이드 클리어 시 감상권 +2
-      </div>
-    </div>
-  `;
-}
+// ===== 필터 =====
+document.querySelectorAll('#ownershipFilter .chip').forEach(chip => {
+  chip.addEventListener('click', function() {
+    document.querySelectorAll('#ownershipFilter .chip').forEach(c => c.classList.remove('active'));
+    this.classList.add('active');
+    ownershipFilter = this.dataset.ownership;
+    renderDex();
+  });
+});
 
-// ===== 음악 재생 (Web Audio API) =====
-let musicContext = null;
-let musicOscillators = [];
+document.querySelectorAll('[data-rarity]').forEach(chip => {
+  chip.addEventListener('click', function() {
+    activeRarity = this.dataset.rarity;
+    document.querySelectorAll('[data-rarity]').forEach(c => c.classList.remove('active'));
+    this.classList.add('active');
+    renderDex();
+  });
+});
 
-function getMelodyForMusicId(musicId) {
-  const melodies = {
-    'opening_1': [523, 587, 659, 784, 880, 784, 659, 587, 523, 587, 659, 784, 880, 987, 880, 784],
-    'ending_1': [440, 494, 523, 587, 659, 587, 523, 494, 440, 494, 523, 587, 659, 784, 659, 587],
-    'opening_ag': [523, 587, 659, 784, 880, 784, 659, 784, 880, 987, 880, 784, 659, 587, 523],
-    'ending_ag': [494, 523, 587, 659, 587, 523, 494, 440, 494, 523, 587, 659, 784, 659, 587],
-    'opening_dp': [587, 659, 784, 880, 784, 659, 587, 659, 784, 987, 880, 784, 659, 587, 523],
-    'ending_dp': [523, 494, 440, 494, 523, 587, 659, 587, 523, 494, 523, 587, 659, 784, 659],
-    'movie_1': [523, 587, 659, 784, 880, 784, 659, 784, 880, 987, 880, 784, 659, 784, 880, 987],
-    'only_one_story': [587, 659, 784, 880, 987, 880, 784, 659, 784, 880, 987, 1047, 987, 880, 784, 659]
-  };
-  return melodies[musicId] || [523, 587, 659, 784, 880, 784, 659];
-}
-
-// ===== 음악 재생 =====
-function playMusicById(musicId) {
-  const music = MUSIC_LIST.find(m => m.id === musicId);
-  if (!music) {
-    console.warn('⚠️ 음악을 찾을 수 없음:', musicId);
-    return;
+// ===== 자정 초기화 =====
+function resetDailyContent() {
+  const key = todayKey();
+  state.quizDoneToday = null;
+  currentQuiz = { questions: [], currentIndex: 0, correctCount: 0, isFinished: false, totalQuestions: 0 };
+  const today = todayKey();
+  for (const dateKey in state.dailyMissions) { if (dateKey !== today) delete state.dailyMissions[dateKey]; }
+  if (!state.dailyMissions[today]) state.dailyMissions[today] = {};
+  state.mathQuiz = { today: null, questions: [], currentIndex: 0, results: [], completed: false };
+  const shouldResetRaid = !state.raid || state.raid.today !== today || state.raid.completed === true;
+  if (shouldResetRaid) {
+    const finalForms = POKEMON_LIST.filter(p => { const evoChain = getEvoChain(p.engName); return evoChain && evoChain.length >= 2 && evoChain[evoChain.length-1] === p.engName; });
+    let boss = finalForms.length > 0 ? finalForms[Math.floor(Math.random() * finalForms.length)] : POKEMON_LIST[Math.floor(Math.random() * POKEMON_LIST.length)];
+    state.raid = { boss, hp: boss.hp * 15, maxHp: boss.hp * 15, completed: false, today: today, attackChance: 0, rewardCollected: false };
+    state.raidSelectedType = null; state.raidSelectedCard = null;
   }
-  
-  if (state.isMusicPlaying && state.currentMusic === musicId) {
-    stopMusic();
-    return;
-  }
-  
-  stopMusic();
-  
-  if (state.isYouTubeReady && music.videoId) {
-    // 컨테이너 생성 (숨겨진 플레이어)
-    let container = document.getElementById('musicPlayerContainer');
-    if (!container) {
-      container = document.createElement('div');
-      container.id = 'musicPlayerContainer';
-      document.body.appendChild(container);
-    }
-    container.style.display = 'block';
-    
-    createYouTubePlayer(music.videoId, 'musicPlayerContainer');
-    state.currentMusic = musicId;
-    state.isMusicPlaying = true;
-    renderMusicTab();
-  } else {
-    // YouTube API가 없으면 멜로디 재생
-    playSimpleMelody(musicId);
-  }
-}
-
-// ===== 음악 재생 상태 표시 =====
-function showMusicStatus(videoId) {
-  const statusEl = document.getElementById('musicPlayerStatus');
-  const titleEl = document.getElementById('nowPlayingTitle');
-  if (!statusEl || !titleEl) return;
-  
-  const music = MUSIC_LIST.find(m => m.videoId === videoId || m.id === videoId);
-  titleEl.textContent = music ? music.title : '알 수 없는 곡';
-  statusEl.style.display = 'block';
-}
-
-// ===== 음악 재생 상태 숨기기 =====
-function hideMusicStatus() {
-  const statusEl = document.getElementById('musicPlayerStatus');
-  if (statusEl) {
-    statusEl.style.display = 'none';
-  }
-}
-// ===== 감상권 사용 후 음악 재생 =====
-function useTicketAndPlay(musicId) {
-  const music = MUSIC_LIST.find(m => m.id === musicId);
-  if (!music) {
-    alert('⚠️ 음악을 찾을 수 없어요!');
-    return;
-  }
-  
-  if (!state.unlockedMusic.includes(musicId)) {
-    alert('⚠️ 아직 해금되지 않은 음악이에요!');
-    return;
-  }
-  
-  if ((state.musicTickets || 0) < 1) {
-    alert('⚠️ 감상권이 부족합니다! 레이드를 클리어해서 감상권을 획득하세요.');
-    return;
-  }
-  
-  // ⭐ 이미 재생 중이면 정지
-  if (state.isMusicPlaying && state.currentMusic === musicId) {
-    stopMusic();
-    return;
-  }
-  
-  // ⭐ 감상권 1개 소비
-  state.musicTickets = (state.musicTickets || 0) - 1;
   saveState();
-  updateStatline();
-  
-  // ⭐ 음악 재생
-  playMusicById(musicId);
-}  
-// ===== 간단한 멜로디 재생 (YouTube API 없을 때 대체) =====
-// ===== 간단한 멜로디 재생 (안드로이드 최적화) =====
-function playSimpleMelody(musicId) {
-  const music = MUSIC_LIST.find(m => m.id === musicId);
-  if (!music) return;
-  
-  const melodies = {
-    'opening_1': [523, 587, 659, 784, 880, 784, 659, 587, 523],
-    'ending_1': [440, 494, 523, 587, 659, 587, 523, 494, 440],
-    'opening_ag': [523, 587, 659, 784, 880, 784, 659, 784, 880],
-    'ending_ag': [494, 523, 587, 659, 587, 523, 494, 440],
-    'opening_dp': [587, 659, 784, 880, 784, 659, 587, 659, 784],
-    'opening_dp_promise': [523, 587, 659, 784, 880, 784, 659, 784, 880],
-    'ending_dp': [523, 494, 440, 494, 523, 587, 659, 587, 523],
-    'movie_1': [523, 587, 659, 784, 880, 784, 659, 784, 880],
-    'movie_2_best': [587, 659, 784, 880, 987, 880, 784, 659, 784],
-    'only_one_story': [587, 659, 784, 880, 987, 880, 784, 659, 784]
-  };
-  
-  const notes = melodies[musicId] || [523, 587, 659, 784, 880, 784, 659];
-  
-  try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    
-    // ⭐ 안드로이드: AudioContext 재개
-    if (ctx.state === 'suspended') {
-      ctx.resume().catch(e => console.warn('⚠️ AudioContext 재개 실패:', e));
-    }
-    
-    notes.forEach((freq, i) => {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'square';
-      osc.frequency.value = freq;
-      gain.gain.value = 0.08;
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      const startTime = ctx.currentTime + i * 0.15;
-      osc.start(startTime);
-      osc.stop(startTime + 0.1);
-    });
-    
-    state.currentMusic = musicId;
-    state.isMusicPlaying = true;
-    renderMusicTab();
-    
-    // ⭐ 음악 재생 상태 표시
-    const statusEl = document.getElementById('musicPlayerStatus');
-    const titleEl = document.getElementById('nowPlayingTitle');
-    if (statusEl && titleEl) {
-      titleEl.textContent = music.title;
-      statusEl.style.display = 'block';
-    }
-    
-    setTimeout(() => {
-      state.isMusicPlaying = false;
-      state.currentMusic = null;
-      renderMusicTab();
-      const statusEl = document.getElementById('musicPlayerStatus');
-      if (statusEl) statusEl.style.display = 'none';
-    }, notes.length * 0.15 + 500);
-    
-  } catch(e) {
-    console.warn('⚠️ 멜로디 재생 실패:', e);
-    state.isMusicPlaying = false;
-  }
-}
-// ===== YouTube API 로드 =====
-function loadYouTubeAPI() {
-  // 안드로이드에서는 API 로드를 2초 지연
-  const isAndroid = /android/i.test(navigator.userAgent);
-  const delay = isAndroid ? 2000 : 0;
-  
-  setTimeout(() => {
-    if (document.querySelector('script[src*="youtube.com/iframe_api"]')) return;
-    
-    const script = document.createElement('script');
-    script.src = 'https://www.youtube.com/iframe_api';
-    document.head.appendChild(script);
-    console.log('📥 YouTube API 로드 중... (안드로이드 지연:', delay, 'ms)');
-  }, delay);
+  renderQuizMission(); renderMathQuiz(); renderLifeMissions(); renderRaidMission(); updateStatline();
 }
 
-// ===== YouTube API 준비 콜백 =====
-let ytPlayer = null;
-
-function onYouTubeIframeAPIReady() {
-  console.log('✅ YouTube API 준비 완료!');
-  state.isYouTubeReady = true;
-}
-
-// ===== YouTube 플레이어 생성 =====
-// ===== YouTube 플레이어 생성 (오디오 전용) =====
-// ===== YouTube 플레이어 생성 (음악 전용 - 숨김) =====
-function createYouTubePlayer(videoId, containerId) {
-  if (!state.isYouTubeReady) {
-    console.warn('⚠️ YouTube API가 아직 준비되지 않음');
-    return;
+let lastCheckedDate = todayKey();
+setInterval(function() {
+  const currentDate = todayKey();
+  if (currentDate !== lastCheckedDate) {
+    lastCheckedDate = currentDate;
+    resetDailyContent();
   }
-  
-  if (ytPlayer) {
-    try {
-      ytPlayer.destroy();
-    } catch(e) {}
-    ytPlayer = null;
-  }
-  
-  const container = document.getElementById(containerId);
-  if (!container) {
-    console.warn('⚠️ 컨테이너를 찾을 수 없음:', containerId);
-    return;
-  }
-  
-  // 기존 iframe 제거
-  const oldIframe = container.querySelector('iframe');
-  if (oldIframe) oldIframe.remove();
-  
-  // ⭐ 음악 전용: 플레이어 숨김
-  ytPlayer = new YT.Player(containerId, {
-    height: '1',          // ⭐ 최소 높이 (숨김)
-    width: '1',           // ⭐ 최소 너비 (숨김)
-    videoId: videoId,
-    playerVars: {
-      'autoplay': 1,
-      'controls': 0,        // ⭐ 컨트롤 숨김
-      'rel': 0,             // ⭐ 관련 영상 제거
-      'showinfo': 0,        // ⭐ 영상 정보 제거
-      'iv_load_policy': 3,  // ⭐ 자막/댓글 제거
-      'modestbranding': 1,  // ⭐ 유튜브 로고 최소화
-      'fs': 0,              // ⭐ 전체화면 제거
-      'disablekb': 1,       // ⭐ 키보드 제어 제거
-      'playsinline': 1,     // ⭐ 전체화면 방지
-      'hl': 'ko',           // ⭐ 한국어 설정
-      'cc_lang_pref': 'ko', // ⭐ 한국어 자막
-      'origin': window.location.origin
-    },
-    events: {
-      'onReady': function(event) {
-        console.log('🎵 오디오 플레이어 준비 완료');
-        event.target.playVideo();
-        // ⭐ 재생 상태 표시
-        showMusicStatus(videoId);
-      },
-      'onStateChange': function(event) {
-        if (event.data === YT.PlayerState.ENDED) {
-          console.log('🎵 음악 재생 종료');
-          hideMusicStatus();
-          state.isMusicPlaying = false;
-          state.currentMusic = null;
-          renderMusicTab();
-        }
-      }
-    }
-  });
-}
-// ===== 음악 정지 (안드로이드 강화) =====
-function stopMusic() {
-  // YouTube 플레이어 정지
-  if (ytPlayer) {
-    try {
-      ytPlayer.stopVideo();
-      ytPlayer.destroy();
-    } catch(e) {
-      console.warn('⚠️ YouTube 정지 오류:', e);
-    }
-    ytPlayer = null;
-  }
-  
-  // Web Audio API 정지
-  if (musicOscillators.length > 0) {
-    musicOscillators.forEach(({ osc }) => {
-      try { osc.stop(); } catch(e) {}
-    });
-    musicOscillators = [];
-  }
-  if (musicContext) {
-    try { musicContext.close(); } catch(e) {}
-    musicContext = null;
-  }
-  
-  // ⭐ YouTube 컨테이너 완전 제거 (안드로이드 메모리 해제)
-  const container = document.getElementById('musicPlayerContainer');
-  if (container) {
-    container.innerHTML = '';
-    container.style.display = 'none';
-  }
-  
-  // ⭐ 상태 표시 숨기기
-  const statusEl = document.getElementById('musicPlayerStatus');
-  if (statusEl) {
-    statusEl.style.display = 'none';
-  }
-  
-  state.isMusicPlaying = false;
-  state.currentMusic = null;
-  
-  // ⭐ UI 갱신
-  renderMusicTab();
-  
-  console.log('🎵 음악 정지 완료');
-}
-// ============================================================
-// 🧩 상성 퀴즈
-// ============================================================
-let typeQuiz = {
-  questions: [],
-  currentIndex: 0,
-  correctCount: 0,
-  totalQuestions: 10,
-  isFinished: false
-};
-
-function generateTypeQuizQuestions() {
-  const types = Object.keys(TYPE_CHART);
-  const questions = [];
-  
-  for (let i = 0; i < 10; i++) {
-    const attackType = types[Math.floor(Math.random() * types.length)];
-    const defendType = types[Math.floor(Math.random() * types.length)];
-    
-    if (Math.random() < 0.8) {
-      const mult = getEffMult(attackType, defendType);
-      const options = ['⛔ 효과가 없다!', '❌ 효과가 별로다...', '➖ 효과가 보통이다', '⚡ 효과가 굉장하다!'];
-      const correctIndex = mult === 0 ? 0 : mult === 0.5 ? 1 : mult === 1 ? 2 : 3;
-      
-      questions.push({
-        type: 'attack',
-        question: `🔥 ${getTypeLabel(attackType)} 타입 공격이 🛡️ ${getTypeLabel(defendType)} 타입에게 주는 효과는?`,
-        options: options,
-        correctIndex: correctIndex,
-        explanation: `${getTypeLabel(attackType)} → ${getTypeLabel(defendType)}: ${options[correctIndex]}`
-      });
-    } else {
-      const isWeak = Math.random() < 0.5;
-      
-      questions.push({
-        type: 'defense',
-        question: `❓ ${getTypeLabel(defendType)} 타입은 ${getTypeLabel(attackType)} 타입에 ${isWeak ? '약할까?' : '강할까?'}`,
-        options: ['✅ 맞아! (약해)', '❌ 아니야! (강해)'],
-        correctIndex: isWeak ? 0 : 1,
-        explanation: `${getTypeLabel(defendType)} → ${getTypeLabel(attackType)}: ${isWeak ? '약함' : '강함'}`
-      });
-    }
-  }
-  
-  typeQuiz.questions = questions;
-  typeQuiz.currentIndex = 0;
-  typeQuiz.correctCount = 0;
-  typeQuiz.isFinished = false;
-  typeQuiz.totalQuestions = questions.length;
-}
-
-function renderTypeQuiz() {
-  const panel = document.getElementById('missionPanel');
-  
-  if (typeQuiz.isFinished) {
-    const isPass = typeQuiz.correctCount >= 7;
-    if (isPass) {
-      state.musicTickets = (state.musicTickets || 0) + 1;
-      saveState();
-      updateStatline();
-    }
-    
-    panel.innerHTML = `
-      <div class="mission-intro">
-        <div class="big-emoji">🧠</div>
-        <div class="title-text">상성 퀴즈 완료!</div>
-        <div style="font-size:18px;color:#B7AFDE;margin:8px 0;">
-          ${typeQuiz.totalQuestions}문제 중 ${typeQuiz.correctCount}문제 정답!
-        </div>
-        <div style="font-size:16px;color:${isPass ? 'var(--good)' : 'var(--bad)'};">
-          ${isPass ? '🎵 음악 감상권 +1 획득!' : '📚 7개 이상 맞추면 감상권을 획득할 수 있어요!'}
-        </div>
-        <button class="btn small" onclick="resetTypeQuiz()" style="margin-top:12px;">🔄 다시 도전</button>
-      </div>
-    `;
-    return;
-  }
-  
-  if (typeQuiz.questions.length === 0) generateTypeQuizQuestions();
-  
-  const q = typeQuiz.questions[typeQuiz.currentIndex];
-  if (!q) { typeQuiz.isFinished = true; renderTypeQuiz(); return; }
-  
-  panel.innerHTML = `
-    <div class="quiz-box">
-      <div style="font-family:var(--font-mono);font-size:14px;color:#B7AFDE;margin-bottom:8px;">
-        ${typeQuiz.currentIndex + 1} / ${typeQuiz.totalQuestions} · 정답 ${typeQuiz.correctCount}개
-      </div>
-      <div class="quiz-q" style="font-size:18px;">${q.question}</div>
-      <div class="choice-grid">
-        ${q.options.map((opt, idx) => `
-          <button class="choice-btn" data-idx="${idx}" onclick="checkTypeQuizAnswer(${idx})">
-            ${opt}
-          </button>
-        `).join('')}
-      </div>
-      <div class="quiz-feedback" id="typeQuizFeedback"></div>
-    </div>
-  `;
-}
-
-function checkTypeQuizAnswer(selectedIdx) {
-  const q = typeQuiz.questions[typeQuiz.currentIndex];
-  if (q._answered) return;
-  q._answered = true;
-  
-  const buttons = document.querySelectorAll('.choice-btn');
-  buttons.forEach((b, i) => {
-    b.disabled = true;
-    if (i === q.correctIndex) b.classList.add('correct');
-    if (i === selectedIdx && selectedIdx !== q.correctIndex) b.classList.add('wrong');
-  });
-  
-  const fb = document.getElementById('typeQuizFeedback');
-  const isCorrect = selectedIdx === q.correctIndex;
-  
-  if (isCorrect) {
-    typeQuiz.correctCount++;
-    fb.textContent = `✅ 정답! ${q.explanation}`;
-    fb.className = 'quiz-feedback ok';
-    if (Math.random() < 0.3) {
-      grantCardReward();
-      fb.textContent += ' 🎁 카드 획득!';
-    }
-  } else {
-    fb.textContent = `❌ 정답: ${q.explanation}`;
-    fb.className = 'quiz-feedback no';
-  }
-  
-  setTimeout(() => {
-    typeQuiz.currentIndex++;
-    if (typeQuiz.currentIndex >= typeQuiz.totalQuestions) {
-      typeQuiz.isFinished = true;
-      renderTypeQuiz();
-    } else {
-      renderTypeQuiz();
-    }
-  }, 2000);
-}
-
-function resetTypeQuiz() {
-  typeQuiz = {
-    questions: [],
-    currentIndex: 0,
-    correctCount: 0,
-    totalQuestions: 10,
-    isFinished: false
-  };
-  renderTypeQuiz();
-}
+}, 60000);
 
 // ============================================================
-// 🎨 색칠 도안 생성 (간단 버전)
+// 🚀 합성 시스템 (window에 등록)
 // ============================================================
-function generateColoringPage(engName) {
-  const pokemon = getPokemonByName(engName);
-  if (!pokemon) {
-    alert('⚠️ 포켓몬을 찾을 수 없어요!');
-    return;
-  }
-  
-  if (!confirm(`🎨 ${pokemon.name} 색칠 도안을 생성할까요?`)) {
-    return;
-  }
-  
-  const imageUrl = pokemon.image || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokemon.id}.png`;
-  
-  const coloringHTML = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="UTF-8">
-      <title>${pokemon.name} 색칠놀이 도안</title>
-      <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-          font-family: 'Malgun Gothic', sans-serif; 
-          background: #fff; 
-          padding: 20px;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          min-height: 100vh;
-        }
-        .page {
-          width: 210mm;
-          min-height: 297mm;
-          background: #fff;
-          padding: 15mm 20mm 12mm;
-          border: 1px solid #ddd;
-          box-shadow: 0 0 10px rgba(0,0,0,.1);
-          position: relative;
-        }
-        .header {
-          text-align: center;
-          margin-bottom: 10px;
-          padding-bottom: 6px;
-          border-bottom: 2px solid #333;
-        }
-        .header h1 { font-size: 22px; color: #333; }
-        .header .sub { font-size: 11px; color: #888; margin-top: 2px; }
-        .coloring-area {
-          width: 100%;
-          min-height: 190mm;
-          border: 3px solid #555;
-          border-radius: 8px;
-          padding: 16px;
-          background: #ffffff;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          position: relative;
-        }
-        .coloring-area img {
-          max-width: 100%;
-          max-height: 175mm;
-          object-fit: contain;
-          filter: grayscale(100%) contrast(1.5) brightness(1.1);
-          -webkit-filter: grayscale(100%) contrast(1.5) brightness(1.1);
-          background: transparent;
-        }
-        .preview {
-          position: absolute;
-          top: 16px;
-          right: 16px;
-          width: 20%;
-          max-width: 120px;
-          min-width: 60px;
-          border: 2px solid #333;
-          border-radius: 8px;
-          background: #fff;
-          padding: 4px;
-          box-shadow: 0 2px 10px rgba(0,0,0,.2);
-          z-index: 10;
-        }
-        .preview img {
-          width: 100%;
-          height: auto;
-          aspect-ratio: 1/1;
-          object-fit: contain;
-          display: block;
-          filter: none !important;
-          -webkit-filter: none !important;
-        }
-        .preview .label {
-          position: absolute;
-          bottom: -20px;
-          left: 50%;
-          transform: translateX(-50%);
-          font-size: 9px;
-          color: #666;
-          white-space: nowrap;
-          background: #fff;
-          padding: 0 6px;
-        }
-        .footer {
-          text-align: center;
-          margin-top: 10px;
-          padding-top: 6px;
-          border-top: 2px solid #ddd;
-          font-size: 10px;
-          color: #999;
-        }
-        @media print {
-          body { padding: 0; }
-          .page { border: none; box-shadow: none; padding: 8mm 12mm; }
-          .no-print { display: none; }
-        }
-      </style>
-    </head>
-    <body>
-      <div class="page">
-        <div class="header">
-          <h1>🎨 ${pokemon.name} 색칠놀이</h1>
-          <div class="sub">큰 윤곽선에 색칠하고, 오른쪽 상단의 원본을 참고하세요!</div>
-        </div>
-        <div class="coloring-area">
-          <div class="preview">
-            <img src="${imageUrl}" alt="원본" onerror="this.parentElement.innerHTML='<div style=\\'padding:20px;text-align:center;font-size:12px;color:#999;\\'><div style=\\'font-size:30px;\\'>❌</div>이미지 없음</div>'">
-            <div class="label">🎯 원본</div>
-          </div>
-          <img src="${imageUrl}" alt="${pokemon.name} 윤곽선" 
-               style="filter: grayscale(100%) contrast(1.5) brightness(1.1); -webkit-filter: grayscale(100%) contrast(1.5) brightness(1.1); background: transparent;"
-               onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22300%22%3E%3Crect fill=%22%23fff%22 width=%22300%22 height=%22300%22/%3E%3Ctext x=%22150%22 y=%22160%22 font-size=%2240%22 text-anchor=%22middle%22%3E❓%3C/text%3E%3C/svg%3E'">
-        </div>
-        <div class="footer">
-          <p>📅 ${new Date().toLocaleDateString('ko-KR')}  |  포켓몬 카드 마스터</p>
-        </div>
-      </div>
-      <div style="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);display:flex;gap:12px;z-index:100;" class="no-print">
-        <button onclick="window.print()" style="padding:12px 32px;font-size:18px;border-radius:12px;border:none;background:#4CAF7D;color:#fff;cursor:pointer;font-weight:700;box-shadow:0 4px 0 #2E7A54;">🖨️ 인쇄하기</button>
-        <button onclick="window.close()" style="padding:12px 32px;font-size:18px;border-radius:12px;border:none;background:#E4614B;color:#fff;cursor:pointer;font-weight:700;box-shadow:0 4px 0 #A04030;">✕ 닫기</button>
-      </div>
-    </body>
-    </html>
-  `;
-  
-  const win = window.open('', '_blank', 'width=800,height=600');
-  if (win) {
-    win.document.write(coloringHTML);
-    win.document.close();
-  } else {
-    alert('⚠️ 팝업이 차단되었습니다! 팝업 차단을 해제해주세요.');
-  }
-}
 
-// ============================================================
-// 🏗️ 합성 시스템
-// ============================================================
 window.craftFromDetail = function(engName) {
     try {
         const info = state.owned[engName];
@@ -6616,137 +5618,70 @@ window.openCardDetailFromCraft = function(engName) {
   }
 };
 
-// ============================================================
-// 🚀 초기화
-// ============================================================
-// ===== 게임 초기화 (안드로이드 최적화) =====
+// ===== 초기화 =====
 async function initGame() {
-  console.log('🚀 게임 초기화 시작...');
-  
-  // ⭐ 안드로이드 감지
-  const isAndroid = /android/i.test(navigator.userAgent);
-  if (isAndroid) {
-    console.log('📱 안드로이드 기기 감지됨 - 최적화 모드 활성화');
-  }
-  
-  // 로딩 화면 표시
-  const loadingScreen = document.getElementById('loadingScreen');
-  if (loadingScreen) loadingScreen.style.display = 'block';
-  
+  document.getElementById('loadingScreen').style.display = 'block';
   document.querySelectorAll('section').forEach(s => s.style.display = 'none');
   
-  try {
-    const hasSavedData = loadState();
-    console.log('📊 상태 로드 완료:', hasSavedData);
-    
-    autoMergeDuplicates();
-    console.log('📊 중복 카드 합치기 완료');
-    
-    // ⭐ 안드로이드: 로드 타임아웃 추가 (15초)
-    const loadPromise = loadAllPokemon();
-    const timeoutPromise = new Promise((_, reject) => {
-      setTimeout(() => reject(new Error('로드 타임아웃 (15초)')), 15000);
-    });
-    
-    await Promise.race([loadPromise, timeoutPromise]);
-    console.log('📊 포켓몬 로드 완료:', POKEMON_LIST.length + '마리');
-    
-    EVOLVABLE_POKEMON_LIST = await getAllEvolvablePokemon();
-    console.log('📊 진화 가능 포켓몬:', EVOLVABLE_POKEMON_LIST.length + '종');
-    
-    // ⭐ 안드로이드: YouTube API 로드 지연
-    loadYouTubeAPI();
-    
-    if (!hasSavedData) {
-      console.log('📊 새 게임 데이터 생성');
-      state.owned = {};
-      state.wins = 0;
-      state.losses = 0;
-      state.missionsWon = 0;
-      state.team = [];
-      state.dailyMissions = {};
-      state.customMissions = [];
-      state.pet = null;
-      state.quizStats = { total: 0, correct: 0 };
-      state.quizDoneToday = null;
-      state.playerAge = null;
-      state.mathQuiz = { today: null, questions: [], currentIndex: 0, results: [], completed: false };
-      state.mathStats = { total: 0, correct: 0 };
-      state.raid = { boss: null, hp: 0, maxHp: 0, completed: false, today: null, rewardCollected: false, attackChance: 0 };
-      state.raidSelectedType = null;
-      state.raidSelectedCard = null;
-      state.battleChances = 0;
-      state.pvpChances = 0;
-      state.evolutionStones = { mega: 0, gigantamax: 0 };
-      state.unlockedMusic = [];
-      state.musicTickets = 0;
-      state.isYouTubeReady = false;
-      saveState();
-    }
-    
-    // 로딩 상태 업데이트
-    const statusEl = document.getElementById('loadingStatus');
-    if (statusEl) {
-      statusEl.textContent = '✅ ' + POKEMON_LIST.length + '마리 | 진화: ' + EVOLVABLE_POKEMON_LIST.length + '종 | 보유: ' + Object.keys(state.owned).length + '마리';
-    }
-    
-    // ⭐ 로딩 화면 숨기기
-    if (loadingScreen) loadingScreen.style.display = 'none';
-    
-    // ⭐ 나이 확인
-    if (!state.playerAge) {
-      console.log('📊 나이 입력 필요');
-      document.getElementById('ageScreen').style.display = 'block';
-      document.querySelectorAll('section').forEach(s => s.style.display = 'none');
-    } else {
-      console.log('📊 나이 설정됨:', state.playerAge);
-      document.querySelectorAll('section').forEach(s => s.style.display = '');
-      document.getElementById('tab-mission').classList.add('active');
-      
-      // ⭐ 모든 UI 렌더링
-      renderAll();
-    }
-    
-    bindAdminEvents();
-    bindMissionEditEvents();
-    updateStoneDisplay();
-    
-    // 캐시 삭제 버튼
-    const clearCacheBtn = document.getElementById('clearCacheBtn');
-    if (clearCacheBtn) {
-      clearCacheBtn.addEventListener('click', clearPokeCache);
-      clearCacheBtn.addEventListener('touchend', function(e) {
-        e.preventDefault();
-        clearPokeCache();
-      });
-    }
-    
-    const clearAllBtn = document.getElementById('clearAllDataBtn');
-    if (clearAllBtn) {
-      clearAllBtn.addEventListener('click', clearAllData);
-      clearAllBtn.addEventListener('touchend', function(e) {
-        e.preventDefault();
-        clearAllData();
-      });
-    }
-    
-    console.log('✅ 게임 초기화 완료!');
-    
-  } catch(e) {
-    console.error('❌ 게임 초기화 오류:', e);
-    
-    // ⭐ 오류 시에도 UI 표시 (안드로이드 대응)
-    if (loadingScreen) loadingScreen.style.display = 'none';
+  const hasSavedData = loadState();
+  autoMergeDuplicates();
+  await loadAllPokemon();
+  EVOLVABLE_POKEMON_LIST = await getAllEvolvablePokemon();
+  
+  if (!hasSavedData) {
+    state.owned = {};
+    state.wins = 0;
+    state.losses = 0;
+    state.missionsWon = 0;
+    state.team = [];
+    state.dailyMissions = {};
+    state.customMissions = [];
+    state.pet = null;
+    state.quizStats = { total: 0, correct: 0 };
+    state.quizDoneToday = null;
+    state.playerAge = null;
+    state.mathQuiz = { today: null, questions: [], currentIndex: 0, results: [], completed: false };
+    state.mathStats = { total: 0, correct: 0 };
+    state.raid = { boss: null, hp: 0, maxHp: 0, completed: false, today: null, rewardCollected: false, attackChance: 0 };
+    state.raidSelectedType = null;
+    state.raidSelectedCard = null;
+    state.battleChances = 0;
+    state.pvpChances = 0;
+    state.evolutionStones = { mega: 0, gigantamax: 0 };
+    saveState();
+  }
+  
+  document.getElementById('loadingStatus').textContent = '✅ ' + POKEMON_LIST.length + '마리 | 진화: ' + EVOLVABLE_POKEMON_LIST.length + '종 | 보유: ' + Object.keys(state.owned).length + '마리';
+  
+  document.getElementById('loadingScreen').style.display = 'none';
+  
+  if (!state.playerAge) {
+    document.getElementById('ageScreen').style.display = 'block';
+    document.querySelectorAll('section').forEach(s => s.style.display = 'none');
+  } else {
     document.querySelectorAll('section').forEach(s => s.style.display = '');
     document.getElementById('tab-mission').classList.add('active');
-    
-    try {
-      renderAll();
-    } catch(renderErr) {
-      console.error('❌ 렌더링 오류:', renderErr);
-    }
-    
-    alert('게임 초기화 중 오류가 발생했습니다. 페이지를 새로고침해주세요.');
+    renderAll();
+  }
+  bindAdminEvents();
+  bindMissionEditEvents();
+  updateStoneDisplay();
+  const clearCacheBtn = document.getElementById('clearCacheBtn');
+  if (clearCacheBtn) {
+    clearCacheBtn.addEventListener('click', clearPokeCache);
+    clearCacheBtn.addEventListener('touchend', function(e) {
+      e.preventDefault();
+      clearPokeCache();
+    });
+  }
+  
+  const clearAllBtn = document.getElementById('clearAllDataBtn');
+  if (clearAllBtn) {
+    clearAllBtn.addEventListener('click', clearAllData);
+    clearAllBtn.addEventListener('touchend', function(e) {
+      e.preventDefault();
+      clearAllData();
+    });
   }
 }
 
@@ -6761,7 +5696,6 @@ function renderAll() {
   renderRaidMission();
   renderMathQuiz();
   renderCraftTab();
-  renderMusicTab();
 }
 
 initGame();
