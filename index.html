@@ -3172,25 +3172,35 @@ function renderLifeMissions() {
       <span>🎵 감상권: <b>${state.musicTickets || 0}</b>개</span>
     </div>
     <div class="life-mission-list">
-      ${allMissions.map(m => {
-        const isDone = doneToday[m.id];
-        const isRequired = DEFAULT_LIFE_MISSIONS.some(r => r.id === m.id);
-        return `<div class="mission-card ${isDone ? 'completed' : ''}">
-          <div class="mc-left"><div class="mc-emoji">${m.emoji || '📌'}</div><div class="mc-label">${m.label} ${isRequired ? '⭐' : ''}</div></div>
-          ${isDone ? '<span class="mc-status done">✅ 완료!</span>' : `<button class="mc-status pending" data-life="${m.id}">✔️ 완료!</button>`}
-        </div>`;
-      }).join('')}
+      ${allMissions
+        .sort((a, b) => {
+          const aDone = doneToday[a.id];
+          const bDone = doneToday[b.id];
+          // 미완료(aDone=false)가 위로 오도록 정렬
+          if (aDone && !bDone) return 1;   // a는 완료, b는 미완료 → b가 위로
+          if (!aDone && bDone) return -1;  // a는 미완료, b는 완료 → a가 위로
+          return 0;                         // 둘 다 같으면 원래 순서 유지
+        })
+        .map(m => {
+          const isDone = doneToday[m.id];
+          const isRequired = DEFAULT_LIFE_MISSIONS.some(r => r.id === m.id);
+          return `<div class="mission-card ${isDone ? 'completed' : ''}">
+            <div class="mc-left"><div class="mc-emoji">${m.emoji || '📌'}</div><div class="mc-label">${m.label} ${isRequired ? '⭐' : ''}</div></div>
+            ${isDone ? '<span class="mc-status done">✅ 완료!</span>' : `<button class="mc-status pending" data-life="${m.id}">✔️ 완료!</button>`}
+          </div>`;
+        }).join('')}
     </div>
     <div class="custom-mission-input">
       <input type="text" id="customMissionInput" placeholder="새 미션" maxlength="20" style="flex:2;padding:14px 16px;border-radius:12px;border:3px solid rgba(255,201,60,.2);background:rgba(255,255,255,.05);color:var(--paper);font-family:var(--font-body);font-size:18px;min-height:52px;">
       <input type="text" id="customMissionEmoji" placeholder="이모지" maxlength="2" style="width:60px;min-width:60px;text-align:center;padding:14px 4px;border-radius:12px;border:3px solid rgba(255,201,60,.2);background:rgba(255,255,255,.05);color:var(--paper);font-size:20px;min-height:52px;">
       <input type="number" id="customMissionCardCount" placeholder="카드" min="0" max="10" value="1" style="width:70px;min-width:60px;text-align:center;font-size:16px;padding:14px 4px;border-radius:12px;border:3px solid rgba(255,201,60,.2);background:rgba(255,255,255,.05);color:var(--paper);min-height:52px;">
       <button class="btn small" id="addCustomMission" style="padding:10px 16px;min-height:52px;">➕ 추가</button>
+      <button class="btn small danger" id="resetCustomMissions" style="padding:10px 16px;min-height:52px;background:var(--bad);box-shadow:0 4px 0 #A04030;color:#fff;">🗑️ 초기화</button>
     </div>
     <div class="reveal-wrap" id="lifeReveal"></div>
   `;
 
-  // ⭐ 미션 완료 버튼 이벤트 (레이드 공격 기회 추가 포함)
+  // ⭐ 미션 완료 버튼 이벤트
   document.querySelectorAll('[data-life]').forEach(btn => {
     btn.addEventListener('click', function() {
       const key = todayKey();
@@ -3210,7 +3220,7 @@ function renderLifeMissions() {
         if (reward) rewards.push(reward);
       }
       
-      // ⭐⭐⭐ 레이드 공격 기회 추가
+      // 레이드 공격 기회 추가
       if (state.raid && state.raid.boss && !state.raid.completed) {
         state.raid.attackChance = (state.raid.attackChance || 0) + 1;
       }
@@ -3276,6 +3286,26 @@ function renderLifeMissions() {
     saveState();
     renderLifeMissions();
   });
+
+  // ⭐ 커스텀 미션 초기화 버튼
+  document.getElementById('resetCustomMissions')?.addEventListener('click', function() {
+    resetCustomMissions();
+  });
+}
+// ===== 커스텀 미션 초기화 =====
+function resetCustomMissions() {
+  if (!state.customMissions || state.customMissions.length === 0) {
+    alert('⚠️ 삭제할 커스텀 미션이 없어요!');
+    return;
+  }
+  
+  if (!confirm('⚠️ 모든 커스텀 미션을 삭제할까요?')) return;
+  if (!confirm('⚠️ 마지막 확인입니다! 되돌릴 수 없어요!')) return;
+  
+  state.customMissions = [];
+  saveState();
+  renderLifeMissions();
+  toast('🗑️ 모든 커스텀 미션이 삭제되었습니다!');
 }
 
 // ===== 🧠 퀴즈미션 =====
