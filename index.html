@@ -1857,6 +1857,7 @@
 // ============================================================
 
 // ===== 효과음 시스템 =====
+// ===== 효과음 시스템 =====
 const SFX = {
   _ctx: null,
   get context() {
@@ -1880,27 +1881,69 @@ const SFX = {
       gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration / 1000);
     } catch(e) {}
   },
-  cardReward() { this.beep(523,100); setTimeout(()=>this.beep(659,100),120); setTimeout(()=>this.beep(784,150),240); },
-  evolution() { this.beep(523,80); setTimeout(()=>this.beep(659,80),100); setTimeout(()=>this.beep(784,80),200); setTimeout(()=>this.beep(1047,200),300); },
-  megaEvolution() { this.beep(440,60); setTimeout(()=>this.beep(659,60),80); setTimeout(()=>this.beep(880,60),160); setTimeout(()=>this.beep(1047,100),240); setTimeout(()=>this.beep(1318,150),340); },
-  attack() { this.beep(200,100,'sawtooth',0.2); setTimeout(()=>this.beep(150,150,'sawtooth',0.15),50); },
-  victory() { this.beep(523,100); setTimeout(()=>this.beep(659,100),120); setTimeout(()=>this.beep(784,100),240); setTimeout(()=>this.beep(1047,200),360); },
-  defeat() { this.beep(440,150); setTimeout(()=>this.beep(349,150),160); setTimeout(()=>this.beep(294,200),320); },
-  click() { this.beep(800,50,'sine',0.15); },
-  levelUp() { this.beep(440,80); setTimeout(()=>this.beep(523,80),100); setTimeout(()=>this.beep(659,80),200); setTimeout(()=>this.beep(784,150),300); },
-  missionDone() { this.beep(523,100); setTimeout(()=>this.beep(659,100),150); setTimeout(()=>this.beep(784,150),300); },
-  ticket() { this.beep(880,80); setTimeout(()=>this.beep(1047,100),100); }
+  cardReward() { 
+    this.beep(523,100); 
+    setTimeout(()=>this.beep(659,100),120); 
+    setTimeout(()=>this.beep(784,150),240); 
+  },
+  evolution() { 
+    this.beep(523,80); 
+    setTimeout(()=>this.beep(659,80),100); 
+    setTimeout(()=>this.beep(784,80),200); 
+    setTimeout(()=>this.beep(1047,200),300); 
+  },
+  megaEvolution() { 
+    this.beep(440,60); 
+    setTimeout(()=>this.beep(659,60),80); 
+    setTimeout(()=>this.beep(880,60),160); 
+    setTimeout(()=>this.beep(1047,100),240); 
+    setTimeout(()=>this.beep(1318,150),340); 
+  },
+  attack() { 
+    this.beep(200,100,'sawtooth',0.2); 
+    setTimeout(()=>this.beep(150,150,'sawtooth',0.15),50); 
+  },
+  victory() { 
+    this.beep(523,100); 
+    setTimeout(()=>this.beep(659,100),120); 
+    setTimeout(()=>this.beep(784,100),240); 
+    setTimeout(()=>this.beep(1047,200),360); 
+  },
+  defeat() { 
+    this.beep(440,150); 
+    setTimeout(()=>this.beep(349,150),160); 
+    setTimeout(()=>this.beep(294,200),320); 
+  },
+  click() { 
+    this.beep(800,50,'sine',0.15); 
+  },
+  levelUp() { 
+    this.beep(440,80); 
+    setTimeout(()=>this.beep(523,80),100); 
+    setTimeout(()=>this.beep(659,80),200); 
+    setTimeout(()=>this.beep(784,150),300); 
+  },
+  missionDone() { 
+    this.beep(523,100); 
+    setTimeout(()=>this.beep(659,100),150); 
+    setTimeout(()=>this.beep(784,150),300); 
+  },
+  // ✅ 추가: ticket 메서드
+  ticket() { 
+    this.beep(880,80); 
+    setTimeout(()=>this.beep(1047,100),100); 
+  }
 };
 
 // ===== Firebase 설정 =====
-const firebaseConfig = {
-  apiKey: MY_CONFIG.FIREBASE_API_KEY,
-  authDomain: MY_CONFIG.FIREBASE_AUTH_DOMAIN,
-  databaseURL: MY_CONFIG.FIREBASE_DATABASE_URL,
-  projectId: MY_CONFIG.FIREBASE_PROJECT_ID,
-  storageBucket: MY_CONFIG.FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: MY_CONFIG.FIREBASE_MESSAGING_SENDER_ID,
-  appId: MY_CONFIG.FIREBASE_APP_ID
+const MY_CONFIG = {
+  apiKey: "AIzaSyAnNMf2GxcLs7abmetxwWmoxBkIrFy1jQQ",
+  authDomain: "pokebattle-45a99.firebaseapp.com",
+  databaseURL: "https://pokebattle-45a99-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "pokebattle-45a99",
+  storageBucket: "pokebattle-45a99.firebasestorage.app",
+  messagingSenderId: "26507760702",
+  appId: "1:26507760702:web:3b2b9c75a0c4f98efcad6f"
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
@@ -2531,6 +2574,7 @@ function getPokemonByName(name) {
 
 function clamp(n, lo, hi) { return Math.max(lo, Math.min(hi, n)); }
 
+// ===== 오늘 날짜 키 (KST 기준, 오전 8:30 리셋) =====
 function todayKey() {
   const now = new Date();
   const kstOffset = 9 * 60;
@@ -2895,8 +2939,9 @@ function adminSetTimeLimit() {
 }
 // ⭐ 관리자 - 음악감상권 지급
 // ⭐ 관리자 - 음악감상권 지급
+// ===== 관리자 - 음악감상권 지급 =====
 function adminGiveTicket() {
-  console.log('🎵 adminGiveTicket 실행됨!'); // 디버깅용
+  console.log('🎵 adminGiveTicket 실행됨!');
   const countInput = document.getElementById('adminTicketCount');
   const resultEl = document.getElementById('adminTicketResult');
   
@@ -2916,11 +2961,13 @@ function adminGiveTicket() {
   }
   SFX.ticket();
 }
+// ===== 관리자 이벤트 바인딩 =====
 function bindAdminEvents() {
-  // 안전하게 요소가 존재하는지 확인 후 이벤트 바인딩
+  // 관리자 패널 열기
   const adminPanelBtn = document.getElementById('adminPanelBtn');
   if (adminPanelBtn) adminPanelBtn.addEventListener('click', openAdminPanel);
   
+  // 관리자 모달 닫기
   const adminModalClose = document.getElementById('adminModalClose');
   if (adminModalClose) adminModalClose.addEventListener('click', closeAdminPanel);
   
@@ -2930,6 +2977,7 @@ function bindAdminEvents() {
   const adminPwCancelBtn = document.getElementById('adminPwCancelBtn');
   if (adminPwCancelBtn) adminPwCancelBtn.addEventListener('click', closeAdminPanel);
   
+  // 관리자 비밀번호 확인
   const adminPwConfirmBtn = document.getElementById('adminPwConfirmBtn');
   if (adminPwConfirmBtn) adminPwConfirmBtn.addEventListener('click', checkAdminPassword);
   
@@ -2940,6 +2988,7 @@ function bindAdminEvents() {
     });
   }
   
+  // 카드 지급
   const adminGiveCardBtn = document.getElementById('adminGiveCardBtn');
   if (adminGiveCardBtn) adminGiveCardBtn.addEventListener('click', adminGiveCard);
   
@@ -2950,21 +2999,24 @@ function bindAdminEvents() {
     });
   }
   
+  // 진화의돌 지급
   const adminGiveStoneBtn = document.getElementById('adminGiveStoneBtn');
   if (adminGiveStoneBtn) adminGiveStoneBtn.addEventListener('click', adminGiveStone);
   
+  // 시간제한 설정
   const adminSetTimeBtn = document.getElementById('adminSetTimeBtn');
   if (adminSetTimeBtn) adminSetTimeBtn.addEventListener('click', adminSetTimeLimit);
   
-  // ⭐ 음악감상권 지급 이벤트 (요소가 있을 때만 연결)
+  // ✅ 음악감상권 지급 (수정됨)
   const adminGiveTicketBtn = document.getElementById('adminGiveTicketBtn');
   if (adminGiveTicketBtn) {
     adminGiveTicketBtn.addEventListener('click', adminGiveTicket);
     console.log('✅ adminGiveTicketBtn 이벤트 연결됨');
   } else {
-    console.warn('⚠️ adminGiveTicketBtn 요소 없음 (음악감상권 UI가 추가되지 않음)');
+    console.warn('⚠️ adminGiveTicketBtn 요소 없음');
   }
   
+  // 모달 외부 클릭 시 닫기
   const adminModal = document.getElementById('adminModal');
   if (adminModal) {
     adminModal.addEventListener('click', function(e) {
@@ -5409,36 +5461,81 @@ document.querySelectorAll('[data-rarity]').forEach(chip => {
 });
 
 // ===== 자정 초기화 =====
+// ===== 자정 초기화 =====
 function resetDailyContent() {
-  const key = todayKey();
+  const today = todayKey();  // ✅ 한 번만 호출
+  
+  // 퀴즈 초기화
   state.quizDoneToday = null;
   state.typeQuizDoneToday = null;
-  // ⭐ 중복 획득 방지 플래그 초기화
+  
+  // 중복 획득 방지 플래그 초기화
   state._mathMusicRewarded = false;
   state._typeQuizTicketRewarded = false;
   state._typeQuizCardRewarded = false;
-  currentQuiz = { questions: [], currentIndex: 0, correctCount: 0, isFinished: false };
-  currentTypeQuiz = { questions: [], currentIndex: 0, correctCount: 0, isFinished: false };
-  const today = todayKey();
-  for (const dateKey in state.dailyMissions) { if (dateKey !== today) delete state.dailyMissions[dateKey]; }
-  if (!state.dailyMissions[today]) state.dailyMissions[today] = {};
-  state.mathQuiz = { today: null, questions: [], currentIndex: 0, results: [], completed: false };
   
-  // ⭐⭐⭐ 중요: 하루 사용시간 초기화 (이 부분이 누락되었을 수 있음)
+  currentQuiz = { 
+    questions: [], 
+    currentIndex: 0, 
+    correctCount: 0, 
+    isFinished: false 
+  };
+  currentTypeQuiz = { 
+    questions: [], 
+    currentIndex: 0, 
+    correctCount: 0, 
+    isFinished: false 
+  };
+  
+  // 미션 초기화 (오늘 날짜만 남기고 삭제)
+  for (const dateKey in state.dailyMissions) { 
+    if (dateKey !== today) delete state.dailyMissions[dateKey]; 
+  }
+  if (!state.dailyMissions[today]) state.dailyMissions[today] = {};
+  
+  // 수학 퀴즈 초기화
+  state.mathQuiz = { 
+    today: null, 
+    questions: [], 
+    currentIndex: 0, 
+    results: [], 
+    completed: false 
+  };
+  
+  // 사용시간 초기화
   state.dailyPlayTime = 0;
   state.lockUntil = null;
   hideLockScreen();
   
+  // 레이드 리셋
   const shouldResetRaid = !state.raid || state.raid.today !== today || state.raid.completed === true;
   if (shouldResetRaid) {
-    const finalForms = POKEMON_LIST.filter(p => { const evoChain = getEvoChain(p.engName); return evoChain && evoChain.length >= 2 && evoChain[evoChain.length-1] === p.engName; });
-    let boss = finalForms.length > 0 ? finalForms[Math.floor(Math.random() * finalForms.length)] : POKEMON_LIST[Math.floor(Math.random() * POKEMON_LIST.length)];
-    state.raid = { boss, hp: boss.hp * 15, maxHp: boss.hp * 15, completed: false, today: today, attackChance: 0, rewardCollected: false };
-    state.raidSelectedType = null; state.raidSelectedCard = null;
+    const finalForms = POKEMON_LIST.filter(p => { 
+      const evoChain = getEvoChain(p.engName); 
+      return evoChain && evoChain.length >= 2 && evoChain[evoChain.length-1] === p.engName; 
+    });
+    let boss = finalForms.length > 0 
+      ? finalForms[Math.floor(Math.random() * finalForms.length)] 
+      : POKEMON_LIST[Math.floor(Math.random() * POKEMON_LIST.length)];
+    
+    state.raid = { 
+      boss: boss, 
+      hp: boss.hp * 15, 
+      maxHp: boss.hp * 15, 
+      completed: false, 
+      today: today, 
+      attackChance: 0, 
+      rewardCollected: false 
+    };
+    state.raidSelectedType = null;
+    state.raidSelectedCard = null;
   }
+  
   saveState();
   renderAll();
 }
+
+// 자정 체크
 let lastCheckedDate = todayKey();
 setInterval(function() {
   const currentDate = todayKey();
@@ -5447,22 +5544,6 @@ setInterval(function() {
     resetDailyContent();
   }
 }, 60000);
-
-// ===== 초기화 =====
-async function initGame() {
-  document.getElementById('loadingScreen').style.display = 'block';
-  document.querySelectorAll('section').forEach(s => s.style.display = 'none');
-  
-  const hasSavedData = loadState();
-  await loadAllPokemon();
-  EVOLVABLE_POKEMON_LIST = await getAllEvolvablePokemon();
-  
-  // ⭐⭐⭐ 모든 메가/거다이맥스 포켓몬을 POKEMON_LIST에 추가 (도감에 표시되도록)
-  addAllMegaAndGigantamaxToPokedex();
-  
-  // ... 나머지 코드 ...
-}
-
 // ⭐ 새로운 함수: 모든 메가/거다이맥스 포켓몬을 POKEMON_LIST에 추가
 function addAllMegaAndGigantamaxToPokedex() {
   // 메가 포켓몬 추가
@@ -5521,7 +5602,48 @@ function addAllMegaAndGigantamaxToPokedex() {
     localStorage.setItem(CACHE_TIME_KEY, String(Date.now()));
   } catch(e) {}
 }
+// ===== 초기화 =====
+// ===== 게임 초기화 =====
+async function initGame() {
+  document.getElementById('loadingScreen').style.display = 'block';
+  document.querySelectorAll('section').forEach(s => s.style.display = 'none');
+  
+  const hasSavedData = loadState();
+  await loadAllPokemon();
+  EVOLVABLE_POKEMON_LIST = await getAllEvolvablePokemon();
+  
+  // ✅ 모든 메가/거다이맥스 포켓몬을 POKEMON_LIST에 추가 (도감에 표시되도록)
+  addAllMegaAndGigantamaxToPokedex();
+  
+  // 나이 설정 확인
+  if (!state.playerAge) {
+    showAgeInput();
+    document.getElementById('loadingScreen').style.display = 'none';
+    return;
+  }
+  
+  // 일일 콘텐츠 초기화
+  resetDailyContent();
+  
+  // 탭 초기화
+  document.querySelectorAll('section').forEach(s => s.style.display = '');
+  document.getElementById('tab-mission').classList.add('active');
+  document.querySelector('nav.tabbar button[data-tab="tab-mission"]').classList.add('active');
+  
+  document.getElementById('loadingScreen').style.display = 'none';
+  renderAll();
+  
+  // 시간제한 체크
+  checkTimeLimit();
+  
+  // 이벤트 바인딩
+  bindAdminEvents();
+  
+  console.log('✅ 게임 초기화 완료!', Object.keys(state.owned).length + '마리 보유');
+}
 
+// 게임 시작
+initGame();
 function renderAll() {
   updateStatline();
   renderFilters();
