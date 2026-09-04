@@ -1399,6 +1399,134 @@
   .evolution-stone-badge.mega { background: var(--mega); color: #fff; }
   .evolution-stone-badge.gigantamax { background: var(--gigantamax); color: #fff; }
   
+  /* 음악 도감 스타일 */
+  .music-dex-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    padding: 4px 0;
+  }
+  .music-card {
+    background: linear-gradient(160deg, var(--paper) 0%, var(--paper-2) 100%);
+    border-radius: 14px;
+    padding: 10px 8px;
+    border: 3px solid var(--sun);
+    box-shadow: 0 4px 12px rgba(0,0,0,.2);
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .music-card:active { transform: scale(0.95); }
+  .music-card .art {
+    width: 100%;
+    aspect-ratio: 1/0.9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(circle at 50% 40%, rgba(255,255,255,.4), transparent 70%);
+    border-radius: 10px;
+  }
+  .music-card .art img { width: 60%; height: 60%; object-fit: contain; }
+  .music-card .name {
+    font-family: var(--font-display);
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-top: 3px;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .music-card .type-tag {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    padding: 2px 12px;
+    border-radius: 20px;
+    color: #fff;
+    margin: 3px auto 5px;
+    background: var(--normal);
+  }
+  .music-card .statrow {
+    display: flex;
+    justify-content: space-around;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: #5A5170;
+    padding: 0 2px;
+  }
+  .music-card .statrow span b {
+    font-size: 12px;
+    color: var(--text-dark);
+    font-weight: 700;
+  }
+  .music-card .music-badge {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    font-size: 18px;
+    background: rgba(0,0,0,.3);
+    backdrop-filter: blur(2px);
+    padding: 2px 6px;
+    border-radius: 50%;
+    line-height: 1.2;
+  }
+  .music-card.locked { filter: grayscale(1) brightness(0.5); }
+  .music-card.locked .name { color: #aaa; }
+  
+  .music-player-mini {
+    position: fixed;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(35,32,66,.95);
+    backdrop-filter: blur(10px);
+    border: 2px solid var(--sun);
+    border-radius: 16px;
+    padding: 8px 16px;
+    display: none;
+    align-items: center;
+    gap: 12px;
+    z-index: 500;
+    max-width: 90%;
+    box-shadow: 0 4px 20px rgba(0,0,0,.5);
+  }
+  .music-player-mini .mp-info {
+    font-family: var(--font-display);
+    font-size: 14px;
+    color: var(--paper);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 120px;
+  }
+  .music-player-mini .mp-controls {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .music-player-mini .mp-controls button {
+    background: none;
+    border: none;
+    color: var(--sun-2);
+    font-size: 20px;
+    cursor: pointer;
+    padding: 4px 6px;
+  }
+  .music-player-mini .mp-controls button:active { transform: scale(0.9); }
+  .music-player-mini .mp-close {
+    background: none;
+    border: none;
+    color: #8d84b0;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 4px;
+  }
+  .music-player-mini .mp-close:active { transform: scale(0.9); }
+  
   @media (max-width: 400px) {
     .grid { gap: 6px; }
     .card.mini { padding: 6px; }
@@ -1421,6 +1549,11 @@
     .raid-pokemon-card .rpc-art { font-size: 20px; }
     .raid-pokemon-card .rpc-name { font-size: 9px; }
     .raid-pokemon-card .rpc-atk { font-size: 7px; }
+    .music-dex-grid { grid-template-columns: repeat(3, 1fr); gap: 6px; }
+    .music-card .art img { width: 50%; height: 50%; }
+    .music-card .name { font-size: 12px; }
+    .music-player-mini .mp-info { max-width: 80px; font-size: 12px; }
+    .music-player-mini .mp-controls button { font-size: 16px; }
   }
   #clearCacheBtn, #clearAllDataBtn {
   -webkit-tap-highlight-color: transparent;
@@ -1575,28 +1708,40 @@
 
     <section id="tab-dex">
       <h2 class="section-title">📖 도감</h2>
-      <div class="progress-bar"><div id="dexProgress" style="width:0%"></div></div>
-      <div class="progress-txt" id="dexProgressText">0 / 0</div>
-      
-      <div class="ownership-filter" id="ownershipFilter">
-        <button class="chip active" data-ownership="all">📋 전체</button>
-        <button class="chip" data-ownership="owned">✅ 보유</button>
-        <button class="chip" data-ownership="missing">❌ 미보유</button>
+      <div class="mode-toggle" style="margin-bottom:12px;">
+        <button data-dexmode="pokemon" class="active">🎴 포켓몬</button>
+        <button data-dexmode="music">🎵 음악</button>
       </div>
-      
-      <div style="display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 4px;">
-        <span style="font-family:var(--font-mono);font-size:12px;color:#B7AFDE;">등급:</span>
-        <button class="chip active" data-rarity="all">전체</button>
-        <button class="chip" data-rarity="common">일반</button>
-        <button class="chip" data-rarity="rare">레어</button>
-        <button class="chip" data-rarity="super-rare">슈퍼</button>
-        <button class="chip" data-rarity="ultra-rare">울트라</button>
-        <button class="chip" data-rarity="special">스페셜</button>
-        <button class="chip" data-rarity="mega">메가</button>
-        <button class="chip" data-rarity="gigantamax">거다이맥스</button>
+      <div id="dexContent">
+        <div class="progress-bar"><div id="dexProgress" style="width:0%"></div></div>
+        <div class="progress-txt" id="dexProgressText">0 / 0</div>
+        
+        <div class="ownership-filter" id="ownershipFilter">
+          <button class="chip active" data-ownership="all">📋 전체</button>
+          <button class="chip" data-ownership="owned">✅ 보유</button>
+          <button class="chip" data-ownership="missing">❌ 미보유</button>
+        </div>
+        
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 4px;">
+          <span style="font-family:var(--font-mono);font-size:12px;color:#B7AFDE;">등급:</span>
+          <button class="chip active" data-rarity="all">전체</button>
+          <button class="chip" data-rarity="common">일반</button>
+          <button class="chip" data-rarity="rare">레어</button>
+          <button class="chip" data-rarity="super-rare">슈퍼</button>
+          <button class="chip" data-rarity="ultra-rare">울트라</button>
+          <button class="chip" data-rarity="special">스페셜</button>
+          <button class="chip" data-rarity="mega">메가</button>
+          <button class="chip" data-rarity="gigantamax">거다이맥스</button>
+        </div>
+        <div class="filter-row" id="filterRow"></div>
+        <div class="grid" id="dexGrid"></div>
       </div>
-      <div class="filter-row" id="filterRow"></div>
-      <div class="grid" id="dexGrid"></div>
+      <div id="musicDexContent" style="display:none;">
+        <div style="margin-bottom:12px;font-family:var(--font-mono);font-size:14px;color:#B7AFDE;text-align:center;">
+          🎵 보유한 포켓몬의 BGM을 감상해보세요! (클릭하면 재생)
+        </div>
+        <div class="music-dex-grid" id="musicDexGrid"></div>
+      </div>
     </section>
 
     <section id="tab-pet">
@@ -1630,6 +1775,16 @@
       </div>
     </section>
   </main>
+
+  <!-- 음악 플레이어 미니 -->
+  <div class="music-player-mini" id="musicPlayerMini">
+    <div class="mp-info" id="mpInfo">🎵 포켓몬 BGM</div>
+    <div class="mp-controls">
+      <button id="mpPlayBtn">▶️</button>
+      <button id="mpStopBtn">⏹️</button>
+    </div>
+    <button class="mp-close" id="mpCloseBtn">✕</button>
+  </div>
 
   <div class="mission-edit-overlay" id="missionEditOverlay">
     <div class="mission-edit-box">
@@ -2053,11 +2208,16 @@ let ownershipFilter = 'all';
 let activeFilter = 'all';
 let activeRarity = 'all';
 let missionMode = 'quiz';
+let dexMode = 'pokemon';
 let currentQuiz = { questions: [], currentIndex: 0, correctCount: 0, isFinished: false };
 let myBattleRoom = null;
 let battleListener = null;
 let myTradeRoom = null;
 let tradeListener = null;
+
+// ===== 음악 도감 관련 변수 =====
+let musicPlayer = null;
+let currentMusicPokemon = null;
 
 const DEFAULT_LIFE_MISSIONS = [
   { id:'go-out', label:'등원하기', emoji:'🎒' },
@@ -2967,7 +3127,139 @@ document.querySelectorAll('nav.tabbar button').forEach(btn => {
     if (this.dataset.tab === 'tab-pet') renderPetTab();
     if (this.dataset.tab === 'tab-trade') renderTradeTab();
     if (this.dataset.tab === 'tab-craft') renderCraftTab();
+    if (this.dataset.tab === 'tab-dex') renderDexTab();
   });
+});
+
+// ===== 도감 탭 (포켓몬/음악 전환) =====
+document.querySelectorAll('[data-dexmode]').forEach(btn => {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('[data-dexmode]').forEach(b => b.classList.remove('active'));
+    this.classList.add('active');
+    dexMode = this.dataset.dexmode;
+    renderDexTab();
+  });
+});
+
+function renderDexTab() {
+  if (dexMode === 'pokemon') {
+    document.getElementById('dexContent').style.display = 'block';
+    document.getElementById('musicDexContent').style.display = 'none';
+    renderFilters();
+    renderDex();
+  } else {
+    document.getElementById('dexContent').style.display = 'none';
+    document.getElementById('musicDexContent').style.display = 'block';
+    renderMusicDex();
+  }
+}
+
+// ===== 음악 도감 =====
+function renderMusicDex() {
+  const grid = document.getElementById('musicDexGrid');
+  const ownedCards = Object.keys(state.owned).filter(key => state.owned[key].count > 0);
+  
+  if (ownedCards.length === 0) {
+    grid.innerHTML = `<div style="text-align:center;padding:30px 16px;color:#8d84b0;grid-column:1/-1;">
+      <div style="font-size:48px;margin-bottom:8px;">🎵</div>
+      <div style="font-size:18px;">보유한 포켓몬이 없어요!</div>
+      <div style="font-size:13px;color:#6b6395;margin-top:4px;">미션을 완료해서 포켓몬을 모아보세요!</div>
+    </div>`;
+    return;
+  }
+  
+  grid.innerHTML = ownedCards.map(key => {
+    const pokemon = getPokemonByName(key);
+    if (!pokemon) return '';
+    const info = state.owned[key];
+    const rInfo = getRarityInfo(info.rarity);
+    const hasCry = !!pokemon.cryUrl;
+    const isPlaying = currentMusicPokemon && currentMusicPokemon.engName === pokemon.engName && musicPlayer && !musicPlayer.paused;
+    
+    return `
+      <div class="music-card ${!hasCry ? 'locked' : ''}" data-eng="${pokemon.engName}" onclick="playPokemonMusic('${pokemon.engName}')">
+        <div class="art">${pokemonImage(pokemon)}</div>
+        <div class="name">${pokemon.name}</div>
+        <span class="type-tag" style="background:${getTypeColor(pokemon.type)}">${getTypeLabel(pokemon.type)}</span>
+        <div class="music-badge">${isPlaying ? '▶️' : hasCry ? '🎵' : '🔇'}</div>
+        <div style="font-size:10px;color:#6b6395;margin-top:4px;">${hasCry ? 'BGM 재생 가능' : 'BGM 없음'}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function playPokemonMusic(engName) {
+  const pokemon = getPokemonByName(engName);
+  if (!pokemon || !pokemon.cryUrl) {
+    toast('🎵 이 포켓몬은 BGM이 없어요!');
+    return;
+  }
+  
+  // 기존 플레이어 중지
+  stopMusic();
+  
+  try {
+    const audio = new Audio(pokemon.cryUrl);
+    audio.volume = 0.5;
+    audio.loop = true;
+    audio.play().catch(e => {
+      toast('⚠️ BGM을 재생할 수 없어요!');
+      console.warn('Audio play failed:', e);
+    });
+    
+    musicPlayer = audio;
+    currentMusicPokemon = pokemon;
+    
+    // 미니 플레이어 표시
+    const player = document.getElementById('musicPlayerMini');
+    document.getElementById('mpInfo').textContent = `🎵 ${pokemon.name} BGM`;
+    document.getElementById('mpPlayBtn').textContent = '⏸️';
+    player.style.display = 'flex';
+    
+    // 재생 종료시 자동 숨김
+    audio.onended = () => {
+      player.style.display = 'none';
+      currentMusicPokemon = null;
+      musicPlayer = null;
+    };
+    
+    renderMusicDex();
+  } catch(e) {
+    console.error('Music play error:', e);
+    toast('⚠️ BGM 재생에 실패했어요!');
+  }
+}
+
+function stopMusic() {
+  if (musicPlayer) {
+    try { musicPlayer.pause(); } catch(e) {}
+    musicPlayer = null;
+    currentMusicPokemon = null;
+    document.getElementById('musicPlayerMini').style.display = 'none';
+    renderMusicDex();
+  }
+}
+
+// 미니 플레이어 이벤트
+document.getElementById('mpPlayBtn').addEventListener('click', function() {
+  if (!musicPlayer) return;
+  if (musicPlayer.paused) {
+    musicPlayer.play().catch(() => {});
+    this.textContent = '⏸️';
+  } else {
+    musicPlayer.pause();
+    this.textContent = '▶️';
+  }
+});
+
+document.getElementById('mpStopBtn').addEventListener('click', function() {
+  stopMusic();
+  renderMusicDex();
+});
+
+document.getElementById('mpCloseBtn').addEventListener('click', function() {
+  stopMusic();
+  renderMusicDex();
 });
 
 // ===== 미션 시스템 =====
@@ -4227,7 +4519,6 @@ function performMegaEvolution(engName) {
     return;
   }
 
-  // ⭐ 1. 기존 카드 확인 (엄격하게)
   const sourceCard = state.owned[engName];
   if (!sourceCard || sourceCard.count < 1) {
     alert('⚠️ 진화할 카드가 없어요!');
@@ -4237,12 +4528,10 @@ function performMegaEvolution(engName) {
   const originalRarity = sourceCard.originalRarity || sourceCard.rarity || 'common';
   console.log('🔍 메가진화 시작:', engName, '등급:', originalRarity);
 
-  // ⭐ 2. 메가 이미지
   let megaImage = MEGA_IMAGE_MAP?.[megaEvo.id] ||
                    sourcePokemon.image ||
                    `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${sourcePokemon.id}.png`;
 
-  // ⭐ 3. POKEMON_LIST에 메가 포켓몬 강제 추가 (중복 방지)
   let megaPokemon = getPokemonByName(megaEvo.id);
   if (!megaPokemon) {
     megaPokemon = {
@@ -4264,7 +4553,6 @@ function performMegaEvolution(engName) {
     POKEMON_LIST.push(megaPokemon);
     console.log('✅ POKEMON_LIST에 메가 추가:', megaPokemon.name);
 
-    // 캐시 저장
     try {
       const cache = localStorage.getItem(CACHE_KEY);
       if (cache) {
@@ -4278,19 +4566,16 @@ function performMegaEvolution(engName) {
       console.warn('⚠️ 캐시 저장 실패:', e);
     }
   } else {
-    // 이미 있으면 이미지 업데이트
     megaPokemon.image = megaImage;
     megaPokemon.originalRarity = originalRarity;
   }
 
-  // ⭐ 4. 기존 카드 1장 삭제
   sourceCard.count -= 1;
   if (sourceCard.count <= 0) {
     delete state.owned[engName];
   }
   console.log('🗑️ 기존 카드 삭제 후:', state.owned[engName] || '없음');
 
-  // ⭐ 5. 메가 카드 추가 (강제로 count=1 설정, 중복 방지)
   state.owned[megaEvo.id] = {
     count: (state.owned[megaEvo.id]?.count || 0) + 1,
     rarity: 'mega',
@@ -4298,7 +4583,6 @@ function performMegaEvolution(engName) {
   };
   console.log('✅ 메가 카드 추가 완료:', state.owned[megaEvo.id]);
 
-  // ⭐ 6. Pet도 함께 진화!
   if (state.pet) {
     const petCurrentId = state.pet.evolvedId || state.pet.baseId;
     if (petCurrentId === engName) {
@@ -4310,7 +4594,6 @@ function performMegaEvolution(engName) {
     }
   }
 
-  // ⭐ 7. 저장 및 UI 갱신
   saveState();
   SFX.megaEvolution();
   closeModal();
@@ -4340,7 +4623,6 @@ function performGigantamaxEvolution(engName) {
     return;
   }
 
-  // ⭐ 1. 기존 카드 확인 (엄격하게)
   const sourceCard = state.owned[engName];
   if (!sourceCard || sourceCard.count < 1) {
     alert('⚠️ 진화할 카드가 없어요!');
@@ -4350,12 +4632,10 @@ function performGigantamaxEvolution(engName) {
   const originalRarity = sourceCard.originalRarity || sourceCard.rarity || 'common';
   console.log('🔍 거다이맥스 진화 시작:', engName, '등급:', originalRarity);
 
-  // ⭐ 2. 거다이맥스 이미지
   let gigaImage = GIGANTAMAX_IMAGE_MAP?.[gigaEvo.id] ||
                    sourcePokemon.image ||
                    `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${sourcePokemon.id}.png`;
 
-  // ⭐ 3. POKEMON_LIST에 거다이맥스 포켓몬 강제 추가 (중복 방지)
   let gigaPokemon = getPokemonByName(gigaEvo.id);
   if (!gigaPokemon) {
     gigaPokemon = {
@@ -4377,7 +4657,6 @@ function performGigantamaxEvolution(engName) {
     POKEMON_LIST.push(gigaPokemon);
     console.log('✅ POKEMON_LIST에 거다이맥스 추가:', gigaPokemon.name);
 
-    // 캐시 저장
     try {
       const cache = localStorage.getItem(CACHE_KEY);
       if (cache) {
@@ -4391,19 +4670,16 @@ function performGigantamaxEvolution(engName) {
       console.warn('⚠️ 캐시 저장 실패:', e);
     }
   } else {
-    // 이미 있으면 이미지 업데이트
     gigaPokemon.image = gigaImage;
     gigaPokemon.originalRarity = originalRarity;
   }
 
-  // ⭐ 4. 기존 카드 1장 삭제
   sourceCard.count -= 1;
   if (sourceCard.count <= 0) {
     delete state.owned[engName];
   }
   console.log('🗑️ 기존 카드 삭제 후:', state.owned[engName] || '없음');
 
-  // ⭐ 5. 거다이맥스 카드 추가 (강제로 count=1 설정, 중복 방지)
   state.owned[gigaEvo.id] = {
     count: (state.owned[gigaEvo.id]?.count || 0) + 1,
     rarity: 'gigantamax',
@@ -4411,7 +4687,6 @@ function performGigantamaxEvolution(engName) {
   };
   console.log('✅ 거다이맥스 카드 추가 완료:', state.owned[gigaEvo.id]);
 
-  // ⭐ 6. Pet도 함께 진화!
   if (state.pet) {
     const petCurrentId = state.pet.evolvedId || state.pet.baseId;
     if (petCurrentId === engName) {
@@ -4423,7 +4698,6 @@ function performGigantamaxEvolution(engName) {
     }
   }
 
-  // ⭐ 7. 저장 및 UI 갱신
   saveState();
   SFX.megaEvolution();
   closeModal();
@@ -4989,8 +5263,7 @@ function leaveBattleRoom() {
 }
 
 // ===== 교환 시스템 =====
-// ===== 교환 탭 (한글/영문 검색 지원) =====
-function renderTradeTab() {
+// ===== 교환 탭 (한글/영문 검색 지원) =====function renderTradeTab() {
   const container = document.getElementById('tradeContent');
   const ownedCards = Object.keys(state.owned).filter(key => state.owned[key].count > 0);
   
@@ -5053,7 +5326,6 @@ function renderTradeTab() {
     <button class="btn small ghost block" style="margin-top:10px;" onclick="leaveTradeRoom();">🚪 방 나가기</button>
   `;
   
-  // ⭐⭐⭐ 수정된 검색 기능 (한글 + 영문 모두 지원) ⭐⭐⭐
   document.getElementById('tradeCardSearch')?.addEventListener('input', function() {
     const query = this.value.trim().toLowerCase();
     const items = document.querySelectorAll('.trade-card-item');
@@ -5683,6 +5955,16 @@ async function initGame() {
       clearAllData();
     });
   }
+  
+  // 음악 플레이어 자동 숨김
+  document.addEventListener('click', function(e) {
+    const player = document.getElementById('musicPlayerMini');
+    if (player && player.style.display !== 'none') {
+      if (!e.target.closest('#musicPlayerMini')) {
+        // 외부 클릭시 숨기지 않음 (사용자가 직접 닫도록)
+      }
+    }
+  });
 }
 
 function renderAll() {
@@ -5696,6 +5978,7 @@ function renderAll() {
   renderRaidMission();
   renderMathQuiz();
   renderCraftTab();
+  renderDexTab();
 }
 
 initGame();
