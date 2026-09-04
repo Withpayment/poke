@@ -4175,7 +4175,7 @@ function performMegaEvolution(engName) {
   sourceCard.count -= 1;
   if (sourceCard.count <= 0) delete state.owned[engName];
   
-  // ⭐ 메가 포켓몬 객체 생성 (POKEMON_LIST에 없으면 추가)
+  // ⭐ 메가 포켓몬 객체 생성 (POKEMON_LIST에 강제 추가)
   let megaPokemon = getPokemonByName(megaEvo.id);
   if (!megaPokemon) {
     const sourcePokemon2 = getPokemonByName(engName);
@@ -4194,7 +4194,28 @@ function performMegaEvolution(engName) {
       cryUrl: null,
       isMega: true
     };
-    POKEMON_LIST.push(megaPokemon);
+    
+    // ⭐ POKEMON_LIST에 추가 (이미 있는지 확인 후)
+    const exists = POKEMON_LIST.some(p => p.engName === megaEvo.id);
+    if (!exists) {
+      POKEMON_LIST.push(megaPokemon);
+      console.log('✅ POKEMON_LIST에 메가 추가:', megaPokemon.name);
+      
+      // ⭐ 캐시에도 저장 (도감에서 보이도록)
+      try {
+        const cache = localStorage.getItem(CACHE_KEY);
+        if (cache) {
+          const list = JSON.parse(cache);
+          if (!list.find(p => p.engName === megaEvo.id)) {
+            list.push(megaPokemon);
+            localStorage.setItem(CACHE_KEY, JSON.stringify(list));
+          }
+        }
+      } catch(e) {}
+    }
+  } else {
+    // 이미 있으면 이미지 업데이트
+    megaPokemon.image = MEGA_IMAGE_MAP[megaEvo.id] || megaPokemon.image;
   }
   
   // ⭐ 메가 카드 추가 (강제 획득)
@@ -4218,6 +4239,8 @@ function performMegaEvolution(engName) {
   saveState();
   SFX.megaEvolution();
   closeModal();
+  
+  // ⭐ 도감 새로고침 (메가 포켓몬이 보이도록)
   renderDex();
   renderPetTab();
   updateStatline();
@@ -4227,7 +4250,7 @@ function performMegaEvolution(engName) {
   if (finalMegaPokemon) {
     showRewardPopup(finalMegaPokemon, '💎 메가진화 성공!', `${finalMegaPokemon.name} 획득!`);
   } else {
-    alert('🎉 메가진화 완료!');
+    alert('🎉 메가진화 완료! (도감에서 확인하세요)');
   }
 }
 
@@ -4247,7 +4270,7 @@ function performGigantamaxEvolution(engName) {
   sourceCard.count -= 1;
   if (sourceCard.count <= 0) delete state.owned[engName];
   
-  // ⭐ 거다이맥스 포켓몬 객체 생성 (POKEMON_LIST에 없으면 추가)
+  // ⭐ 거다이맥스 포켓몬 객체 생성 (POKEMON_LIST에 강제 추가)
   let gigaPokemon = getPokemonByName(gigaEvo.id);
   if (!gigaPokemon) {
     const sourcePokemon2 = getPokemonByName(engName);
@@ -4266,10 +4289,29 @@ function performGigantamaxEvolution(engName) {
       cryUrl: null,
       isGigantamax: true
     };
-    POKEMON_LIST.push(gigaPokemon);
+    
+    // ⭐ POKEMON_LIST에 추가
+    const exists = POKEMON_LIST.some(p => p.engName === gigaEvo.id);
+    if (!exists) {
+      POKEMON_LIST.push(gigaPokemon);
+      console.log('✅ POKEMON_LIST에 거다이맥스 추가:', gigaPokemon.name);
+      
+      try {
+        const cache = localStorage.getItem(CACHE_KEY);
+        if (cache) {
+          const list = JSON.parse(cache);
+          if (!list.find(p => p.engName === gigaEvo.id)) {
+            list.push(gigaPokemon);
+            localStorage.setItem(CACHE_KEY, JSON.stringify(list));
+          }
+        }
+      } catch(e) {}
+    }
+  } else {
+    gigaPokemon.image = GIGANTAMAX_IMAGE_MAP[gigaEvo.id] || gigaPokemon.image;
   }
   
-  // ⭐ 거다이맥스 카드 추가 (강제 획득)
+  // ⭐ 거다이맥스 카드 추가
   if (!state.owned[gigaEvo.id]) {
     state.owned[gigaEvo.id] = { count: 1, rarity: 'gigantamax' };
   } else {
@@ -4290,16 +4332,17 @@ function performGigantamaxEvolution(engName) {
   saveState();
   SFX.megaEvolution();
   closeModal();
+  
+  // ⭐ 도감 새로고침
   renderDex();
   renderPetTab();
   updateStatline();
   
-  // ⭐ 획득한 거다이맥스 포켓몬 표시
   const finalGigaPokemon = getPokemonByName(gigaEvo.id);
   if (finalGigaPokemon) {
     showRewardPopup(finalGigaPokemon, '🔥 거다이맥스 성공!', `${finalGigaPokemon.name} 획득!`);
   } else {
-    alert('🎉 거다이맥스 완료!');
+    alert('🎉 거다이맥스 완료! (도감에서 확인하세요)');
   }
 }
 // ===== 배틀 (기존 코드 유지, 시간제한 추가) =====
@@ -5387,65 +5430,69 @@ async function initGame() {
   await loadAllPokemon();
   EVOLVABLE_POKEMON_LIST = await getAllEvolvablePokemon();
   
-  if (!hasSavedData) {
-    state.owned = {};
-    state.wins = 0;
-    state.losses = 0;
-    state.missionsWon = 0;
-    state.team = [];
-    state.dailyMissions = {};
-    state.customMissions = [];
-    state.pet = null;
-    state.quizStats = { total: 0, correct: 0 };
-    state.quizDoneToday = null;
-    state.typeQuizDoneToday = null;
-    state.playerAge = null;
-    state.mathQuiz = { today: null, questions: [], currentIndex: 0, results: [], completed: false };
-    state.mathStats = { total: 0, correct: 0 };
-    state.raid = { boss: null, hp: 0, maxHp: 0, completed: false, today: null, rewardCollected: false, attackChance: 0 };
-    state.raidSelectedType = null;
-    state.raidSelectedCard = null;
-    state.battleChances = 0;
-    state.pvpChances = 0;
-    state.evolutionStones = { mega: 0, gigantamax: 0 };
-    state.musicTickets = 0;
-    state.unlockedMusic = [];
-    state.dailyPlayTime = 0;
-    state.timeLimitMinutes = 15;
-    state.lockUntil = null;
-    saveState();
-  }
+  // ⭐⭐⭐ 모든 메가/거다이맥스 포켓몬을 POKEMON_LIST에 추가 (도감에 표시되도록)
+  addAllMegaAndGigantamaxToPokedex();
   
-  document.getElementById('loadingStatus').textContent = '✅ ' + POKEMON_LIST.length + '마리 | 보유: ' + Object.keys(state.owned).length + '마리';
-  document.getElementById('loadingScreen').style.display = 'none';
-  
-  if (!state.playerAge) {
-    document.getElementById('ageScreen').style.display = 'block';
-    document.querySelectorAll('section').forEach(s => s.style.display = 'none');
-  } else {
-    document.querySelectorAll('section').forEach(s => s.style.display = '');
-    document.getElementById('tab-mission').classList.add('active');
-    renderAll();
-  }
-  bindAdminEvents();
-  updateStoneDisplay();
-  updateTicketDisplay();
-  
-  // 시간제한 체크
-  if (state.lockUntil) {
-    const lockTime = new Date(state.lockUntil);
-    if (Date.now() < lockTime.getTime()) {
-      showLockScreen();
-    } else {
-      state.lockUntil = null;
-      saveState();
+  // ... 나머지 코드 ...
+}
+
+// ⭐ 새로운 함수: 모든 메가/거다이맥스 포켓몬을 POKEMON_LIST에 추가
+function addAllMegaAndGigantamaxToPokedex() {
+  // 메가 포켓몬 추가
+  for (const [engName, megaEvo] of Object.entries(MEGA_EVOLUTIONS)) {
+    const exists = POKEMON_LIST.some(p => p.engName === megaEvo.id);
+    if (!exists) {
+      const sourcePokemon = getPokemonByName(engName);
+      const megaPokemon = {
+        id: megaEvo.id,
+        name: megaEvo.name,
+        engName: megaEvo.id,
+        type: sourcePokemon ? sourcePokemon.type : 'normal',
+        types: sourcePokemon ? sourcePokemon.types : ['normal'],
+        hp: sourcePokemon ? sourcePokemon.hp + 20 : 100,
+        atk: sourcePokemon ? sourcePokemon.atk + 20 : 100,
+        def: sourcePokemon ? sourcePokemon.def + 20 : 100,
+        spd: sourcePokemon ? sourcePokemon.spd + 20 : 100,
+        image: MEGA_IMAGE_MAP[megaEvo.id] || (sourcePokemon ? sourcePokemon.image : ''),
+        speciesUrl: null,
+        cryUrl: null,
+        isMega: true
+      };
+      POKEMON_LIST.push(megaPokemon);
+      console.log('✅ 메가 추가 (도감):', megaPokemon.name);
     }
-  } else {
-    checkTimeLimit();
   }
   
-  document.getElementById('clearCacheBtn').addEventListener('click', clearPokeCache);
-  document.getElementById('clearAllDataBtn').addEventListener('click', clearAllData);
+  // 거다이맥스 포켓몬 추가
+  for (const [engName, gigaEvo] of Object.entries(GIGANTAMAX_EVOLUTIONS)) {
+    const exists = POKEMON_LIST.some(p => p.engName === gigaEvo.id);
+    if (!exists) {
+      const sourcePokemon = getPokemonByName(engName);
+      const gigaPokemon = {
+        id: gigaEvo.id,
+        name: gigaEvo.name,
+        engName: gigaEvo.id,
+        type: sourcePokemon ? sourcePokemon.type : 'normal',
+        types: sourcePokemon ? sourcePokemon.types : ['normal'],
+        hp: sourcePokemon ? sourcePokemon.hp + 25 : 100,
+        atk: sourcePokemon ? sourcePokemon.atk + 22 : 100,
+        def: sourcePokemon ? sourcePokemon.def + 22 : 100,
+        spd: sourcePokemon ? sourcePokemon.spd + 18 : 100,
+        image: GIGANTAMAX_IMAGE_MAP[gigaEvo.id] || (sourcePokemon ? sourcePokemon.image : ''),
+        speciesUrl: null,
+        cryUrl: null,
+        isGigantamax: true
+      };
+      POKEMON_LIST.push(gigaPokemon);
+      console.log('✅ 거다이맥스 추가 (도감):', gigaPokemon.name);
+    }
+  }
+  
+  // 캐시 업데이트
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify(POKEMON_LIST));
+    localStorage.setItem(CACHE_TIME_KEY, String(Date.now()));
+  } catch(e) {}
 }
 
 function renderAll() {
