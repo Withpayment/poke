@@ -2445,7 +2445,7 @@ async function getAllEvolvablePokemon() {
     const allEvolvable = [];
 
     const isAndroid = /android/i.test(navigator.userAgent);
-    const batchSize = isAndroid ? 20 : 40; // ⭐ 병렬 배치로 처리
+    const batchSize = isAndroid ? 20 : 40;
 
     function extractAllNames(chainLink) {
       const names = [];
@@ -2458,18 +2458,30 @@ async function getAllEvolvablePokemon() {
       return names;
     }
 
+    // ⭐ 요청 하나당 8초 넘으면 강제로 포기하고 다음으로 넘어감
+    async function fetchWithTimeout(url, ms = 8000) {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), ms);
+      try {
+        const res = await fetch(url, { signal: controller.signal });
+        return await res.json();
+      } finally {
+        clearTimeout(timer);
+      }
+    }
+
     for (let i = 0; i < listData.results.length; i += batchSize) {
       const batch = listData.results.slice(i, i + batchSize);
       const promises = batch.map(async (chainRef) => {
         try {
-          const chainRes = await fetch(chainRef.url);
-          const chainData = await chainRes.json();
+          const chainData = await fetchWithTimeout(chainRef.url);
           const chain = extractAllNames(chainData.chain);
           if (chain.length > 0) {
             for (const name of chain) { _evoChainCache[name] = chain; }
           }
           return chain;
         } catch (e) {
+          // 타임아웃/실패한 요청은 그냥 건너뜀 (전체를 막지 않음)
           return [];
         }
       });
@@ -2477,7 +2489,6 @@ async function getAllEvolvablePokemon() {
       const results = await Promise.all(promises);
       results.forEach(chain => allEvolvable.push(...chain));
 
-      // 진행 상황 표시 (선택)
       const statusEl = document.getElementById('loadingStatus');
       if (statusEl) {
         const progress = Math.round((i + batch.length) / listData.results.length * 100);
