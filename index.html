@@ -5116,7 +5116,22 @@ function resetDailyContent() {
   currentTypeQuiz = { questions: [], currentIndex: 0, correctCount: 0, isFinished: false };
   const today = todayKey();
   for (const dateKey in state.dailyMissions) { if (dateKey !== today) delete state.dailyMissions[dateKey]; }
-  if (!state.dailyMissions[today]) state.dailyMissions[today]
+  if (!state.dailyMissions[today]) state.dailyMissions[today] = {};
+  state.mathQuiz = { today: null, questions: [], currentIndex: 0, results: [], completed: false };
+  // 하루 사용시간 초기화
+  state.dailyPlayTime = 0;
+  state.lockUntil = null;
+  hideLockScreen();
+  const shouldResetRaid = !state.raid || state.raid.today !== today || state.raid.completed === true;
+  if (shouldResetRaid) {
+    const finalForms = POKEMON_LIST.filter(p => { const evoChain = getEvoChain(p.engName); return evoChain && evoChain.length >= 2 && evoChain[evoChain.length-1] === p.engName; });
+    let boss = finalForms.length > 0 ? finalForms[Math.floor(Math.random() * finalForms.length)] : POKEMON_LIST[Math.floor(Math.random() * POKEMON_LIST.length)];
+    state.raid = { boss, hp: boss.hp * 15, maxHp: boss.hp * 15, completed: false, today: today, attackChance: 0, rewardCollected: false };
+    state.raidSelectedType = null; state.raidSelectedCard = null;
+  }
+  saveState();
+  renderAll();
+}
 
 let lastCheckedDate = todayKey();
 setInterval(function() {
