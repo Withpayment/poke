@@ -1565,6 +1565,11 @@
     transform: scale(0.95);
     opacity: 0.7;
   }
+  /* 음악 재생 애니메이션 */
+@keyframes musicPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+}
 </style>
 </head>
 <body>
@@ -5158,106 +5163,154 @@ function playMusic(videoId, title, artist) {
     return;
   }
   
-  // ⭐ 패널이 이미 렌더링되었는지 확인
   const panel = document.getElementById('musicPanel');
   if (!panel) {
     console.error('❌ musicPanel을 찾을 수 없음');
     return;
   }
   
-  // ⭐ musicPlayerArea가 없으면 동적으로 생성
+  // ⭐ 플레이어 UI 생성
   let playerArea = document.getElementById('musicPlayerArea');
   if (!playerArea) {
     playerArea = document.createElement('div');
     playerArea.id = 'musicPlayerArea';
     playerArea.className = 'music-player';
-    playerArea.style.display = 'block';
-    playerArea.innerHTML = `
-      <div class="now-playing" id="nowPlaying">🎵 재생 중...</div>
-      <div class="player-controls">
-        <button class="btn small ghost" onclick="stopMusic()" style="font-size:14px;padding:8px 16px;min-height:36px;">⏹️ 정지</button>
-      </div>
+    playerArea.style.cssText = `
+      margin-top: 12px;
+      padding: 16px;
+      background: linear-gradient(160deg, rgba(255,107,157,.12), rgba(255,107,157,.04));
+      border-radius: 14px;
+      border: 2px solid rgba(255,107,157,.3);
+      box-shadow: 0 4px 20px rgba(255,107,157,.1);
     `;
     panel.appendChild(playerArea);
   }
   
-  const nowPlaying = document.getElementById('nowPlaying');
-  if (nowPlaying) {
-    nowPlaying.textContent = `🎵 ${title} - ${artist}`;
-  }
+  // ⭐ 플레이어 UI HTML
+  playerArea.innerHTML = `
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+      <div style="font-size:32px;animation:musicPulse 1.5s infinite;">🎵</div>
+      <div style="flex:1;min-width:120px;">
+        <div id="nowPlaying" style="font-family:var(--font-display);font-size:16px;color:var(--music);font-weight:700;">${title}</div>
+        <div style="font-size:13px;color:#B7AFDE;">${artist}</div>
+      </div>
+      <div style="display:flex;gap:6px;align-items:center;">
+        <button onclick="toggleMusicPlay()" id="playPauseBtn" style="background:var(--music);border:none;border-radius:50%;width:44px;height:44px;font-size:20px;color:#fff;cursor:pointer;box-shadow:0 3px 0 #CC4A7A;transition:transform .1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">⏸️</button>
+        <button onclick="stopMusic()" style="background:rgba(255,255,255,.1);border:2px solid rgba(255,255,255,.15);border-radius:50%;width:40px;height:40px;font-size:16px;color:#B7AFDE;cursor:pointer;">⏹️</button>
+      </div>
+    </div>
+    <div style="margin-top:8px;position:relative;">
+      <div id="progressBar" style="width:100%;height:4px;background:rgba(255,255,255,.1);border-radius:4px;cursor:pointer;position:relative;overflow:hidden;">
+        <div id="progressFill" style="width:0%;height:100%;background:linear-gradient(90deg,var(--music),var(--sun));border-radius:4px;transition:width .3s;"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:#6b6395;margin-top:3px;">
+        <span id="currentTime">0:00</span>
+        <span id="totalTime">3:00</span>
+      </div>
+    </div>
+  `;
   
   playerArea.style.display = 'block';
   
-  // YouTube Iframe API로 음악 재생
-  if (window.YT && YT.Player) {
-    if (musicPlayer) {
-      try { musicPlayer.destroy(); } catch(e) {}
-      musicPlayer = null;
-    }
-    try {
-      musicPlayer = new YT.Player('musicPlayerArea', {
-        height: '0',
-        width: '0',
-        videoId: videoId,
-        playerVars: {
-          autoplay: 1,
-          controls: 0,
-          modestbranding: 1,
-          rel: 0,
-          showinfo: 0,
-          iv_load_policy: 3,
-          disablekb: 1,
-          fs: 0,
-          playsinline: 1
-        },
-        events: {
-          onReady: function(event) {
-            event.target.playVideo();
-          },
-          onStateChange: function(event) {
-            if (event.data === YT.PlayerState.ENDED) {
-              stopMusic();
-            }
-          },
-          onError: function(event) {
-            console.error('YouTube 오류:', event.data);
-            alert('🎵 음악 재생 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
-            stopMusic();
-          }
-        }
-      });
-    } catch(e) {
-      console.error('YouTube Player 생성 오류:', e);
-      alert('🎵 음악 재생을 시작할 수 없습니다.');
-    }
-  } else {
-    // Fallback
+  // ⭐ YouTube iframe 생성 (숨김)
+  try {
+    const oldIframe = playerArea.querySelector('iframe');
+    if (oldIframe) oldIframe.remove();
+    
     const iframe = document.createElement('iframe');
+    iframe.id = 'youtubePlayer';
+    iframe.width = '0';
+    iframe.height = '0';
     iframe.style.display = 'none';
-    iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&controls=0&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3&disablekb=1&fs=0&playsinline=1`;
-    iframe.allow = 'autoplay';
+    iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&controls=0&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3&disablekb=1&fs=0&playsinline=1&origin=${encodeURIComponent(window.location.origin)}`;
+    iframe.allow = 'autoplay; encrypted-media';
     playerArea.appendChild(iframe);
+    
+    // ⭐ 진행바 업데이트 (가상)
+    let progress = 0;
+    window._musicInterval = setInterval(() => {
+      progress += 1;
+      if (progress > 100) {
+        clearInterval(window._musicInterval);
+        return;
+      }
+      const fill = document.getElementById('progressFill');
+      const currentTime = document.getElementById('currentTime');
+      if (fill) fill.style.width = progress + '%';
+      if (currentTime) {
+        const seconds = Math.floor((progress / 100) * 180);
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        currentTime.textContent = `${mins}:${String(secs).padStart(2, '0')}`;
+      }
+    }, 1000);
+    
+  } catch(e) {
+    console.error('음악 재생 오류:', e);
+    alert('🎵 음악 재생 중 오류가 발생했습니다.');
+    stopMusic();
   }
   
   updateTicketDisplay();
   saveState();
 }
-
+// ⭐ 음악 일시정지/재생 토글
+function toggleMusicPlay() {
+  const iframe = document.getElementById('youtubePlayer');
+  const btn = document.getElementById('playPauseBtn');
+  
+  if (!iframe) {
+    alert('⚠️ 재생 중인 음악이 없습니다.');
+    return;
+  }
+  
+  // iframe src를 통해 재생 제어 (토글 방식)
+  const currentSrc = iframe.src;
+  if (currentSrc.includes('autoplay=1')) {
+    // 일시정지 (autoplay 제거)
+    iframe.src = currentSrc.replace('autoplay=1', 'autoplay=0');
+    if (btn) btn.textContent = '▶️';
+    clearInterval(window._musicInterval);
+  } else {
+    // 재생 (autoplay 추가)
+    iframe.src = currentSrc.replace('autoplay=0', 'autoplay=1');
+    if (btn) btn.textContent = '⏸️';
+    // 진행바 다시 시작
+    let progress = parseFloat(document.getElementById('progressFill')?.style.width || '0');
+    window._musicInterval = setInterval(() => {
+      progress += 1;
+      if (progress > 100) {
+        clearInterval(window._musicInterval);
+        return;
+      }
+      const fill = document.getElementById('progressFill');
+      const currentTime = document.getElementById('currentTime');
+      if (fill) fill.style.width = progress + '%';
+      if (currentTime) {
+        const seconds = Math.floor((progress / 100) * 180);
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        currentTime.textContent = `${mins}:${String(secs).padStart(2, '0')}`;
+      }
+    }, 1000);
+  }
+}
 function stopMusic() {
-  if (musicPlayer) {
-    try { 
-      musicPlayer.stopVideo(); 
-      musicPlayer.destroy(); 
-    } catch(e) {
-      console.warn('musicPlayer 정리 중 오류:', e);
-    }
-    musicPlayer = null;
+  // ⭐ 인터벌 정리
+  if (window._musicInterval) {
+    clearInterval(window._musicInterval);
+    window._musicInterval = null;
   }
   
   const area = document.getElementById('musicPlayerArea');
   if (area) {
     const iframe = area.querySelector('iframe');
-    if (iframe) iframe.remove();
+    if (iframe) {
+      try {
+        iframe.src = '';
+        iframe.remove();
+      } catch(e) {}
+    }
     area.style.display = 'none';
   }
   
