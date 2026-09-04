@@ -286,87 +286,88 @@
     line-height: 1.2;
   }
   
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-    padding: 4px 0;
-  }
-  
-  .card.mini {
-    background: linear-gradient(160deg, var(--paper) 0%, var(--paper-2) 100%);
-    border-radius: 14px;
-    padding: 10px 8px;
-    border: 3px solid var(--sun);
-    box-shadow: 0 4px 12px rgba(0,0,0,.2);
-    cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s;
-    text-align: center;
-    position: relative;
-    overflow: hidden;
-  }
-  .card.mini:active { transform: scale(0.95); }
-  .card.mini .art {
-    width: 100%;
-    aspect-ratio: 1/0.9;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: radial-gradient(circle at 50% 40%, rgba(255,255,255,.4), transparent 70%);
-    border-radius: 10px;
-  }
-  .card.mini .art img { width: 60%; height: 60%; object-fit: contain; }
-  .card.mini .name {
-    font-family: var(--font-display);
-    font-size: 15px;
-    font-weight: 700;
-    color: var(--text-dark);
-    margin-top: 3px;
-    line-height: 1.2;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .card.mini .type-tag {
-    display: inline-block;
-    font-family: var(--font-mono);
-    font-size: 10px;
-    padding: 2px 12px;
-    border-radius: 20px;
-    color: #fff;
-    margin: 3px auto 5px;
-    background: var(--normal);
-  }
-  .card.mini .statrow {
-    display: flex;
-    justify-content: space-around;
-    font-family: var(--font-mono);
-    font-size: 9px;
-    color: #5A5170;
-    padding: 0 2px;
-  }
-  .card.mini .statrow span b {
-    font-size: 12px;
-    color: var(--text-dark);
-    font-weight: 700;
-  }
-  .card.mini .rarity-badge {
-    position: absolute;
-    top: 5px;
-    right: 5px;
-    font-family: var(--font-mono);
-    font-size: 9px;
-    font-weight: 700;
-    padding: 2px 8px;
-    border-radius: 10px;
-    color: #fff;
-    background: rgba(0,0,0,.4);
-    backdrop-filter: blur(2px);
-    letter-spacing: .04em;
-    line-height: 1.4;
-  }
-  .card.mini.locked { filter: grayscale(1) brightness(0.5); }
-  .card.mini.locked .name { color: #aaa; }
+/* ===== 도감 카드 - 4열 그리드 ===== */
+.dex-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 5px;
+  padding: 4px 0;
+}
+
+.card.mini {
+  background: linear-gradient(160deg, var(--paper) 0%, var(--paper-2) 100%);
+  border-radius: 8px;
+  padding: 4px 3px;
+  border: 2px solid var(--sun);
+  box-shadow: 0 2px 6px rgba(0,0,0,.2);
+  cursor: pointer;
+  transition: transform 0.15s;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.card.mini:active { transform: scale(0.95); }
+.card.mini .art {
+  width: 100%;
+  aspect-ratio: 1/0.9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at 50% 40%, rgba(255,255,255,.4), transparent 70%);
+  border-radius: 6px;
+}
+.card.mini .art img { width: 50%; height: 50%; object-fit: contain; }
+.card.mini .name {
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin-top: 1px;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.card.mini .type-tag {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 7px;
+  padding: 1px 6px;
+  border-radius: 10px;
+  color: #fff;
+  margin: 1px auto 2px;
+  background: var(--normal);
+}
+.card.mini .statrow {
+  display: flex;
+  justify-content: space-around;
+  font-family: var(--font-mono);
+  font-size: 6px;
+  color: #5A5170;
+  padding: 0 1px;
+}
+.card.mini .statrow span b {
+  font-size: 8px;
+  color: var(--text-dark);
+  font-weight: 700;
+}
+.card.mini .rarity-badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  font-family: var(--font-mono);
+  font-size: 6px;
+  font-weight: 700;
+  padding: 1px 4px;
+  border-radius: 6px;
+  color: #fff;
+  background: rgba(0,0,0,.5);
+  backdrop-filter: blur(2px);
+  letter-spacing: .04em;
+  line-height: 1.3;
+}
+.card.mini.locked { filter: grayscale(1) brightness(0.5); }
+.card.mini.locked .name { color: #aaa; }
   
   .filter-row {
     display: flex;
@@ -1637,54 +1638,52 @@
           </div>
         </div>
         
-        <div id="adminContentSection" style="display:none;">
-          <div style="margin-bottom:16px;padding:14px;background:rgba(255,255,255,.05);border-radius:12px;border:2px solid rgba(255,215,0,.15);">
-            <div style="font-family:var(--font-display);font-size:16px;color:var(--sun-2);margin-bottom:8px;">🎴 카드 지급</div>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;">
-              <input id="adminCardSearch" placeholder="포켓몬 이름 검색..." style="flex:2;min-width:120px;padding:10px 14px;border-radius:8px;border:2px solid rgba(255,201,60,.2);background:rgba(255,255,255,.05);color:var(--paper);font-size:14px;">
-              <input id="adminCardCount" type="number" value="1" min="1" max="99" style="width:60px;padding:10px 8px;border-radius:8px;border:2px solid rgba(255,201,60,.2);background:rgba(255,255,255,.05);color:var(--paper);font-size:14px;text-align:center;">
-              <button class="btn small" id="adminGiveCardBtn" style="font-size:14px;padding:8px 16px;min-height:40px;">🎁 지급</button>
-            </div>
-            <div id="adminCardResult" style="font-size:12px;color:#B7AFDE;margin-top:6px;"></div>
-          </div>
-          
-          <div style="margin-bottom:16px;padding:14px;background:rgba(255,255,255,.05);border-radius:12px;border:2px solid rgba(255,215,0,.15);">
-            <div style="font-family:var(--font-display);font-size:16px;color:var(--sun-2);margin-bottom:8px;">💎 진화의돌 지급</div>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;">
-              <select id="adminStoneType" style="flex:1;min-width:100px;padding:10px 14px;border-radius:8px;border:2px solid rgba(255,201,60,.2);background:rgba(255,255,255,.05);color:var(--paper);font-size:14px;">
-                <option value="mega">💎 메가진화의돌</option>
-                <option value="gigantamax">🔥 거다이맥스돌</option>
-              </select>
-              <input id="adminStoneCount" type="number" value="1" min="1" max="99" style="width:60px;padding:10px 8px;border-radius:8px;border:2px solid rgba(255,201,60,.2);background:rgba(255,255,255,.05);color:var(--paper);font-size:14px;text-align:center;">
-              <button class="btn small" id="adminGiveStoneBtn" style="font-size:14px;padding:8px 16px;min-height:40px;">💎 지급</button>
-            </div>
-            <div id="adminStoneResult" style="font-size:12px;color:#B7AFDE;margin-top:6px;"></div>
-          </div>
-          
-          <!-- ⭐ 시간제한 설정 -->
-          <div style="margin-bottom:16px;padding:14px;background:rgba(255,255,255,.05);border-radius:12px;border:2px solid rgba(255,215,0,.15);">
-            <div style="font-family:var(--font-display);font-size:16px;color:var(--sun-2);margin-bottom:8px;">⏰ 시간제한 설정</div>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
-              <span style="font-size:14px;color:#B7AFDE;">하루 사용 시간:</span>
-              <input id="adminTimeLimit" type="number" value="15" min="1" max="120" style="width:80px;padding:10px 8px;border-radius:8px;border:2px solid rgba(255,201,60,.2);background:rgba(255,255,255,.05);color:var(--paper);font-size:16px;text-align:center;">
-              <span style="font-size:14px;color:#B7AFDE;">분</span>
-              <button class="btn small" id="adminSetTimeBtn" style="font-size:14px;padding:8px 16px;min-height:40px;">⏱️ 설정</button>
-            </div>
-            <div id="adminTimeResult" style="font-size:12px;color:#B7AFDE;margin-top:6px;"></div>
-          </div>
-          
-          <div style="padding:12px;background:rgba(255,255,255,.03);border-radius:10px;border:1px solid rgba(255,255,255,.05);">
-            <div style="font-size:13px;color:#B7AFDE;text-align:center;">
-              📊 보유 카드: <b style="color:var(--paper);" id="adminOwnedCount">0</b>장 &nbsp;|&nbsp;
-              💎 메가돌: <b style="color:#FF00FF;" id="adminMegaCount">0</b>개 &nbsp;|&nbsp;
-              🔥 거다이돌: <b style="color:#00D4FF;" id="adminGigaCount">0</b>개
-            </div>
-          </div>
-          
-          <div style="display:flex;gap:10px;margin-top:12px;">
-            <button class="btn ghost" id="adminCloseBtn" style="flex:1;">닫기</button>
-          </div>
-        </div>
+<div id="adminContentSection" style="display:none;">
+  <div style="margin-bottom:16px;padding:14px;background:rgba(255,255,255,.05);border-radius:12px;border:2px solid rgba(255,215,0,.15);">
+    <div style="font-family:var(--font-display);font-size:16px;color:var(--sun-2);margin-bottom:8px;">🎴 카드 지급</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <input id="adminCardSearch" placeholder="포켓몬 이름 검색..." style="flex:2;min-width:120px;padding:10px 14px;border-radius:8px;border:2px solid rgba(255,201,60,.2);background:rgba(255,255,255,.05);color:var(--paper);font-size:14px;">
+      <input id="adminCardCount" type="number" value="1" min="1" max="99" style="width:60px;padding:10px 8px;border-radius:8px;border:2px solid rgba(255,201,60,.2);background:rgba(255,255,255,.05);color:var(--paper);font-size:14px;text-align:center;">
+      <button class="btn small" id="adminGiveCardBtn" style="font-size:14px;padding:8px 16px;min-height:40px;">🎁 지급</button>
+    </div>
+    <div id="adminCardResult" style="font-size:12px;color:#B7AFDE;margin-top:6px;"></div>
+  </div>
+  
+  <div style="margin-bottom:16px;padding:14px;background:rgba(255,255,255,.05);border-radius:12px;border:2px solid rgba(255,215,0,.15);">
+    <div style="font-family:var(--font-display);font-size:16px;color:var(--sun-2);margin-bottom:8px;">💎 진화의돌 지급</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <select id="adminStoneType" style="flex:1;min-width:100px;padding:10px 14px;border-radius:8px;border:2px solid rgba(255,201,60,.2);background:rgba(255,255,255,.05);color:var(--paper);font-size:14px;">
+        <option value="mega">💎 메가진화의돌</option>
+        <option value="gigantamax">🔥 거다이맥스돌</option>
+      </select>
+      <input id="adminStoneCount" type="number" value="1" min="1" max="99" style="width:60px;padding:10px 8px;border-radius:8px;border:2px solid rgba(255,201,60,.2);background:rgba(255,255,255,.05);color:var(--paper);font-size:14px;text-align:center;">
+      <button class="btn small" id="adminGiveStoneBtn" style="font-size:14px;padding:8px 16px;min-height:40px;">💎 지급</button>
+    </div>
+    <div id="adminStoneResult" style="font-size:12px;color:#B7AFDE;margin-top:6px;"></div>
+  </div>
+  
+  <!-- ⭐ 음악감상권 지급 추가 -->
+  <div style="margin-bottom:16px;padding:14px;background:rgba(255,255,255,.05);border-radius:12px;border:2px solid rgba(255,215,0,.15);">
+    <div style="font-family:var(--font-display);font-size:16px;color:var(--sun-2);margin-bottom:8px;">🎵 음악감상권 지급</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+      <input id="adminTicketCount" type="number" value="1" min="1" max="99" style="width:70px;padding:10px 8px;border-radius:8px;border:2px solid rgba(255,201,60,.2);background:rgba(255,255,255,.05);color:var(--paper);font-size:16px;text-align:center;">
+      <button class="btn small" id="adminGiveTicketBtn" style="font-size:14px;padding:8px 16px;min-height:40px;">🎵 지급</button>
+    </div>
+    <div id="adminTicketResult" style="font-size:12px;color:#B7AFDE;margin-top:6px;"></div>
+  </div>
+  
+  <div style="padding:12px;background:rgba(255,255,255,.03);border-radius:10px;border:1px solid rgba(255,255,255,.05);">
+    <div style="font-size:13px;color:#B7AFDE;text-align:center;">
+      📊 보유 카드: <b style="color:var(--paper);" id="adminOwnedCount">0</b>장 &nbsp;|&nbsp;
+      💎 메가돌: <b style="color:#FF00FF;" id="adminMegaCount">0</b>개 &nbsp;|&nbsp;
+      🔥 거다이돌: <b style="color:#00D4FF;" id="adminGigaCount">0</b>개
+    </div>
+  </div>
+  
+  <div style="display:flex;gap:10px;margin-top:12px;">
+    <button class="btn ghost" id="adminCloseBtn" style="flex:1;">닫기</button>
+  </div>
+</div>
       </div>
     </div>
 
@@ -1756,7 +1755,7 @@
         <button class="chip" data-rarity="gigantamax">거다이맥스</button>
       </div>
       <div class="filter-row" id="filterRow"></div>
-      <div class="grid" id="dexGrid"></div>
+     <div class="dex-grid" id="dexGrid"></div>
     </section>
 
     <!-- 탭: 키우기 -->
@@ -2888,7 +2887,19 @@ function adminSetTimeLimit() {
   resultEl.textContent = `⏰ 시간제한이 ${minutes}분으로 설정되었습니다!`;
   resultEl.style.color = 'var(--good)';
 }
-
+// ⭐ 관리자 - 음악감상권 지급
+function adminGiveTicket() {
+  const countInput = document.getElementById('adminTicketCount');
+  const resultEl = document.getElementById('adminTicketResult');
+  const count = parseInt(countInput.value) || 1;
+  
+  addTickets(count);
+  updateAdminStats();
+  
+  resultEl.textContent = `✅ 음악감상권 ×${count} 지급 완료! (현재 ${state.musicTickets || 0}개)`;
+  resultEl.style.color = 'var(--good)';
+  SFX.ticket();
+}
 function bindAdminEvents() {
   document.getElementById('adminPanelBtn').addEventListener('click', openAdminPanel);
   document.getElementById('adminModalClose').addEventListener('click', closeAdminPanel);
@@ -2904,6 +2915,8 @@ function bindAdminEvents() {
   });
   document.getElementById('adminGiveStoneBtn').addEventListener('click', adminGiveStone);
   document.getElementById('adminSetTimeBtn').addEventListener('click', adminSetTimeLimit);
+  // ⭐ 음악감상권 지급 이벤트 추가
+  document.getElementById('adminGiveTicketBtn').addEventListener('click', adminGiveTicket);
   document.getElementById('adminModal').addEventListener('click', function(e) {
     if (e.target === this) closeAdminPanel();
   });
@@ -2973,17 +2986,29 @@ function clearAllData() {
 }
 
 // ===== 탭 전환 =====
+// ===== 탭 전환 (미션 완료 체크 추가) =====
 document.querySelectorAll('nav.tabbar button').forEach(btn => {
   btn.addEventListener('click', function() {
+    const tabId = this.dataset.tab;
+    
+    // ⭐ 도감탭, 배틀탭, 음악도감탭은 미션 완료 체크
+    if (tabId === 'tab-dex' || tabId === 'tab-battle' || tabId === 'tab-music') {
+      if (!isAllRequiredMissionsDone()) {
+        alert('⚠️ 오늘의 생활미션 8개를 모두 완료해야 사용할 수 있어요!');
+        return;
+      }
+    }
+    
     document.querySelectorAll('nav.tabbar button').forEach(b => b.classList.remove('active'));
     document.querySelectorAll('main section').forEach(s => s.classList.remove('active'));
     this.classList.add('active');
-    document.getElementById(this.dataset.tab).classList.add('active');
-    if (this.dataset.tab === 'tab-battle') renderBattleSetup();
-    if (this.dataset.tab === 'tab-pet') renderPetTab();
-    if (this.dataset.tab === 'tab-trade') renderTradeTab();
-    if (this.dataset.tab === 'tab-craft') renderCraftTab();
-    if (this.dataset.tab === 'tab-music') renderMusicTab();
+    document.getElementById(tabId).classList.add('active');
+    
+    if (tabId === 'tab-battle') renderBattleSetup();
+    if (tabId === 'tab-pet') renderPetTab();
+    if (tabId === 'tab-trade') renderTradeTab();
+    if (tabId === 'tab-craft') renderCraftTab();
+    if (tabId === 'tab-music') renderMusicTab();
   });
 });
 
@@ -3250,14 +3275,19 @@ function renderTypeQuiz() {
   if (currentTypeQuiz.isFinished) {
     const correctCount = currentTypeQuiz.correctCount || 0;
     let rewardMsg = '';
-    if (correctCount >= 7) {
+    
+    // ⭐ 감상권 중복 지급 방지
+    if (correctCount >= 7 && !state._typeQuizTicketRewarded) {
       addTickets(1);
+      state._typeQuizTicketRewarded = true;
       rewardMsg = '🎵 음악감상권 1개 획득!';
     }
-    if (correctCount === 10) {
+    if (correctCount === 10 && !state._typeQuizCardRewarded) {
       grantCardReward();
+      state._typeQuizCardRewarded = true;
       rewardMsg += ' 🎁 카드 획득!';
     }
+    
     state.typeQuizDoneToday = key;
     saveState();
     panel.innerHTML = `<div class="mission-intro"><div class="big-emoji">📊</div><div class="title-text">상성퀴즈 완료!</div><div style="font-size:18px;color:#B7AFDE;margin:8px 0;">10문제 중 ${correctCount}문제 정답!</div>${rewardMsg ? `<div style="color:var(--good);margin-top:8px;">${rewardMsg}</div>` : ''}<button class="btn small" onclick="currentTypeQuiz={questions:[],currentIndex:0,correctCount:0,isFinished:false};renderTypeQuiz();">새 퀴즈 (내일)</button></div>`;
@@ -3267,7 +3297,6 @@ function renderTypeQuiz() {
   const q = currentTypeQuiz.questions[currentTypeQuiz.currentIndex];
   if (!q) { currentTypeQuiz.isFinished = true; renderTypeQuiz(); return; }
   const progress = (currentTypeQuiz.currentIndex + 1) + ' / 10';
-  const effectText = getTypeEffectiveness(q.attackType, q.defendType);
   panel.innerHTML = `<div class="quiz-box"><div style="font-family:var(--font-mono);font-size:14px;color:#B7AFDE;margin-bottom:8px;">${progress} · 정답 ${currentTypeQuiz.correctCount}개</div>
     <div style="background:rgba(255,255,255,.05);border-radius:12px;padding:12px;margin-bottom:12px;">
       <div style="display:flex;justify-content:center;align-items:center;gap:16px;font-size:20px;">
@@ -3369,16 +3398,21 @@ function renderMathQuiz() {
   if (q && q.completed) {
     const correctCount = q.results ? q.results.filter(r => r).length : 0;
     const total = q.questions ? q.questions.length : 10;
+    
+    // ⭐ 이미 음악을 획득했는지 확인 (중복 방지)
     let rewardMsg = '';
-    if (correctCount === total && total > 0) {
+    if (correctCount === total && total > 0 && !state._mathMusicRewarded) {
       const unlocked = MUSIC_LIST.filter(m => !state.unlockedMusic.includes(m.id));
       if (unlocked.length > 0) {
         const newMusic = unlocked[Math.floor(Math.random() * unlocked.length)];
         state.unlockedMusic.push(newMusic.id);
+        state._mathMusicRewarded = true;
         rewardMsg = `🎵 '${newMusic.title}' 음악을 획득했어요!`;
         SFX.ticket();
+        saveState();
       }
     }
+    
     panel.innerHTML = `<div class="mission-intro"><div class="big-emoji">🎉</div><div class="title-text">수학 퀴즈 완료!</div><div style="font-size:20px;color:#B7AFDE;margin:8px 0;">${total}문제 중 ${correctCount}문제 정답! (${Math.round(correctCount/total*100)}%)</div>${rewardMsg ? `<div style="color:var(--music);margin-top:8px;">${rewardMsg}</div>` : ''}</div>`;
     return;
   }
@@ -3512,25 +3546,34 @@ function renderRaidMission() {
     filteredPokemon = POKEMON_LIST.filter(p => state.owned[p.engName] && p.types.includes(selectedType)).sort((a,b) => (b.atk||0) - (a.atk||0));
   }
   if (selectedCard) selectedPokemonData = getPokemonByName(selectedCard);
-  const typeHTML = `<div class="raid-section"><div class="raid-section-title"><span class="step-badge">1</span>공격할 속성 선택</div><div class="raid-type-selector">${allTypes.map(type => `<button class="raid-type-btn ${state.raidSelectedType === type ? 'selected' : ''}" onclick="selectRaidType('${type}')"><span class="type-icon">${typeEmojis[type] || '❓'}</span><span class="type-label">${getTypeLabel(type)}</span></button>`).join('')}</div></div>`;
-  let pokemonHTML = '';
-  if (selectedType) {
-    if (filteredPokemon.length === 0) {
-      pokemonHTML = `<div class="raid-pokemon-selector"><div class="raid-section-title"><span class="step-badge">2</span>${getTypeLabel(selectedType)} 타입 포켓몬</div><div class="raid-empty-msg">😢 ${getTypeLabel(selectedType)} 타입 포켓몬이 없어요</div></div>`;
-    } else {
-      pokemonHTML = `<div class="raid-pokemon-selector"><div class="raid-section-title"><span class="step-badge">2</span>${getTypeLabel(selectedType)} 타입 포켓몬 (공격력 순)<span style="font-size:11px;color:#6b6395;margin-left:auto;">${filteredPokemon.length}마리</span></div><div class="raid-pokemon-grid">${filteredPokemon.slice(0,12).map(p => { const rarityInfo = getRarityInfo(state.owned[p.engName]?.rarity || 'common'); const isSelected = selectedCard === p.engName; return `<div class="raid-pokemon-card ${isSelected ? 'selected' : ''}" onclick="selectRaidPokemon('${p.engName}')"><div class="rpc-art">${pokemonImage(p, '28px')}</div><div class="rpc-name">${p.name}</div><div class="rpc-atk">⚔️ ${p.atk} ${rarityInfo.emoji}</div></div>`; }).join('')}</div></div>`;
-    }
-  }
-  let selectedInfoHTML = '';
-  if (selectedCard && selectedPokemonData) {
-    const rarityInfo = getRarityInfo(state.owned[selectedCard]?.rarity || 'common');
-    selectedInfoHTML = `<div class="raid-selected-info">✅ 선택된 카드: <span class="highlight">${selectedPokemonData.name}</span> ${rarityInfo.emoji} ⚔️ ${selectedPokemonData.atk}</div>`;
-  }
-  const attackDisabled = atkChance <= 0 || !selectedCard;
-  panel.innerHTML = `<div class="raid-boss"><div class="boss-art">${pokemonImage(boss, '80px')}</div><div class="boss-name">${boss.name}</div><div class="boss-hp"><div style="width:${hpPercent}%"></div></div><div class="boss-info">❤️ HP ${Math.max(0, Math.round(raid.hp))} / ${raid.maxHp}</div>${typeHTML}${pokemonHTML}${selectedInfoHTML}<div class="raid-attack-area"><button class="btn" id="raidAttackBtn" ${attackDisabled ? 'disabled' : ''}>⚔️ 공격! (${atkChance}회)</button><button class="btn small ghost" onclick="resetRaidSelection()" style="flex:0.5;min-width:60px;">↺</button></div></div>`;
+  
+  // ⭐ 레이드 보스 타입 표시
+  const typeText = boss.types.map(t => getTypeLabel(t)).join('/');
+  const hasCard = !!state.owned[boss.engName];
+  
+  panel.innerHTML = `<div class="raid-boss">
+    <div class="raid-boss-info">
+      <div class="rb-row">
+        <div class="rb-art">${pokemonImage(boss, '52px')}</div>
+        <div class="rb-detail">
+          <div class="rb-name">${boss.name}</div>
+          <div class="rb-stat">⭐ 타입: ${typeText}</div>
+          <div class="rb-stat">❤️ HP: ${boss.hp} · ⚔️ 공격: ${boss.atk}</div>
+          <div class="rb-owner">${hasCard ? '✅ 보유한 카드입니다' : '❌ 아직 미보유 카드입니다'}</div>
+        </div>
+      </div>
+      <div style="margin-top:6px;font-size:12px;color:#6b6395;text-align:center;">⚔️ 레이드 보스는 체력이 15배 증가합니다</div>
+    </div>
+    <div class="boss-hp"><div style="width:${hpPercent}%"></div></div>
+    <div class="boss-info">❤️ HP ${Math.max(0, Math.round(raid.hp))} / ${raid.maxHp}</div>
+    <div class="raid-section"><div class="raid-section-title"><span class="step-badge">1</span>공격할 속성 선택</div>
+    <div class="raid-type-selector">${allTypes.map(type => `<button class="raid-type-btn ${state.raidSelectedType === type ? 'selected' : ''}" onclick="selectRaidType('${type}')"><span class="type-icon">${typeEmojis[type] || '❓'}</span><span class="type-label">${getTypeLabel(type)}</span></button>`).join('')}</div></div>
+    ${selectedType ? (filteredPokemon.length === 0 ? `<div class="raid-pokemon-selector"><div class="raid-section-title"><span class="step-badge">2</span>${getTypeLabel(selectedType)} 타입 포켓몬</div><div class="raid-empty-msg">😢 ${getTypeLabel(selectedType)} 타입 포켓몬이 없어요</div></div>` : `<div class="raid-pokemon-selector"><div class="raid-section-title"><span class="step-badge">2</span>${getTypeLabel(selectedType)} 타입 포켓몬 (공격력 순)<span style="font-size:11px;color:#6b6395;margin-left:auto;">${filteredPokemon.length}마리</span></div><div class="raid-pokemon-grid">${filteredPokemon.slice(0,12).map(p => { const rarityInfo = getRarityInfo(state.owned[p.engName]?.rarity || 'common'); const isSelected = selectedCard === p.engName; return `<div class="raid-pokemon-card ${isSelected ? 'selected' : ''}" onclick="selectRaidPokemon('${p.engName}')"><div class="rpc-art">${pokemonImage(p, '28px')}</div><div class="rpc-name">${p.name}</div><div class="rpc-atk">⚔️ ${p.atk} ${rarityInfo.emoji}</div></div>`; }).join('')}</div></div>`) : ''}
+    ${selectedCard && selectedPokemonData ? `<div class="raid-selected-info">✅ 선택된 카드: <span class="highlight">${selectedPokemonData.name}</span> ${getRarityInfo(state.owned[selectedCard]?.rarity || 'common').emoji} ⚔️ ${selectedPokemonData.atk}</div>` : ''}
+    <div class="raid-attack-area"><button class="btn" id="raidAttackBtn" ${(atkChance <= 0 || !selectedCard) ? 'disabled' : ''}>⚔️ 공격! (${atkChance}회)</button><button class="btn small ghost" onclick="resetRaidSelection()" style="flex:0.5;min-width:60px;">↺</button></div>
+  </div>`;
   document.getElementById('raidAttackBtn')?.addEventListener('click', doRaidAttack);
 }
-
 function selectRaidType(type) { state.raidSelectedType = type; state.raidSelectedCard = null; saveState(); renderRaidMission(); }
 function selectRaidPokemon(engName) { state.raidSelectedCard = engName; saveState(); renderRaidMission(); }
 function resetRaidSelection() { state.raidSelectedType = null; state.raidSelectedCard = null; saveState(); renderRaidMission(); }
@@ -4312,15 +4355,33 @@ function doAiTurn() {
   const p = aiBattle.player[aiBattle.pActive];
   const e = aiBattle.enemy[aiBattle.eActive];
   const order = p.spd >= e.spd ? ['p', 'e'] : ['e', 'p'];
+  
   for (const side of order) {
     if (aiBattle.over) break;
     if (side === 'p') {
       if (p.curHp <= 0) continue;
+      
+      // ⭐ 플레이어 공격 이펙트
+      const playerArt = document.querySelector('.fighter:first-child .art-wrap');
+      if (playerArt) {
+        playerArt.classList.add('attacking');
+        setTimeout(() => playerArt.classList.remove('attacking'), 500);
+      }
+      
       SFX.attack();
       const mult = getEffMult(p.type, e.type);
       const rarityBonus = getRarityDamageBonus(state.owned[p.engName]?.rarity);
       const dmg = Math.max(3, Math.round(p.atk * mult - e.def * 0.35) + rarityBonus);
       e.curHp -= dmg;
+      
+      // ⭐ 적 피격 이펙트
+      const enemyArt = document.querySelector('.fighter:last-child .art-wrap');
+      if (enemyArt) {
+        enemyArt.classList.add('hit-effect');
+        setTimeout(() => enemyArt.classList.remove('hit-effect'), 500);
+        showDamageNumber(enemyArt, dmg);
+      }
+      
       addAiLog(p.name + '의 공격! ' + e.name + '에게 ' + dmg + ' 피해' + (mult > 1 ? ' (효과 굉장!)' : mult < 1 ? ' (효과 별로...)' : ''), mult > 1 ? 'eff' : mult < 1 ? 'bad' : '');
       if (e.curHp <= 0) {
         addAiLog(e.name + ' 쓰러짐!', 'sys');
@@ -4332,10 +4393,27 @@ function doAiTurn() {
     } else {
       const ee = aiBattle.enemy[aiBattle.eActive];
       if (ee.curHp <= 0) continue;
+      
+      // ⭐ 적 공격 이펙트
+      const enemyArt = document.querySelector('.fighter:last-child .art-wrap');
+      if (enemyArt) {
+        enemyArt.classList.add('attacking');
+        setTimeout(() => enemyArt.classList.remove('attacking'), 500);
+      }
+      
       SFX.attack();
       const mult = getEffMult(ee.type, p.type);
       const dmg = Math.max(3, Math.round(ee.atk * mult - p.def * 0.35));
       p.curHp -= dmg;
+      
+      // ⭐ 플레이어 피격 이펙트
+      const playerArt = document.querySelector('.fighter:first-child .art-wrap');
+      if (playerArt) {
+        playerArt.classList.add('hit-effect');
+        setTimeout(() => playerArt.classList.remove('hit-effect'), 500);
+        showDamageNumber(playerArt, dmg);
+      }
+      
       addAiLog(ee.name + '의 공격! ' + p.name + '에게 ' + dmg + ' 피해' + (mult > 1 ? ' (효과 굉장!)' : mult < 1 ? ' (효과 별로...)' : ''), mult > 1 ? 'bad' : mult < 1 ? 'eff' : '');
       if (p.curHp <= 0) {
         addAiLog(p.name + ' 쓰러짐!', 'sys');
@@ -4347,7 +4425,6 @@ function doAiTurn() {
     }
   }
   renderAiArena();
-  addPlayTime(30000);
 }
 
 function endAiBattle(playerWon) {
@@ -4886,7 +4963,21 @@ window.openCardDetailFromCraft = function(engName) {
 let musicPlayer = null;
 
 function renderMusicTab() {
-  if (!checkTimeLimit()) { document.getElementById('musicPanel').innerHTML = ''; return; }
+  // ⭐ 음악도감 접근 제한
+  if (!isAllRequiredMissionsDone()) {
+    document.getElementById('musicPanel').innerHTML = `<div class="empty-note" style="padding:40px 16px;text-align:center;color:#8d84b0;border:2px dashed rgba(255,201,60,.2);border-radius:14px;">
+      <div style="font-size:48px;margin-bottom:8px;">🔒</div>
+      <div style="font-size:18px;font-family:var(--font-display);">음악도감이 잠겨있어요!</div>
+      <div style="font-size:14px;color:#6b6395;margin-top:4px;">오늘의 생활미션 8개를 모두 완료하면 열 수 있어요!</div>
+    </div>`;
+    return;
+  }
+  
+  if (!checkTimeLimit()) { 
+    document.getElementById('musicPanel').innerHTML = ''; 
+    return; 
+  }
+  
   const panel = document.getElementById('musicPanel');
   const unlocked = state.unlockedMusic || [];
   const tickets = state.musicTickets || 0;
@@ -5017,26 +5108,15 @@ function resetDailyContent() {
   const key = todayKey();
   state.quizDoneToday = null;
   state.typeQuizDoneToday = null;
+  // ⭐ 중복 획득 방지 플래그 초기화
+  state._mathMusicRewarded = false;
+  state._typeQuizTicketRewarded = false;
+  state._typeQuizCardRewarded = false;
   currentQuiz = { questions: [], currentIndex: 0, correctCount: 0, isFinished: false };
   currentTypeQuiz = { questions: [], currentIndex: 0, correctCount: 0, isFinished: false };
   const today = todayKey();
   for (const dateKey in state.dailyMissions) { if (dateKey !== today) delete state.dailyMissions[dateKey]; }
-  if (!state.dailyMissions[today]) state.dailyMissions[today] = {};
-  state.mathQuiz = { today: null, questions: [], currentIndex: 0, results: [], completed: false };
-  // 하루 사용시간 초기화
-  state.dailyPlayTime = 0;
-  state.lockUntil = null;
-  hideLockScreen();
-  const shouldResetRaid = !state.raid || state.raid.today !== today || state.raid.completed === true;
-  if (shouldResetRaid) {
-    const finalForms = POKEMON_LIST.filter(p => { const evoChain = getEvoChain(p.engName); return evoChain && evoChain.length >= 2 && evoChain[evoChain.length-1] === p.engName; });
-    let boss = finalForms.length > 0 ? finalForms[Math.floor(Math.random() * finalForms.length)] : POKEMON_LIST[Math.floor(Math.random() * POKEMON_LIST.length)];
-    state.raid = { boss, hp: boss.hp * 15, maxHp: boss.hp * 15, completed: false, today: today, attackChance: 0, rewardCollected: false };
-    state.raidSelectedType = null; state.raidSelectedCard = null;
-  }
-  saveState();
-  renderAll();
-}
+  if (!state.dailyMissions[today]) state.dailyMissions[today]
 
 let lastCheckedDate = todayKey();
 setInterval(function() {
