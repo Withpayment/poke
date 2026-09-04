@@ -4536,7 +4536,35 @@ function renderAiArena() {
   const e = aiBattle.enemy[aiBattle.eActive];
   document.getElementById('battleBody').innerHTML = `<div class="arena"><div class="vs-row"><div class="fighter"><div class="art-wrap">${pokemonImage(p)}</div><div class="fname">${p.name}</div><div class="hpbar"><div style="width:${Math.max(0, p.curHp / p.hp * 100)}%"></div></div><div class="hptext">${Math.max(0, p.curHp)} / ${p.hp}</div></div><div class="vs-seal">VS</div><div class="fighter"><div class="art-wrap">${pokemonImage(e)}</div><div class="fname">${e.name}</div><div class="hpbar"><div style="width:${Math.max(0, e.curHp / e.hp * 100)}%"></div></div><div class="hptext">${Math.max(0, e.curHp)} / ${e.hp}</div></div></div><div class="log">${aiBattle.log.join('')}</div><div class="battle-actions">${aiBattle.over ? `<button class="btn" onclick="aiBattle=null;renderBattleSetup();">팀 다시 구성</button>` : `<button class="btn" onclick="doAiTurn()">⚔️ 공격</button>`}</div></div>`;
 }
-
+// ⭐ 데미지 숫자 표시 함수 (배틀 이펙트)
+function showDamageNumber(targetElement, damage) {
+  if (!targetElement) return;
+  
+  // 데미지 표시할 요소의 위치 계산
+  const rect = targetElement.getBoundingClientRect();
+  const damageEl = document.createElement('div');
+  damageEl.className = 'damage-number';
+  damageEl.textContent = '-' + damage;
+  damageEl.style.cssText = `
+    position: fixed;
+    font-family: var(--font-display);
+    font-size: 36px;
+    font-weight: 800;
+    color: var(--special);
+    text-shadow: 0 0 20px rgba(255,107,53,0.5), 0 2px 4px rgba(0,0,0,0.5);
+    pointer-events: none;
+    z-index: 100;
+    left: ${rect.left + rect.width / 2 - 30}px;
+    top: ${rect.top - 10}px;
+    animation: damageNumber 0.8s ease forwards;
+  `;
+  document.body.appendChild(damageEl);
+  
+  // 애니메이션 종료 후 제거
+  setTimeout(() => {
+    if (damageEl.parentNode) damageEl.remove();
+  }, 800);
+}
 function doAiTurn() {
   const p = aiBattle.player[aiBattle.pActive];
   const e = aiBattle.enemy[aiBattle.eActive];
@@ -4565,7 +4593,7 @@ function doAiTurn() {
       if (enemyArt) {
         enemyArt.classList.add('hit-effect');
         setTimeout(() => enemyArt.classList.remove('hit-effect'), 500);
-        showDamageNumber(enemyArt, dmg);
+        showDamageNumber(enemyArt, dmg); // ← 이제 정상 작동
       }
       
       addAiLog(p.name + '의 공격! ' + e.name + '에게 ' + dmg + ' 피해' + (mult > 1 ? ' (효과 굉장!)' : mult < 1 ? ' (효과 별로...)' : ''), mult > 1 ? 'eff' : mult < 1 ? 'bad' : '');
@@ -4597,7 +4625,7 @@ function doAiTurn() {
       if (playerArt) {
         playerArt.classList.add('hit-effect');
         setTimeout(() => playerArt.classList.remove('hit-effect'), 500);
-        showDamageNumber(playerArt, dmg);
+        showDamageNumber(playerArt, dmg); // ← 이제 정상 작동
       }
       
       addAiLog(ee.name + '의 공격! ' + p.name + '에게 ' + dmg + ' 피해' + (mult > 1 ? ' (효과 굉장!)' : mult < 1 ? ' (효과 별로...)' : ''), mult > 1 ? 'bad' : mult < 1 ? 'eff' : '');
@@ -4612,7 +4640,6 @@ function doAiTurn() {
   }
   renderAiArena();
 }
-
 function endAiBattle(playerWon) {
   aiBattle.over = true;
   if (playerWon) { state.wins++; addAiLog('승리! 🎉', 'eff'); SFX.victory(); }
