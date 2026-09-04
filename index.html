@@ -2888,16 +2888,26 @@ function adminSetTimeLimit() {
   resultEl.style.color = 'var(--good)';
 }
 // ⭐ 관리자 - 음악감상권 지급
+// ⭐ 관리자 - 음악감상권 지급
 function adminGiveTicket() {
+  console.log('🎵 adminGiveTicket 실행됨!'); // 디버깅용
   const countInput = document.getElementById('adminTicketCount');
   const resultEl = document.getElementById('adminTicketResult');
+  
+  if (!countInput) {
+    console.error('❌ adminTicketCount 요소를 찾을 수 없음');
+    return;
+  }
+  
   const count = parseInt(countInput.value) || 1;
   
   addTickets(count);
   updateAdminStats();
   
-  resultEl.textContent = `✅ 음악감상권 ×${count} 지급 완료! (현재 ${state.musicTickets || 0}개)`;
-  resultEl.style.color = 'var(--good)';
+  if (resultEl) {
+    resultEl.textContent = `✅ 음악감상권 ×${count} 지급 완료! (현재 ${state.musicTickets || 0}개)`;
+    resultEl.style.color = 'var(--good)';
+  }
   SFX.ticket();
 }
 function bindAdminEvents() {
@@ -2915,8 +2925,16 @@ function bindAdminEvents() {
   });
   document.getElementById('adminGiveStoneBtn').addEventListener('click', adminGiveStone);
   document.getElementById('adminSetTimeBtn').addEventListener('click', adminSetTimeLimit);
-  // ⭐ 음악감상권 지급 이벤트 추가
-  document.getElementById('adminGiveTicketBtn').addEventListener('click', adminGiveTicket);
+  
+  // ⭐ 음악감상권 지급 이벤트 (제대로 연결되었는지 확인)
+  const ticketBtn = document.getElementById('adminGiveTicketBtn');
+  if (ticketBtn) {
+    ticketBtn.addEventListener('click', adminGiveTicket);
+    console.log('✅ adminGiveTicketBtn 이벤트 연결됨');
+  } else {
+    console.error('❌ adminGiveTicketBtn 요소를 찾을 수 없음');
+  }
+  
   document.getElementById('adminModal').addEventListener('click', function(e) {
     if (e.target === this) closeAdminPanel();
   });
@@ -3934,6 +3952,9 @@ async function openCardDetail(pokemon) {
   const canMega = isFinal && MEGA_EVOLUTIONS[pokemon.engName] && (state.evolutionStones?.mega || 0) > 0;
   const canGiga = isFinal && GIGANTAMAX_EVOLUTIONS[pokemon.engName] && (state.evolutionStones?.gigantamax || 0) > 0;
   
+  // ⭐ 진화 가능 표시 (isFinal이 false면 진화 가능)
+  const canEvolve = !isFinal && state.pet && (state.pet.baseId === pokemon.engName || state.pet.evolvedId === pokemon.engName);
+  
   let abilities = [], description = '', evoChain = [];
   try {
     if (pokemon.speciesUrl) {
@@ -3954,75 +3975,101 @@ async function openCardDetail(pokemon) {
   pokemon._description = description;
   pokemon._evoChain = evoChain;
   
-  // 진화과정 HTML (클릭 가능)
+  // ⭐ 진화과정 간소화 (스크롤 필요 없게)
   let evoHTML = '';
   if (evoChain.length > 0) {
-    evoHTML = `<div class="modal-section"><h4>🔄 진화 과정</h4><div class="evo-chain">${evoChain.map((evo, idx) => {
+    evoHTML = `<div class="modal-section" style="padding:8px 12px;margin:8px 0;"><h4 style="font-size:15px;margin:0 0 4px;">🔄 진화 과정</h4><div class="evo-chain" style="gap:4px;padding:4px 0;">${evoChain.map((evo, idx) => {
       const isCurrent = evo.name === pokemon.name;
       const hasEvo = state.owned[evo.engName];
       const evoPokemon = getPokemonByName(evo.engName);
       const clickable = evoPokemon && evo.engName !== pokemon.engName;
-      return `${idx > 0 ? '<span class="evo-arrow">→</span>' : ''}<div class="evo-item ${!hasEvo && !isCurrent ? 'locked' : ''}" ${clickable ? `onclick="openCardDetail(getPokemonByName('${evo.engName}'));"` : ''} style="${isCurrent ? 'border:3px solid var(--sun);background:rgba(255,201,60,.15);' : ''}${!hasEvo && !isCurrent ? 'opacity:0.6;' : ''}cursor:${clickable ? 'pointer' : 'default'};">
-        ${evo.image ? `<img src="${evo.image}" alt="${evo.name}">` : `<div style="width:56px;height:56px;background:rgba(255,255,255,.1);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;margin:0 auto;">❓</div>`}
-        <div class="evo-name">${evo.name} ${isCurrent ? '⭐' : ''}</div>
-        ${evo.level ? `<div class="evo-level">Lv.${evo.level}</div>` : ''}
-        ${!hasEvo && !isCurrent ? '<div style="font-size:9px;color:var(--bad);">아직 획득 못했어요</div>' : ''}
+      return `${idx > 0 ? '<span class="evo-arrow" style="font-size:18px;">→</span>' : ''}<div class="evo-item ${!hasEvo && !isCurrent ? 'locked' : ''}" ${clickable ? `onclick="openCardDetail(getPokemonByName('${evo.engName}'));"` : ''} style="${isCurrent ? 'border:2px solid var(--sun);background:rgba(255,201,60,.15);' : ''}padding:4px 8px;min-width:60px;cursor:${clickable ? 'pointer' : 'default'};">
+        ${evo.image ? `<img src="${evo.image}" alt="${evo.name}" style="width:36px;height:36px;">` : `<div style="width:36px;height:36px;background:rgba(255,255,255,.1);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;margin:0 auto;">❓</div>`}
+        <div class="evo-name" style="font-size:11px;">${evo.name} ${isCurrent ? '⭐' : ''}</div>
+        ${!hasEvo && !isCurrent ? '<div style="font-size:8px;color:var(--bad);">미보유</div>' : ''}
       </div>`;
     }).join('')}</div></div>`;
   }
   
-  // 울음소리 듣기 버튼
-  const cryButton = pokemon.cryUrl ? `<button class="btn small ghost" onclick="playCry('${pokemon.cryUrl}')" style="font-size:14px;padding:8px 16px;min-height:36px;">🔊 울음소리 듣기</button>` : '';
+  // ⭐ 진화 가능 표시 (키우는 포켓몬이고 최종진화가 아닐 때)
+  let evolveBadge = '';
+  if (canEvolve) {
+    const currentId = state.pet.evolvedId || state.pet.baseId;
+    const chain = getEvoChain(currentId);
+    const currentIndex = chain.indexOf(currentId);
+    if (currentIndex !== -1 && currentIndex < chain.length - 1) {
+      const nextId = chain[currentIndex + 1];
+      const nextPokemon = getPokemonByName(nextId);
+      const evoLevel = 5 + (currentIndex * 5);
+      evolveBadge = `<div style="background:rgba(255,201,60,.15);border:2px solid var(--sun);border-radius:10px;padding:6px 12px;margin:4px 0;text-align:center;font-size:13px;color:var(--sun-2);">
+        🌱 진화 가능! Lv.${state.pet.level} → Lv.${evoLevel} 달성 시 <b>${nextPokemon ? nextPokemon.name : nextId}</b>로 진화!
+      </div>`;
+    }
+  }
   
+  // ⭐ 울음소리 듣기 버튼 (간소화)
+  const cryButton = pokemon.cryUrl ? `<button class="btn small ghost" onclick="playCry('${pokemon.cryUrl}')" style="font-size:12px;padding:4px 12px;min-height:28px;">🔊 울음소리</button>` : '';
+  
+  // ⭐ 메가/거다이 진화 버튼 (수정: 카드 획득 보장)
   let evolutionButtonHTML = '';
   if (isFinal) {
     if (canMega) {
       const megaEvo = MEGA_EVOLUTIONS[pokemon.engName];
-      evolutionButtonHTML += `<button class="btn mega small" onclick="performMegaEvolution('${pokemon.engName}')" style="flex:1;font-size:14px;padding:10px;min-height:44px;">💎 메가진화 (${megaEvo.name})</button>`;
+      evolutionButtonHTML += `<button class="btn mega small" onclick="performMegaEvolution('${pokemon.engName}')" style="font-size:13px;padding:6px 12px;min-height:32px;flex:1;">💎 메가진화</button>`;
     }
     if (canGiga) {
       const gigaEvo = GIGANTAMAX_EVOLUTIONS[pokemon.engName];
-      evolutionButtonHTML += `<button class="btn gigantamax small" onclick="performGigantamaxEvolution('${pokemon.engName}')" style="flex:1;font-size:14px;padding:10px;min-height:44px;">🔥 거다이맥스 (${gigaEvo.name})</button>`;
+      evolutionButtonHTML += `<button class="btn gigantamax small" onclick="performGigantamaxEvolution('${pokemon.engName}')" style="font-size:13px;padding:6px 12px;min-height:32px;flex:1;">🔥 거다이맥스</button>`;
     }
   }
   
+  // ⭐ 합성 버튼 (간소화)
   let craftButtonHTML = '';
   if (canCraft && canUpgrade) {
     const nextRarity = RARITIES[rarityIndex + 1];
-    craftButtonHTML = `<div style="margin-top:12px;padding:12px;background:rgba(255,201,60,.08);border-radius:12px;border:2px solid rgba(255,201,60,.2);">
-      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
-        <div style="font-size:14px;color:#B7AFDE;">📦 ${rInfo.label} 카드 ×${count} 보유<br><span style="font-size:12px;color:var(--sun-2);">2장 합성 → ${nextRarity.label} 등급!</span></div>
-        <button class="btn small" onclick="window.craftFromDetail('${pokemon.engName}')" style="font-size:14px;padding:8px 18px;min-height:36px;">🔮 합성하기</button>
-      </div>
-    </div>`;
+    craftButtonHTML = `<button class="btn small" onclick="window.craftFromDetail('${pokemon.engName}')" style="font-size:13px;padding:6px 12px;min-height:32px;background:var(--good);box-shadow:0 3px 0 #2E7A54;color:#fff;">🔮 합성 (×2 → ${nextRarity.label})</button>`;
   } else if (canSpecialCraft) {
-    craftButtonHTML = `<div style="margin-top:12px;padding:12px;background:rgba(255,107,53,.08);border-radius:12px;border:2px solid rgba(255,107,53,.2);">
-      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
-        <div style="font-size:14px;color:#B7AFDE;">⭐ 스페셜 카드 ×${count} 보유<br><span style="font-size:12px;color:var(--special);">2장 합성 → 원하는 포켓몬으로 변경!</span></div>
-        <button class="btn small" onclick="window.craftSpecialFromDetail('${pokemon.engName}')" style="font-size:14px;padding:8px 18px;min-height:36px;background:var(--special);box-shadow:0 4px 0 #C94A1F;color:#fff;">🔮 특수 합성</button>
-      </div>
-    </div>`;
+    craftButtonHTML = `<button class="btn small" onclick="window.craftSpecialFromDetail('${pokemon.engName}')" style="font-size:13px;padding:6px 12px;min-height:32px;background:var(--special);box-shadow:0 3px 0 #C94A1F;color:#fff;">⭐ 특수합성</button>`;
   }
   
   body.innerHTML = `
-    <div class="modal-art">${pokemonImage(pokemon, '160px')}</div>
-    <div class="modal-name">${pokemon.name}</div>
-    <div class="modal-types">${pokemon.types.map(t => `<span style="background:${getTypeColor(t)}">${getTypeLabel(t)}</span>`).join('')}<span style="background:${rInfo.color};display:inline-block;padding:4px 16px;border-radius:16px;font-family:var(--font-mono);font-size:14px;font-weight:700;color:#fff;margin-left:6px;">${rInfo.emoji} ${rInfo.label} ×${count}</span></div>
-    <div style="text-align:center;margin:8px 0;">${cryButton}</div>
-    <div class="modal-stats"><div>HP <b>${pokemon.hp}</b> (+${bonus.hp})</div><div>공격 <b>${pokemon.atk}</b> (+${bonus.atk})</div><div>방어 <b>${pokemon.def}</b> (+${bonus.def})</div><div style="grid-column:span 3;">속도 <b>${pokemon.spd}</b> (+${bonus.spd})</div></div>
-    ${abilities.length > 0 ? `<div class="modal-section"><h4>⚡ 특성</h4><p>${abilities.join(' / ')}</p></div>` : ''}
-    ${description ? `<div class="modal-section"><h4>📝 설명</h4><p>${description}</p></div>` : ''}
-    ${evoHTML}
-    ${evolutionButtonHTML ? `<div class="modal-section" style="border-left-color:var(--special);"><h4>⭐ 추가 진화</h4><div style="display:flex;gap:8px;flex-wrap:wrap;">${evolutionButtonHTML}</div></div>` : ''}
-    ${craftButtonHTML}
-    <div style="text-align:center;margin-top:12px;"><button class="btn small" id="closeModalBtn">닫기</button></div>
+    <div style="display:flex;flex-direction:column;gap:6px;padding:4px 0;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="width:80px;height:80px;flex-shrink:0;">${pokemonImage(pokemon, '80px')}</div>
+        <div style="flex:1;min-width:0;">
+          <div class="modal-name" style="font-size:22px;margin:0;text-align:left;">${pokemon.name}</div>
+          <div style="display:flex;gap:4px;flex-wrap:wrap;margin:2px 0;">${pokemon.types.map(t => `<span style="background:${getTypeColor(t)};padding:2px 10px;border-radius:12px;font-size:12px;color:#fff;">${getTypeLabel(t)}</span>`).join('')}<span style="background:${rInfo.color};padding:2px 10px;border-radius:12px;font-size:11px;color:#fff;">${rInfo.emoji} ${rInfo.label}</span></div>
+          <div style="font-size:12px;color:#B7AFDE;">보유: ${count}장</div>
+        </div>
+      </div>
+      
+      ${evolveBadge}
+      
+      <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:2px 0;">
+        ${cryButton}
+        ${evolutionButtonHTML}
+        ${craftButtonHTML}
+      </div>
+      
+      <div class="modal-stats" style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:8px;margin:4px 0;background:rgba(255,255,255,.05);border-radius:8px;">
+        <div style="text-align:center;font-size:11px;color:#B7AFDE;">HP <b style="display:block;font-size:16px;color:var(--paper);">${pokemon.hp}</b></div>
+        <div style="text-align:center;font-size:11px;color:#B7AFDE;">공격 <b style="display:block;font-size:16px;color:var(--paper);">${pokemon.atk}</b></div>
+        <div style="text-align:center;font-size:11px;color:#B7AFDE;">방어 <b style="display:block;font-size:16px;color:var(--paper);">${pokemon.def}</b></div>
+        <div style="text-align:center;font-size:11px;color:#B7AFDE;">속도 <b style="display:block;font-size:16px;color:var(--paper);">${pokemon.spd}</b></div>
+      </div>
+      
+      ${abilities.length > 0 ? `<div style="font-size:13px;color:#B7AFDE;padding:4px 8px;background:rgba(255,255,255,.03);border-radius:6px;"><b style="color:var(--sun-2);">특성</b> ${abilities.join(' / ')}</div>` : ''}
+      ${description ? `<div style="font-size:12px;color:#D8D2EF;padding:4px 8px;background:rgba(255,255,255,.03);border-radius:6px;max-height:40px;overflow:hidden;">${description}</div>` : ''}
+      ${evoHTML}
+      
+      <div style="text-align:center;margin-top:4px;"><button class="btn small" id="closeModalBtn" style="font-size:14px;padding:6px 20px;min-height:32px;">닫기</button></div>
+    </div>
   `;
   
   modal.classList.add('open');
   document.getElementById('closeModalBtn').addEventListener('click', closeModal);
   document.getElementById('modalClose').addEventListener('click', closeModal);
 }
-
 function playCry(url) {
   if (!url) return;
   const audio = new Audio(url);
@@ -4073,11 +4120,33 @@ function performMegaEvolution(engName) {
   const sourceCard = state.owned[engName];
   if (!sourceCard || sourceCard.count < 1) { alert('⚠️ 진화할 카드가 없어요!'); return; }
   
-  // 기존 카드 1장 차감
+  // ⭐ 기존 카드 1장 차감
   sourceCard.count -= 1;
   if (sourceCard.count <= 0) delete state.owned[engName];
   
-  // 메가 카드 추가 (강제 획득)
+  // ⭐ 메가 포켓몬 객체 생성 (POKEMON_LIST에 없으면 추가)
+  let megaPokemon = getPokemonByName(megaEvo.id);
+  if (!megaPokemon) {
+    const sourcePokemon2 = getPokemonByName(engName);
+    megaPokemon = {
+      id: megaEvo.id,
+      name: megaEvo.name,
+      engName: megaEvo.id,
+      type: sourcePokemon2 ? sourcePokemon2.type : 'normal',
+      types: sourcePokemon2 ? sourcePokemon2.types : ['normal'],
+      hp: sourcePokemon2 ? sourcePokemon2.hp + 20 : 100,
+      atk: sourcePokemon2 ? sourcePokemon2.atk + 20 : 100,
+      def: sourcePokemon2 ? sourcePokemon2.def + 20 : 100,
+      spd: sourcePokemon2 ? sourcePokemon2.spd + 20 : 100,
+      image: MEGA_IMAGE_MAP[megaEvo.id] || (sourcePokemon2 ? sourcePokemon2.image : ''),
+      speciesUrl: null,
+      cryUrl: null,
+      isMega: true
+    };
+    POKEMON_LIST.push(megaPokemon);
+  }
+  
+  // ⭐ 메가 카드 추가 (강제 획득)
   if (!state.owned[megaEvo.id]) {
     state.owned[megaEvo.id] = { count: 1, rarity: 'mega' };
   } else {
@@ -4085,7 +4154,7 @@ function performMegaEvolution(engName) {
     state.owned[megaEvo.id].rarity = 'mega';
   }
   
-  // Pet도 함께 진화
+  // ⭐ Pet도 함께 진화
   if (state.pet) {
     const petCurrentId = state.pet.evolvedId || state.pet.baseId;
     if (petCurrentId === engName) {
@@ -4102,9 +4171,10 @@ function performMegaEvolution(engName) {
   renderPetTab();
   updateStatline();
   
-  const megaPokemon = getPokemonByName(megaEvo.id);
-  if (megaPokemon) {
-    showRewardPopup(megaPokemon, '💎 메가진화 성공!', '메가진화 완료!');
+  // ⭐ 획득한 메가 포켓몬 표시
+  const finalMegaPokemon = getPokemonByName(megaEvo.id);
+  if (finalMegaPokemon) {
+    showRewardPopup(finalMegaPokemon, '💎 메가진화 성공!', `${finalMegaPokemon.name} 획득!`);
   } else {
     alert('🎉 메가진화 완료!');
   }
@@ -4122,11 +4192,33 @@ function performGigantamaxEvolution(engName) {
   const sourceCard = state.owned[engName];
   if (!sourceCard || sourceCard.count < 1) { alert('⚠️ 진화할 카드가 없어요!'); return; }
   
-  // 기존 카드 1장 차감
+  // ⭐ 기존 카드 1장 차감
   sourceCard.count -= 1;
   if (sourceCard.count <= 0) delete state.owned[engName];
   
-  // 거다이맥스 카드 추가 (강제 획득)
+  // ⭐ 거다이맥스 포켓몬 객체 생성 (POKEMON_LIST에 없으면 추가)
+  let gigaPokemon = getPokemonByName(gigaEvo.id);
+  if (!gigaPokemon) {
+    const sourcePokemon2 = getPokemonByName(engName);
+    gigaPokemon = {
+      id: gigaEvo.id,
+      name: gigaEvo.name,
+      engName: gigaEvo.id,
+      type: sourcePokemon2 ? sourcePokemon2.type : 'normal',
+      types: sourcePokemon2 ? sourcePokemon2.types : ['normal'],
+      hp: sourcePokemon2 ? sourcePokemon2.hp + 25 : 100,
+      atk: sourcePokemon2 ? sourcePokemon2.atk + 22 : 100,
+      def: sourcePokemon2 ? sourcePokemon2.def + 22 : 100,
+      spd: sourcePokemon2 ? sourcePokemon2.spd + 18 : 100,
+      image: GIGANTAMAX_IMAGE_MAP[gigaEvo.id] || (sourcePokemon2 ? sourcePokemon2.image : ''),
+      speciesUrl: null,
+      cryUrl: null,
+      isGigantamax: true
+    };
+    POKEMON_LIST.push(gigaPokemon);
+  }
+  
+  // ⭐ 거다이맥스 카드 추가 (강제 획득)
   if (!state.owned[gigaEvo.id]) {
     state.owned[gigaEvo.id] = { count: 1, rarity: 'gigantamax' };
   } else {
@@ -4134,7 +4226,7 @@ function performGigantamaxEvolution(engName) {
     state.owned[gigaEvo.id].rarity = 'gigantamax';
   }
   
-  // Pet도 함께 진화
+  // ⭐ Pet도 함께 진화
   if (state.pet) {
     const petCurrentId = state.pet.evolvedId || state.pet.baseId;
     if (petCurrentId === engName) {
@@ -4151,14 +4243,14 @@ function performGigantamaxEvolution(engName) {
   renderPetTab();
   updateStatline();
   
-  const gigaPokemon = getPokemonByName(gigaEvo.id);
-  if (gigaPokemon) {
-    showRewardPopup(gigaPokemon, '🔥 거다이맥스 성공!', '거다이맥스 완료!');
+  // ⭐ 획득한 거다이맥스 포켓몬 표시
+  const finalGigaPokemon = getPokemonByName(gigaEvo.id);
+  if (finalGigaPokemon) {
+    showRewardPopup(finalGigaPokemon, '🔥 거다이맥스 성공!', `${finalGigaPokemon.name} 획득!`);
   } else {
     alert('🎉 거다이맥스 완료!');
   }
 }
-
 // ===== 배틀 (기존 코드 유지, 시간제한 추가) =====
 let battleMode = 'pvp';
 let battlePickerStep = 'type';
@@ -4982,6 +5074,12 @@ function renderMusicTab() {
   const unlocked = state.unlockedMusic || [];
   const tickets = state.musicTickets || 0;
   
+  // ⭐ 기존 musicPlayerArea 초기화 (중복 생성 방지)
+  const existingPlayer = document.getElementById('musicPlayerArea');
+  if (existingPlayer) {
+    existingPlayer.remove();
+  }
+  
   panel.innerHTML = `
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
       <div style="font-family:var(--font-display);font-size:18px;color:var(--music);">🎵 포켓몬 음악도감</div>
@@ -5000,12 +5098,6 @@ function renderMusicTab() {
         </div>`;
       }).join('')}
     </div>
-    <div class="music-player" id="musicPlayerArea" style="display:none;">
-      <div class="now-playing" id="nowPlaying">🎵 재생 중...</div>
-      <div class="player-controls">
-        <button class="btn small ghost" onclick="stopMusic()" style="font-size:14px;padding:8px 16px;min-height:36px;">⏹️ 정지</button>
-      </div>
-    </div>
   `;
 }
 
@@ -5020,50 +5112,85 @@ function playMusic(videoId, title, artist) {
     return;
   }
   
-  const playerArea = document.getElementById('musicPlayerArea');
-  const nowPlaying = document.getElementById('nowPlaying');
-  playerArea.style.display = 'block';
-  nowPlaying.textContent = `🎵 ${title} - ${artist}`;
+  // ⭐ 패널이 이미 렌더링되었는지 확인
+  const panel = document.getElementById('musicPanel');
+  if (!panel) {
+    console.error('❌ musicPanel을 찾을 수 없음');
+    return;
+  }
   
-  // YouTube Iframe API로 음악 재생 (키즈모드 - 영상 없이 음악만)
+  // ⭐ musicPlayerArea가 없으면 동적으로 생성
+  let playerArea = document.getElementById('musicPlayerArea');
+  if (!playerArea) {
+    playerArea = document.createElement('div');
+    playerArea.id = 'musicPlayerArea';
+    playerArea.className = 'music-player';
+    playerArea.style.display = 'block';
+    playerArea.innerHTML = `
+      <div class="now-playing" id="nowPlaying">🎵 재생 중...</div>
+      <div class="player-controls">
+        <button class="btn small ghost" onclick="stopMusic()" style="font-size:14px;padding:8px 16px;min-height:36px;">⏹️ 정지</button>
+      </div>
+    `;
+    panel.appendChild(playerArea);
+  }
+  
+  const nowPlaying = document.getElementById('nowPlaying');
+  if (nowPlaying) {
+    nowPlaying.textContent = `🎵 ${title} - ${artist}`;
+  }
+  
+  playerArea.style.display = 'block';
+  
+  // YouTube Iframe API로 음악 재생
   if (window.YT && YT.Player) {
     if (musicPlayer) {
-      musicPlayer.destroy();
+      try { musicPlayer.destroy(); } catch(e) {}
       musicPlayer = null;
     }
-    musicPlayer = new YT.Player('musicPlayerArea', {
-      height: '0',
-      width: '0',
-      videoId: videoId,
-      playerVars: {
-        autoplay: 1,
-        controls: 0,
-        modestbranding: 1,
-        rel: 0,
-        showinfo: 0,
-        iv_load_policy: 3,
-        disablekb: 1,
-        fs: 0,
-        playsinline: 1
-      },
-      events: {
-        onReady: function(event) {
-          event.target.playVideo();
+    try {
+      musicPlayer = new YT.Player('musicPlayerArea', {
+        height: '0',
+        width: '0',
+        videoId: videoId,
+        playerVars: {
+          autoplay: 1,
+          controls: 0,
+          modestbranding: 1,
+          rel: 0,
+          showinfo: 0,
+          iv_load_policy: 3,
+          disablekb: 1,
+          fs: 0,
+          playsinline: 1
         },
-        onStateChange: function(event) {
-          if (event.data === YT.PlayerState.ENDED) {
+        events: {
+          onReady: function(event) {
+            event.target.playVideo();
+          },
+          onStateChange: function(event) {
+            if (event.data === YT.PlayerState.ENDED) {
+              stopMusic();
+            }
+          },
+          onError: function(event) {
+            console.error('YouTube 오류:', event.data);
+            alert('🎵 음악 재생 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
             stopMusic();
           }
         }
-      }
-    });
+      });
+    } catch(e) {
+      console.error('YouTube Player 생성 오류:', e);
+      alert('🎵 음악 재생을 시작할 수 없습니다.');
+    }
   } else {
-    // Fallback: 오디오만 재생 (iframe 생성)
+    // Fallback
     const iframe = document.createElement('iframe');
     iframe.style.display = 'none';
     iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&controls=0&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3&disablekb=1&fs=0&playsinline=1`;
     iframe.allow = 'autoplay';
-    document.getElementById('musicPlayerArea').appendChild(iframe);
+    playerArea.appendChild(iframe);
   }
   
   updateTicketDisplay();
@@ -5072,18 +5199,27 @@ function playMusic(videoId, title, artist) {
 
 function stopMusic() {
   if (musicPlayer) {
-    try { musicPlayer.stopVideo(); musicPlayer.destroy(); } catch(e) {}
+    try { 
+      musicPlayer.stopVideo(); 
+      musicPlayer.destroy(); 
+    } catch(e) {
+      console.warn('musicPlayer 정리 중 오류:', e);
+    }
     musicPlayer = null;
   }
+  
   const area = document.getElementById('musicPlayerArea');
   if (area) {
     const iframe = area.querySelector('iframe');
     if (iframe) iframe.remove();
     area.style.display = 'none';
   }
-  document.getElementById('nowPlaying').textContent = '🎵 재생 중...';
+  
+  const nowPlaying = document.getElementById('nowPlaying');
+  if (nowPlaying) {
+    nowPlaying.textContent = '🎵 재생 중...';
+  }
 }
-
 // ===== 필터 =====
 document.querySelectorAll('#ownershipFilter .chip').forEach(chip => {
   chip.addEventListener('click', function() {
