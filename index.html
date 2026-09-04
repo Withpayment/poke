@@ -1936,14 +1936,14 @@ const SFX = {
 };
 
 // ===== Firebase 설정 =====
-const MY_CONFIG = {
-  apiKey: "AIzaSyAnNMf2GxcLs7abmetxwWmoxBkIrFy1jQQ",
-  authDomain: "pokebattle-45a99.firebaseapp.com",
-  databaseURL: "https://pokebattle-45a99-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "pokebattle-45a99",
-  storageBucket: "pokebattle-45a99.firebasestorage.app",
-  messagingSenderId: "26507760702",
-  appId: "1:26507760702:web:3b2b9c75a0c4f98efcad6f"
+const firebaseConfig = {
+  apiKey: MY_CONFIG.FIREBASE_API_KEY,
+  authDomain: MY_CONFIG.FIREBASE_AUTH_DOMAIN,
+  databaseURL: MY_CONFIG.FIREBASE_DATABASE_URL,
+  projectId: MY_CONFIG.FIREBASE_PROJECT_ID,
+  storageBucket: MY_CONFIG.FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: MY_CONFIG.FIREBASE_MESSAGING_SENDER_ID,
+  appId: MY_CONFIG.FIREBASE_APP_ID
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
