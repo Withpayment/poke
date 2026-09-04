@@ -5263,9 +5263,7 @@ function leaveBattleRoom() {
 }
 
 // ===== 교환 시스템 =====
-// ===== 교환 시스템 =====
-// ===== 교환 탭 (한글/영문 검색 지원) =====
-function renderTradeTab() {
+// ===== 교환 탭 (한글/영문 검색 지원) =====function renderTradeTab() {
   const container = document.getElementById('tradeContent');
   const ownedCards = Object.keys(state.owned).filter(key => state.owned[key].count > 0);
   
