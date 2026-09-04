@@ -3103,7 +3103,7 @@ function renderLifeMissions() {
         ⭐ 필수미션 8개 완료 시 부가기능 오픈!
         <br><span style="font-size:12px;color:#6b6395;">완료: ${DEFAULT_LIFE_MISSIONS.filter(m => doneToday[m.id]).length} / 8</span>
         ${allDone ? '<br><span style="color:var(--good);">✅ 모든 부가기능이 오픈되었습니다!</span>' : ''}
-        <br><span style="font-size:12px;color:#6b6395;">⏰ 오늘 사용시간: ${Math.round((state.dailyPlayTime || 0) / 60000)}/${state.timeLimitMinutes || 15}분</span>
+        <br><span style="font-size:12px;color:${(state.dailyPlayTime || 0) / 60000 >= (state.timeLimitMinutes || 15) ? 'var(--bad)' : 'var(--sun-2)'};">⏰ 오늘 사용시간: ${Math.round((state.dailyPlayTime || 0) / 60000)}/${state.timeLimitMinutes || 15}분</span>
       </div>
       <button class="btn small ghost" onclick="openMissionEditor()" style="font-size:14px;padding:6px 12px;min-height:32px;flex-shrink:0;margin-left:8px;">⚙️</button>
     </div>
@@ -3133,6 +3133,7 @@ function renderLifeMissions() {
     <div class="reveal-wrap" id="lifeReveal"></div>
   `;
 
+  // ⭐ 미션 완료 버튼 이벤트 (레이드 공격 기회 추가 포함)
   document.querySelectorAll('[data-life]').forEach(btn => {
     btn.addEventListener('click', function() {
       const key = todayKey();
@@ -3152,6 +3153,7 @@ function renderLifeMissions() {
         if (reward) rewards.push(reward);
       }
       
+      // ⭐⭐⭐ 레이드 공격 기회 추가
       if (state.raid && state.raid.boss && !state.raid.completed) {
         state.raid.attackChance = (state.raid.attackChance || 0) + 1;
       }
@@ -3169,6 +3171,10 @@ function renderLifeMissions() {
       
       renderLifeMissions();
       const reveal = document.getElementById('lifeReveal');
+      
+      const raidMsg = state.raid && state.raid.boss && !state.raid.completed ? 
+        `<div style="font-family:var(--font-mono);font-size:12px;color:var(--good);margin-top:4px;">⚔️ 레이드 공격 기회 +1! (총 ${state.raid.attackChance || 0}회)</div>` : '';
+      
       if (rewards.length > 0) {
         let cardHTML = rewards.map(r => {
           const rInfo = getRarityInfo(r.rarity);
@@ -3178,14 +3184,26 @@ function renderLifeMissions() {
             <span class="rarity-badge" style="background:${rInfo.color};font-size:8px;position:static;display:inline-block;margin-top:2px;">${rInfo.emoji} ${rInfo.label}</span>
           </div>`;
         }).join('');
+        
         reveal.innerHTML = `<div style="text-align:center;width:100%;margin-top:12px;padding:12px;background:rgba(255,201,60,.08);border-radius:12px;border:2px solid var(--sun);">
           <div style="font-family:var(--font-display);font-size:18px;color:var(--sun-2);margin-bottom:8px;">🎁 미션 완료! ${cardRewardCount}장의 카드 획득!</div>
           <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:6px;">${cardHTML}</div>
+          ${state.pet ? `<div style="font-family:var(--font-mono);font-size:12px;color:var(--sun-2);margin-top:4px;">✨ 키우는 포켓몬 경험치 +10%!</div>` : ''}
+          ${raidMsg}
+          <div style="font-family:var(--font-mono);font-size:12px;color:#B7AFDE;margin-top:4px;">🤖 AI 배틀 +1, 🌐 PVP 배틀 +1</div>
+        </div>`;
+      } else {
+        reveal.innerHTML = `<div style="text-align:center;width:100%;margin-top:12px;padding:12px;background:rgba(255,201,60,.08);border-radius:12px;border:2px solid var(--sun);">
+          <div style="font-family:var(--font-display);font-size:16px;color:var(--sun-2);">✅ 미션 완료!</div>
+          ${state.pet ? `<div style="font-family:var(--font-mono);font-size:12px;color:var(--sun-2);margin-top:4px;">✨ 키우는 포켓몬 경험치 +10%!</div>` : ''}
+          ${raidMsg}
+          <div style="font-family:var(--font-mono);font-size:12px;color:#B7AFDE;margin-top:4px;">🤖 AI 배틀 +1, 🌐 PVP 배틀 +1</div>
         </div>`;
       }
     });
   });
 
+  // ⭐ 커스텀 미션 추가
   document.getElementById('addCustomMission').addEventListener('click', function() {
     const input = document.getElementById('customMissionInput');
     const emojiInput = document.getElementById('customMissionEmoji');
