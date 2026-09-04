@@ -2443,31 +2443,52 @@ async function getAllEvolvablePokemon() {
     const listRes = await fetch('https://pokeapi.co/api/v2/evolution-chain?limit=1000');
     const listData = await listRes.json();
     const allEvolvable = [];
-    for (const chainRef of listData.results) {
-      try {
-        const chainRes = await fetch(chainRef.url);
-        const chainData = await chainRes.json();
-        function extractAllNames(chainLink) {
-          const names = [];
-          names.push(chainLink.species.name);
-          if (chainLink.evolves_to && chainLink.evolves_to.length > 0) {
-            for (const nextLink of chainLink.evolves_to) {
-              names.push(...extractAllNames(nextLink));
-            }
-          }
-          return names;
+
+    const isAndroid = /android/i.test(navigator.userAgent);
+    const batchSize = isAndroid ? 20 : 40; // ⭐ 병렬 배치로 처리
+
+    function extractAllNames(chainLink) {
+      const names = [];
+      names.push(chainLink.species.name);
+      if (chainLink.evolves_to && chainLink.evolves_to.length > 0) {
+        for (const nextLink of chainLink.evolves_to) {
+          names.push(...extractAllNames(nextLink));
         }
-        const chain = extractAllNames(chainData.chain);
-        allEvolvable.push(...chain);
-        if (chain.length > 0) {
-          for (const name of chain) { _evoChainCache[name] = chain; }
-        }
-      } catch(e) {}
+      }
+      return names;
     }
+
+    for (let i = 0; i < listData.results.length; i += batchSize) {
+      const batch = listData.results.slice(i, i + batchSize);
+      const promises = batch.map(async (chainRef) => {
+        try {
+          const chainRes = await fetch(chainRef.url);
+          const chainData = await chainRes.json();
+          const chain = extractAllNames(chainData.chain);
+          if (chain.length > 0) {
+            for (const name of chain) { _evoChainCache[name] = chain; }
+          }
+          return chain;
+        } catch (e) {
+          return [];
+        }
+      });
+
+      const results = await Promise.all(promises);
+      results.forEach(chain => allEvolvable.push(...chain));
+
+      // 진행 상황 표시 (선택)
+      const statusEl = document.getElementById('loadingStatus');
+      if (statusEl) {
+        const progress = Math.round((i + batch.length) / listData.results.length * 100);
+        statusEl.textContent = `🔄 진화 정보 불러오는 중... (${progress}%)`;
+      }
+    }
+
     const unique = [...new Set(allEvolvable)].sort();
     console.log('✅ 진화 가능 포켓몬', unique.length + '종');
     return unique;
-  } catch(error) {
+  } catch (error) {
     console.error('진화 가능 포켓몬 로드 실패:', error);
     return ['bulbasaur','charmander','squirtle','pikachu','eevee','magikarp','riolu'];
   }
