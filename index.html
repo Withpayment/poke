@@ -1675,6 +1675,15 @@
       <button class="btn small" id="adminGiveTicketBtn" style="font-size:14px;padding:8px 16px;min-height:40px;">🎵 지급</button>
     </div>
     <div id="adminTicketResult" style="font-size:12px;color:#B7AFDE;margin-top:6px;"></div>
+    <div style="margin-bottom:16px;padding:14px;background:rgba(255,255,255,.05);border-radius:12px;border:2px solid rgba(255,215,0,.15);">
+  <div style="font-family:var(--font-display);font-size:16px;color:var(--sun-2);margin-bottom:8px;">⏰ 시간제한 설정</div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+    <input id="adminTimeLimit" type="number" value="15" min="1" max="120" style="width:80px;padding:10px 8px;border-radius:8px;border:2px solid rgba(255,201,60,.2);background:rgba(255,255,255,.05);color:var(--paper);font-size:16px;text-align:center;">
+    <span style="color:#B7AFDE;font-size:14px;">분</span>
+    <button class="btn small" id="adminSetTimeBtn" style="font-size:14px;padding:8px 16px;min-height:40px;">⏰ 설정</button>
+  </div>
+  <div id="adminTimeResult" style="font-size:12px;color:#B7AFDE;margin-top:6px;"></div>
+</div>
   </div>
   
   <div style="padding:12px;background:rgba(255,255,255,.03);border-radius:10px;border:1px solid rgba(255,255,255,.05);">
@@ -2760,7 +2769,7 @@ function checkTimeLimit() {
     }
   }
   
-  // ⏰ 사용시간 초과 확인
+  // ⏰ 사용시간 초과 확인 (dailyPlayTime이 maxMs를 초과하면 잠금)
   if (state.dailyPlayTime >= maxMs) {
     const lockUntil = new Date();
     lockUntil.setHours(24, 0, 0, 0);
@@ -2811,9 +2820,22 @@ function updateLockTimer() {
 }
 
 function addPlayTime(ms) {
-  state.dailyPlayTime = (state.dailyPlayTime || 0) + ms;
+  if (!state.dailyPlayTime) state.dailyPlayTime = 0;
+  state.dailyPlayTime += ms;
   saveState();
-  checkTimeLimit(); // ⭐ 시간 초과 시 즉시 체크
+  
+  console.log(`⏰ 사용시간 추가: +${Math.round(ms/1000)}초 (총 ${Math.round(state.dailyPlayTime/1000)}초 / ${state.timeLimitMinutes * 60}초)`);
+  
+  // 시간 초과 시 즉시 체크
+  const maxMs = (state.timeLimitMinutes || 15) * 60 * 1000;
+  if (state.dailyPlayTime >= maxMs) {
+    const lockUntil = new Date();
+    lockUntil.setHours(24, 0, 0, 0);
+    state.lockUntil = lockUntil.toISOString();
+    saveState();
+    showLockScreen();
+    alert('⏰ 오늘 사용시간이 모두 끝났어요! 내일 다시 만나요 😴');
+  }
 }
 
 // ===== 관리자 패널 =====
@@ -2929,13 +2951,19 @@ function adminSetTimeLimit() {
     return;
   }
   
+  // ⭐ 시간제한 변경 시 사용시간 초기화 및 잠금 해제
   state.timeLimitMinutes = minutes;
   state.dailyPlayTime = 0;
   state.lockUntil = null;
   saveState();
   hideLockScreen();
-  resultEl.textContent = `⏰ 시간제한이 ${minutes}분으로 설정되었습니다!`;
+  
+  // ⭐ UI 업데이트
+  renderAll();
+  
+  resultEl.textContent = `⏰ 시간제한이 ${minutes}분으로 설정되었습니다! (사용시간 초기화됨)`;
   resultEl.style.color = 'var(--good)';
+  toast(`⏰ 시간제한 ${minutes}분으로 설정 완료!`);
 }
 // ⭐ 관리자 - 음악감상권 지급
 // ⭐ 관리자 - 음악감상권 지급
@@ -5665,7 +5693,28 @@ async function initGame() {
   
   // 시간제한 체크
   checkTimeLimit();
-  
+    setInterval(function() {
+    const maxMs = (state.timeLimitMinutes || 15) * 60 * 1000;
+    if (state.dailyPlayTime >= maxMs && !state.lockUntil) {
+      const lockUntil = new Date();
+      lockUntil.setHours(24, 0, 0, 0);
+      state.lockUntil = lockUntil.toISOString();
+      saveState();
+      showLockScreen();
+      alert('⏰ 오늘 사용시간이 모두 끝났어요! 내일 다시 만나요 😴');
+    }
+    // 잠금 상태에서 잠금 해제 시간이 지났는지 확인
+    if (state.lockUntil) {
+      const lockTime = new Date(state.lockUntil);
+      if (Date.now() >= lockTime.getTime()) {
+        state.lockUntil = null;
+        state.dailyPlayTime = 0;
+        saveState();
+        hideLockScreen();
+        renderAll();
+      }
+    }
+  }, 10000);
   // 이벤트 바인딩
   bindAdminEvents();
   
@@ -5675,6 +5724,13 @@ async function initGame() {
 // 게임 시작
 initGame();
 function renderAll() {
+  // ⭐ 시간제한 체크 (잠금 상태면 렌더링 중단)
+  if (!checkTimeLimit()) {
+    // 잠금 상태에서는 빈 화면 표시
+    document.querySelectorAll('section').forEach(s => s.style.display = 'none');
+    return;
+  }
+  
   updateStatline();
   renderFilters();
   renderDex();
