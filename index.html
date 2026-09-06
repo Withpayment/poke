@@ -1575,12 +1575,29 @@
 <body>
 <div class="app" id="app">
   <!-- 시스템 잠금 오버레이 -->
-  <div class="lock-overlay" id="lockOverlay">
-    <div class="sleeping-pokemon">😴💤</div>
-    <div class="lock-title">포켓몬이 잠들었어요...</div>
-    <div class="lock-sub">오늘 사용 시간이 모두 끝났어요! 내일 다시 만나요</div>
-    <div class="lock-timer" id="lockTimer">00:00</div>
+<div class="lock-overlay" id="lockOverlay">
+  <div class="sleeping-pokemon">😴💤</div>
+  <div class="lock-title">포켓몬이 잠들었어요...</div>
+  <div class="lock-sub">오늘 사용 시간이 모두 끝났어요! 내일 다시 만나요</div>
+  <div class="lock-timer" id="lockTimer">00:00:00</div>
+  
+  <!-- ⭐ 히든 추가시간 패널 (우측 상단 3번 터치로 표시) -->
+  <div id="hiddenTimePanel" style="display:none;margin-top:20px;padding:16px;background:rgba(255,255,255,.05);border-radius:16px;border:2px solid rgba(255,201,60,.15);width:100%;max-width:320px;animation:fadein .3s ease;">
+    <div style="font-family:var(--font-display);font-size:16px;color:var(--sun-2);margin-bottom:8px;">🔑 추가 시간 부여</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;">
+      <input id="lockPasswordInput" type="password" maxlength="4" placeholder="비밀번호 4자리" inputmode="numeric" 
+             style="flex:1;min-width:100px;padding:12px 16px;border-radius:12px;border:3px solid rgba(255,201,60,.2);background:rgba(255,255,255,.05);color:var(--paper);font-size:20px;text-align:center;letter-spacing:8px;">
+      <button id="lockAddTimeBtn" class="btn small" style="font-size:14px;padding:8px 16px;min-height:48px;background:var(--good);box-shadow:0 3px 0 #2E7A54;color:#fff;">⏰ +5분</button>
+    </div>
+    <div id="lockPasswordError" style="font-size:13px;color:var(--bad);margin-top:6px;display:none;">❌ 비밀번호가 틀렸어요!</div>
+    <div id="lockAddTimeResult" style="font-size:13px;color:var(--good);margin-top:6px;display:none;">✅ 추가 시간이 부여되었습니다!</div>
+    <div id="lockCooldownMsg" style="font-size:12px;color:#B7AFDE;margin-top:6px;text-align:center;display:none;">⏳ 다음 추가 가능까지: <span id="lockCooldownTimer">5:00</span></div>
+    <div style="font-size:11px;color:#6b6395;text-align:center;margin-top:6px;">비밀번호: 1234</div>
   </div>
+  
+  <!-- ⭐ 우측 상단 터치 영역 (히든 트리거) -->
+  <div id="hiddenTrigger" style="position:absolute;top:0;right:0;width:80px;height:80px;cursor:pointer;z-index:10;background:transparent;" title="숨김 기능"></div>
+</div>
 
   <header class="top">
     <div class="eyebrow" id="resetHiddenBtn" title="게임 초기화 (숨김)">🔧</div>
@@ -2641,6 +2658,17 @@ function formatTime(ms) {
   if (minutes > 0) return minutes + '분 ' + seconds + '초';
   return seconds + '초';
 }
+function toast(msg) {
+  const el = document.createElement('div');
+  el.style.cssText = 'position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.85);color:#fff;padding:12px 28px;border-radius:14px;font-family:var(--font-display);font-size:18px;z-index:9999;border:2px solid var(--sun);max-width:90%;text-align:center;';
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(() => { 
+    el.style.opacity = '0'; 
+    el.style.transition = 'opacity .3s'; 
+    setTimeout(() => el.remove(), 400); 
+  }, 2500);
+}
 
 function speakText(text, lang = 'ko-KR') {
   if (!window.speechSynthesis) return;
@@ -2669,6 +2697,7 @@ function loadState() {
       if (state.musicTickets === undefined) state.musicTickets = 0;
       if (state.timeLimitMinutes === undefined) state.timeLimitMinutes = 15;
       if (state.dailyPlayTime === undefined) state.dailyPlayTime = 0;
+      if (state._lastActiveDate === undefined) state._lastActiveDate = todayKey();
       console.log('✅ 저장된 상태 로드 완료!', Object.keys(state.owned).length + '마리 보유');
       updateStoneDisplay();
       updateTicketDisplay();
@@ -2755,39 +2784,82 @@ function grantCardReward() {
 function checkTimeLimit() {
   const timeLimit = state.timeLimitMinutes || 15;
   const maxMs = timeLimit * 60 * 1000;
+  const today = todayKey();
   
   // 🔒 잠금 상태 확인
   if (state.lockUntil) {
     const lockTime = new Date(state.lockUntil);
-    if (Date.now() < lockTime.getTime()) {
-      showLockScreen();
-      return false;
-    } else {
+    const now = Date.now();
+    
+    // 잠금 해제 조건: 현재 시간이 잠금 해제 시간을 넘었는지 확인
+    if (now >= lockTime.getTime()) {
       state.lockUntil = null;
+      state.dailyPlayTime = 0;
       saveState();
       hideLockScreen();
+      console.log('✅ 잠금 해제! (시간 경과)');
+      renderAll();
+      return true;
+    } else {
+      showLockScreen();
+      return false;
     }
   }
   
-  // ⏰ 사용시간 초과 확인 (dailyPlayTime이 maxMs를 초과하면 잠금)
+  // 날짜 변경 체크 (자정 리셋)
+  if (state._lastActiveDate && state._lastActiveDate !== today) {
+    state.dailyPlayTime = 0;
+    state.lockUntil = null;
+    state._lastActiveDate = today;
+    saveState();
+    hideLockScreen();
+    console.log('✅ 새 날짜 - 사용시간 초기화!');
+    return true;
+  }
+  
+  // ⏰ 사용시간 초과 확인
   if (state.dailyPlayTime >= maxMs) {
     const lockUntil = new Date();
     lockUntil.setHours(24, 0, 0, 0);
     state.lockUntil = lockUntil.toISOString();
+    state._lastActiveDate = today;
     saveState();
     showLockScreen();
+    console.log(`🔒 잠금! (사용시간: ${Math.round(state.dailyPlayTime/60000)}분 / ${timeLimit}분)`);
     return false;
   }
   
+  state._lastActiveDate = today;
   return true;
 }
-
 function showLockScreen() {
   const overlay = document.getElementById('lockOverlay');
   overlay.classList.add('active');
   document.querySelector('.app').style.opacity = '0.3';
   document.querySelector('.app').style.pointerEvents = 'none';
+  
+  // 에러 메시지 초기화
+  const errorEl = document.getElementById('lockPasswordError');
+  const resultEl = document.getElementById('lockAddTimeResult');
+  const cooldownEl = document.getElementById('lockCooldownMsg');
+  const input = document.getElementById('lockPasswordInput');
+  if (errorEl) errorEl.style.display = 'none';
+  if (resultEl) resultEl.style.display = 'none';
+  if (cooldownEl) cooldownEl.style.display = 'none';
+  if (input) input.value = '';
+  
+  // 히든 패널 숨기기
+  const panel = document.getElementById('hiddenTimePanel');
+  if (panel) panel.style.display = 'none';
+  
+  // 클릭 카운트 초기화
+  lockClickCount = 0;
+  
   updateLockTimer();
+  
+  // 쿨다운 타이머 시작
+  if (window._cooldownInterval) clearInterval(window._cooldownInterval);
+  window._cooldownInterval = setInterval(updateLockCooldown, 1000);
 }
 
 function hideLockScreen() {
@@ -2795,13 +2867,27 @@ function hideLockScreen() {
   overlay.classList.remove('active');
   document.querySelector('.app').style.opacity = '1';
   document.querySelector('.app').style.pointerEvents = 'auto';
+  
+  // 에러 메시지 초기화
+  const errorEl = document.getElementById('lockPasswordError');
+  const resultEl = document.getElementById('lockAddTimeResult');
+  const cooldownEl = document.getElementById('lockCooldownMsg');
+  if (errorEl) errorEl.style.display = 'none';
+  if (resultEl) resultEl.style.display = 'none';
+  if (cooldownEl) cooldownEl.style.display = 'none';
+  
+  // 쿨다운 타이머 정리
+  if (window._cooldownInterval) {
+    clearInterval(window._cooldownInterval);
+    window._cooldownInterval = null;
+  }
 }
 
 function updateLockTimer() {
   const el = document.getElementById('lockTimer');
   if (!el) return;
   if (!state.lockUntil) {
-    el.textContent = '00:00';
+    el.textContent = '00:00:00';
     return;
   }
   const lockTime = new Date(state.lockUntil);
@@ -2811,12 +2897,14 @@ function updateLockTimer() {
     state.lockUntil = null;
     saveState();
     hideLockScreen();
+    renderAll();
     return;
   }
   const hours = Math.floor(remaining / 3600000);
   const minutes = Math.floor((remaining % 3600000) / 60000);
-  el.textContent = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
-  setTimeout(updateLockTimer, 10000);
+  const seconds = Math.floor((remaining % 60000) / 1000);
+  el.textContent = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+  setTimeout(updateLockTimer, 1000);
 }
 
 function addPlayTime(ms) {
@@ -2832,6 +2920,7 @@ function addPlayTime(ms) {
     const lockUntil = new Date();
     lockUntil.setHours(24, 0, 0, 0);
     state.lockUntil = lockUntil.toISOString();
+    state._lastActiveDate = todayKey();
     saveState();
     showLockScreen();
     alert('⏰ 오늘 사용시간이 모두 끝났어요! 내일 다시 만나요 😴');
@@ -3752,6 +3841,155 @@ function renderRaidMission() {
     <div class="raid-attack-area"><button class="btn" id="raidAttackBtn" ${(atkChance <= 0 || !selectedCard) ? 'disabled' : ''}>⚔️ 공격! (${atkChance}회)</button><button class="btn small ghost" onclick="resetRaidSelection()" style="flex:0.5;min-width:60px;">↺</button></div>
   </div>`;
   document.getElementById('raidAttackBtn')?.addEventListener('click', doRaidAttack);
+}
+  // ===== 잠금화면 히든 기능 =====
+const LOCK_PASSWORD = '1234'; // ⭐ 비밀번호 설정 (원하는 번호로 변경)
+let lockClickCount = 0;
+let lockClickTimer = null;
+let lastExtraTimeUsed = 0;
+const EXTRA_TIME_INTERVAL = 5 * 60 * 1000; // 5분
+const EXTRA_TIME_AMOUNT = 5; // 추가 시간 (분)
+
+// ⭐ 우측 상단 3번 터치 감지
+function setupHiddenTrigger() {
+  const trigger = document.getElementById('hiddenTrigger');
+  if (!trigger) return;
+  
+  trigger.addEventListener('click', function(e) {
+    e.stopPropagation();
+    lockClickCount++;
+    
+    clearTimeout(lockClickTimer);
+    lockClickTimer = setTimeout(() => {
+      lockClickCount = 0;
+    }, 3000);
+    
+    if (lockClickCount >= 3) {
+      lockClickCount = 0;
+      toggleHiddenTimePanel();
+    }
+  });
+}
+
+// ⭐ 히든 패널 토글
+function toggleHiddenTimePanel() {
+  const panel = document.getElementById('hiddenTimePanel');
+  if (!panel) return;
+  
+  if (panel.style.display === 'none') {
+    panel.style.display = 'block';
+    const input = document.getElementById('lockPasswordInput');
+    if (input) setTimeout(() => input.focus(), 100);
+    SFX.click();
+  } else {
+    panel.style.display = 'none';
+    const errorEl = document.getElementById('lockPasswordError');
+    const resultEl = document.getElementById('lockAddTimeResult');
+    const cooldownEl = document.getElementById('lockCooldownMsg');
+    if (errorEl) errorEl.style.display = 'none';
+    if (resultEl) resultEl.style.display = 'none';
+    if (cooldownEl) cooldownEl.style.display = 'none';
+  }
+}
+
+// ===== 잠금화면 추가시간 부여 (5분 간격) =====
+function addExtraTimeFromLock() {
+  const input = document.getElementById('lockPasswordInput');
+  const errorEl = document.getElementById('lockPasswordError');
+  const resultEl = document.getElementById('lockAddTimeResult');
+  const cooldownEl = document.getElementById('lockCooldownMsg');
+  const password = input.value.trim();
+  
+  errorEl.style.display = 'none';
+  resultEl.style.display = 'none';
+  cooldownEl.style.display = 'none';
+  
+  // 쿨다운 체크 (5분 간격)
+  const now = Date.now();
+  const timeSinceLastUse = now - lastExtraTimeUsed;
+  if (lastExtraTimeUsed > 0 && timeSinceLastUse < EXTRA_TIME_INTERVAL) {
+    const remaining = Math.ceil((EXTRA_TIME_INTERVAL - timeSinceLastUse) / 1000);
+    const mins = Math.floor(remaining / 60);
+    const secs = remaining % 60;
+    cooldownEl.style.display = 'block';
+    document.getElementById('lockCooldownTimer').textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    input.value = '';
+    input.focus();
+    return;
+  }
+  
+  // 비밀번호 확인
+  if (password !== LOCK_PASSWORD) {
+    errorEl.style.display = 'block';
+    input.value = '';
+    input.focus();
+    return;
+  }
+  
+  // 추가 시간: 5분
+  const extraMinutes = EXTRA_TIME_AMOUNT;
+  const extraMs = extraMinutes * 60 * 1000;
+  
+  if (state.lockUntil) {
+    const lockTime = new Date(state.lockUntil);
+    const now2 = Date.now();
+    const remaining = lockTime.getTime() - now2;
+    
+    if (remaining > 0) {
+      const newLockTime = new Date(now2 + remaining + extraMs);
+      state.lockUntil = newLockTime.toISOString();
+      state.dailyPlayTime = Math.max(0, state.dailyPlayTime - extraMs);
+      lastExtraTimeUsed = Date.now();
+      saveState();
+      
+      resultEl.style.display = 'block';
+      resultEl.textContent = `✅ ${extraMinutes}분 추가! (남은 시간: ${Math.round((remaining + extraMs) / 60000)}분)`;
+      
+      updateLockTimer();
+      
+      setTimeout(() => {
+        state.lockUntil = null;
+        state.dailyPlayTime = Math.max(0, state.dailyPlayTime);
+        saveState();
+        hideLockScreen();
+        renderAll();
+        toast(`⏰ ${extraMinutes}분 추가되었습니다!`);
+      }, 2000);
+      
+      SFX.missionDone();
+      input.value = '';
+      
+    } else {
+      state.lockUntil = null;
+      saveState();
+      hideLockScreen();
+      renderAll();
+      toast('⏰ 이미 잠금이 해제되었습니다!');
+    }
+  } else {
+    hideLockScreen();
+    renderAll();
+    toast('⏰ 잠금 상태가 아닙니다!');
+  }
+}
+
+// ⭐ 쿨다운 타이머 업데이트 (1초마다)
+function updateLockCooldown() {
+  const cooldownEl = document.getElementById('lockCooldownMsg');
+  const timerEl = document.getElementById('lockCooldownTimer');
+  if (!cooldownEl || !timerEl) return;
+  if (cooldownEl.style.display === 'none') return;
+  
+  const now = Date.now();
+  const timeSinceLastUse = now - lastExtraTimeUsed;
+  if (lastExtraTimeUsed > 0 && timeSinceLastUse < EXTRA_TIME_INTERVAL) {
+    const remaining = Math.ceil((EXTRA_TIME_INTERVAL - timeSinceLastUse) / 1000);
+    const mins = Math.floor(remaining / 60);
+    const secs = remaining % 60;
+    timerEl.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+  } else {
+    cooldownEl.style.display = 'none';
+  }
 }
 function selectRaidType(type) { state.raidSelectedType = type; state.raidSelectedCard = null; saveState(); renderRaidMission(); }
 function selectRaidPokemon(engName) { state.raidSelectedCard = engName; saveState(); renderRaidMission(); }
@@ -5521,7 +5759,7 @@ document.querySelectorAll('[data-rarity]').forEach(chip => {
 // ===== 자정 초기화 =====
 // ===== 자정 초기화 =====
 function resetDailyContent() {
-  const today = todayKey();  // ✅ 한 번만 호출
+  const today = todayKey();
   
   // 퀴즈 초기화
   state.quizDoneToday = null;
@@ -5560,10 +5798,16 @@ function resetDailyContent() {
     completed: false 
   };
   
-  // 사용시간 초기화
-  state.dailyPlayTime = 0;
-  state.lockUntil = null;
-  hideLockScreen();
+  // ⭐ 사용시간 초기화 (잠금 상태가 아닐 때만)
+  if (!state.lockUntil || new Date(state.lockUntil).getTime() <= Date.now()) {
+    state.dailyPlayTime = 0;
+    state.lockUntil = null;
+    hideLockScreen();
+    console.log('✅ 사용시간 초기화 완료!');
+  } else {
+    console.log('🔒 잠금 상태 유지 (사용시간 초기화 안함)');
+    showLockScreen();
+  }
   
   // 레이드 리셋
   const shouldResetRaid = !state.raid || state.raid.today !== today || state.raid.completed === true;
@@ -5670,7 +5914,7 @@ async function initGame() {
   await loadAllPokemon();
   EVOLVABLE_POKEMON_LIST = await getAllEvolvablePokemon();
   
-  // ✅ 모든 메가/거다이맥스 포켓몬을 POKEMON_LIST에 추가 (도감에 표시되도록)
+  // 모든 메가/거다이맥스 포켓몬을 POKEMON_LIST에 추가
   addAllMegaAndGigantamaxToPokedex();
   
   // 나이 설정 확인
@@ -5680,8 +5924,32 @@ async function initGame() {
     return;
   }
   
-  // 일일 콘텐츠 초기화
-  resetDailyContent();
+  // 일일 콘텐츠 초기화 (오늘 날짜가 바뀌었을 때만)
+  const today = todayKey();
+  const lastResetDate = localStorage.getItem('lastResetDate');
+  
+  if (lastResetDate !== today) {
+    resetDailyContent();
+    localStorage.setItem('lastResetDate', today);
+    console.log('✅ 오늘 첫 실행 - 일일 콘텐츠 초기화 완료!');
+  } else {
+    console.log('✅ 오늘 이미 실행됨 - 상태 유지!');
+  }
+  
+  // 잠금 상태 복원 (페이지 재실행 시)
+  if (state.lockUntil) {
+    const lockTime = new Date(state.lockUntil);
+    if (Date.now() < lockTime.getTime()) {
+      showLockScreen();
+      document.getElementById('loadingScreen').style.display = 'none';
+      return;
+    } else {
+      state.lockUntil = null;
+      state.dailyPlayTime = 0;
+      saveState();
+      hideLockScreen();
+    }
+  }
   
   // 탭 초기화
   document.querySelectorAll('section').forEach(s => s.style.display = '');
@@ -5693,28 +5961,61 @@ async function initGame() {
   
   // 시간제한 체크
   checkTimeLimit();
-    setInterval(function() {
+  
+  // ⭐ 히든 트리거 설정
+  setupHiddenTrigger();
+  
+  // ⭐ 엔터키 이벤트 (히든 패널 내 입력창)
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+      const input = document.getElementById('lockPasswordInput');
+      if (input && document.activeElement === input) {
+        addExtraTimeFromLock();
+      }
+    }
+  });
+  
+  // 10초마다 시간제한 체크 (실시간 감시)
+  setInterval(function() {
     const maxMs = (state.timeLimitMinutes || 15) * 60 * 1000;
+    const today2 = todayKey();
+    
+    // 날짜 변경 체크
+    if (state._lastActiveDate !== today2) {
+      state.dailyPlayTime = 0;
+      state.lockUntil = null;
+      state._lastActiveDate = today2;
+      saveState();
+      hideLockScreen();
+      renderAll();
+      return;
+    }
+    
     if (state.dailyPlayTime >= maxMs && !state.lockUntil) {
       const lockUntil = new Date();
       lockUntil.setHours(24, 0, 0, 0);
       state.lockUntil = lockUntil.toISOString();
+      state._lastActiveDate = today2;
       saveState();
       showLockScreen();
       alert('⏰ 오늘 사용시간이 모두 끝났어요! 내일 다시 만나요 😴');
     }
+    
     // 잠금 상태에서 잠금 해제 시간이 지났는지 확인
     if (state.lockUntil) {
       const lockTime = new Date(state.lockUntil);
       if (Date.now() >= lockTime.getTime()) {
         state.lockUntil = null;
         state.dailyPlayTime = 0;
+        state._lastActiveDate = today2;
         saveState();
         hideLockScreen();
         renderAll();
+        console.log('✅ 잠금 해제! (시간 경과)');
       }
     }
   }, 10000);
+  
   // 이벤트 바인딩
   bindAdminEvents();
   
@@ -5723,10 +6024,10 @@ async function initGame() {
 
 // 게임 시작
 initGame();
+// ===== 전체 렌더링 =====
 function renderAll() {
   // ⭐ 시간제한 체크 (잠금 상태면 렌더링 중단)
   if (!checkTimeLimit()) {
-    // 잠금 상태에서는 빈 화면 표시
     document.querySelectorAll('section').forEach(s => s.style.display = 'none');
     return;
   }
