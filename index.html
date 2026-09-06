@@ -2788,14 +2788,14 @@ function checkTimeLimit() {
   const today = todayKey();
   
   console.log('🔍 checkTimeLimit 실행됨!');
-  console.log(`⏰ 설정 시간: ${timeLimit}분, 최대: ${maxMs}ms`);
+  console.log('⏰ 설정 시간: ' + timeLimit + '분, 최대: ' + maxMs + 'ms');
   
   // 🔒 잠금 상태 확인
   if (state.lockUntil) {
     const lockTime = new Date(state.lockUntil);
     const now = Date.now();
     
-    console.log(`🔒 잠금 상태: ${lockTime.toLocaleTimeString()}, 현재: ${new Date(now).toLocaleTimeString()}`);
+    console.log('🔒 잠금 상태: ' + lockTime.toLocaleTimeString() + ', 현재: ' + new Date(now).toLocaleTimeString());
     
     if (now >= lockTime.getTime()) {
       state.lockUntil = null;
@@ -2815,7 +2815,7 @@ function checkTimeLimit() {
   
   // ⭐ 세션 시작 시간 설정/복원
   if (!state._sessionStartTime) {
-    const savedSession = localStorage.getItem('sessionStartTime');
+    var savedSession = localStorage.getItem('sessionStartTime');
     if (savedSession) {
       state._sessionStartTime = parseInt(savedSession);
       console.log('⏰ 저장된 세션 복원:', new Date(state._sessionStartTime).toLocaleTimeString());
@@ -2828,9 +2828,9 @@ function checkTimeLimit() {
   }
   
   // ⭐ 실제 경과 시간 계산
-  const elapsedMs = Date.now() - state._sessionStartTime;
-  const elapsedMinutes = Math.round(elapsedMs / 60000);
-  console.log(`⏱️ 경과 시간: ${elapsedMinutes}분 / ${timeLimit}분 (${Math.round(elapsedMs/1000)}초)`);
+  var elapsedMs = Date.now() - state._sessionStartTime;
+  var elapsedMinutes = Math.round(elapsedMs / 60000);
+  console.log('⏱️ 경과 시간: ' + elapsedMinutes + '분 / ' + timeLimit + '분 (' + Math.round(elapsedMs/1000) + '초)');
   
   // 날짜 변경 체크
   if (state._lastActiveDate && state._lastActiveDate !== today) {
@@ -2847,8 +2847,8 @@ function checkTimeLimit() {
   
   // ⭐⭐⭐ 사용시간 초과 확인 (실제 경과 시간 기준)
   if (elapsedMs >= maxMs) {
-    console.log(`🔒 잠금 실행! (${elapsedMinutes}분 >= ${timeLimit}분)`);
-    const lockUntil = new Date();
+    console.log('🔒 잠금 실행! (' + elapsedMinutes + '분 >= ' + timeLimit + '분)');
+    var lockUntil = new Date();
     lockUntil.setHours(24, 0, 0, 0);
     state.lockUntil = lockUntil.toISOString();
     state._lastActiveDate = today;
@@ -2861,9 +2861,9 @@ function checkTimeLimit() {
   }
   
   // ⭐ 남은 시간 표시 (1분 미만일 때)
-  const remainingMs = maxMs - elapsedMs;
+  var remainingMs = maxMs - elapsedMs;
   if (remainingMs < 60000) {
-    console.log(`⏰ 남은 시간: ${Math.round(remainingMs/1000)}초`);
+    console.log('⏰ 남은 시간: ' + Math.round(remainingMs/1000) + '초');
   }
   
   state._lastActiveDate = today;
