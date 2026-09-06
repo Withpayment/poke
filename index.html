@@ -3972,22 +3972,25 @@ function renderRaidMission() {
   </div>`;
   document.getElementById('raidAttackBtn')?.addEventListener('click', doRaidAttack);
 }
-  // ===== 잠금화면 히든 기능 =====
-const LOCK_PASSWORD = '1234'; // ⭐ 비밀번호 설정 (원하는 번호로 변경)
+// ===== 잠금화면 히든 기능 =====
+const LOCK_PASSWORD = '1234';
 let lockClickCount = 0;
 let lockClickTimer = null;
 let lastExtraTimeUsed = 0;
-const EXTRA_TIME_INTERVAL = 5 * 60 * 1000; // 5분
-const EXTRA_TIME_AMOUNT = 5; // 추가 시간 (분)
+const EXTRA_TIME_INTERVAL = 5 * 60 * 1000;
+const EXTRA_TIME_AMOUNT = 5;
 
-  const trigger = document.getElementById('hiddenTrigger');
+  const trigger = document.getElementById('hiddenTrigger');  // ← 여기서부터 잘못됨!
   if (!trigger) {
     console.error('❌ hiddenTrigger 요소를 찾을 수 없음!');
     return;
   }
   
   console.log('✅ hiddenTrigger 찾음!');
+  // ... 
   
+  console.log('✅ 히든 트리거 설정 완료!');
+}  // ← 여기서 함수가 끝나야 하는데 제대로 안 닫힘
   // ⭐ 기존 이벤트 리스너 제거 (중복 방지)
   const newTrigger = trigger.cloneNode(true);
   trigger.parentNode.replaceChild(newTrigger, trigger);
