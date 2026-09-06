@@ -2871,115 +2871,142 @@ function checkTimeLimit() {
 }
 function showLockScreen() {
   console.log('🔒 잠금화면 표시!');
-  const overlay = document.getElementById('lockOverlay');
+  var overlay = document.getElementById('lockOverlay');
+  if (!overlay) {
+    console.error('❌ lockOverlay를 찾을 수 없음!');
+    return;
+  }
+  
+  // ⭐ 이미 잠금화면이 활성화되어 있으면 중복 생성 방지
+  if (overlay.classList.contains('active')) {
+    console.log('⏳ 이미 잠금화면 활성화됨, 히든 트리거만 재연결');
+    // 히든 트리거만 재연결
+    reconnectHiddenTrigger();
+    return;
+  }
+  
   overlay.classList.add('active');
   document.querySelector('.app').style.opacity = '0.3';
   document.querySelector('.app').style.pointerEvents = 'none';
   
   // 에러 메시지 초기화
-  const errorEl = document.getElementById('lockPasswordError');
-  const resultEl = document.getElementById('lockAddTimeResult');
-  const cooldownEl = document.getElementById('lockCooldownMsg');
-  const input = document.getElementById('lockPasswordInput');
+  var errorEl = document.getElementById('lockPasswordError');
+  var resultEl = document.getElementById('lockAddTimeResult');
+  var cooldownEl = document.getElementById('lockCooldownMsg');
+  var input = document.getElementById('lockPasswordInput');
   if (errorEl) errorEl.style.display = 'none';
   if (resultEl) resultEl.style.display = 'none';
   if (cooldownEl) cooldownEl.style.display = 'none';
   if (input) input.value = '';
   
   // 히든 패널 숨기기
-  const panel = document.getElementById('hiddenTimePanel');
+  var panel = document.getElementById('hiddenTimePanel');
   if (panel) panel.style.display = 'none';
   
   // 클릭 카운트 초기화
   lockClickCount = 0;
   
-  // ⭐⭐⭐ 중요: 잠금화면이 열린 후 히든 트리거 강제 생성 및 설정
-  setTimeout(function() {
-    console.log('🔍 히든 트리거 강제 설정 시작...');
-    
-    // 기존 트리거 제거 (중복 방지)
-    const oldTrigger = document.getElementById('hiddenTrigger');
-    if (oldTrigger) oldTrigger.remove();
-    
-    // 새 트리거 생성 (보이게!)
-    const overlay2 = document.getElementById('lockOverlay');
-    if (overlay2) {
-      const newTrigger = document.createElement('div');
-      newTrigger.id = 'hiddenTrigger';
-      newTrigger.style.cssText = `
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        width: 80px;
-        height: 80px;
-        cursor: pointer;
-        z-index: 999;
-        background: rgba(255, 0, 0, 0.15);
-        border: 3px dashed rgba(255, 255, 255, 0.4);
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 12px;
-        color: rgba(255, 255, 255, 0.3);
-      `;
-      newTrigger.textContent = '👆 터치';
-      newTrigger.title = '3번 터치하면 추가시간 패널이 열립니다';
-      overlay2.appendChild(newTrigger);
-      console.log('✅ 히든 트리거 생성 완료 (보이는 상태)');
-      
-      // 이벤트 연결
-      newTrigger.addEventListener('click', function(e) {
-        e.stopPropagation();
-        lockClickCount++;
-        console.log(`👆 클릭 카운트: ${lockClickCount}`);
-        
-        clearTimeout(lockClickTimer);
-        lockClickTimer = setTimeout(() => {
-          console.log('⏰ 클릭 카운트 리셋 (3초 경과)');
-          lockClickCount = 0;
-        }, 3000);
-        
-        if (lockClickCount >= 3) {
-          console.log('🎯 3번 클릭 감지! 히든 패널 표시');
-          lockClickCount = 0;
-          toggleHiddenTimePanel();
-        }
-      });
-      
-      // 패널 닫기 버튼도 추가 (X 버튼)
-      const panel2 = document.getElementById('hiddenTimePanel');
-      if (panel2) {
-        // 패널에 닫기 버튼이 없으면 추가
-        if (!panel2.querySelector('.panel-close-btn')) {
-          const closeBtn = document.createElement('button');
-          closeBtn.className = 'panel-close-btn';
-          closeBtn.style.cssText = `
-            position: absolute;
-            top: 8px;
-            right: 12px;
-            background: none;
-            border: none;
-            color: #B7AFDE;
-            font-size: 20px;
-            cursor: pointer;
-          `;
-          closeBtn.textContent = '✕';
-          closeBtn.onclick = function() {
-            panel2.style.display = 'none';
-          };
-          panel2.style.position = 'relative';
-          panel2.appendChild(closeBtn);
-        }
-      }
-    }
-  }, 500);
+  // ⭐ 히든 트리거 생성 (최초 1회만)
+  createHiddenTrigger();
   
   updateLockTimer();
   
-  // 쿨다운 타이머 시작
   if (window._cooldownInterval) clearInterval(window._cooldownInterval);
   window._cooldownInterval = setInterval(updateLockCooldown, 1000);
+}
+
+// ⭐ 히든 트리거 생성 함수 (분리)
+function createHiddenTrigger() {
+  console.log('🔍 히든 트리거 생성 시작...');
+  
+  // 기존 트리거 제거
+  var oldTrigger = document.getElementById('hiddenTrigger');
+  if (oldTrigger) oldTrigger.remove();
+  
+  var overlay = document.getElementById('lockOverlay');
+  if (!overlay) {
+    console.error('❌ lockOverlay 없음!');
+    return;
+  }
+  
+  var newTrigger = document.createElement('div');
+  newTrigger.id = 'hiddenTrigger';
+  newTrigger.style.cssText = 'position:absolute;top:10px;right:10px;width:100px;height:100px;cursor:pointer;z-index:9999;background:rgba(255,200,0,0.3);border:3px solid #FFD700;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:16px;color:#FFD700;font-weight:bold;';
+  newTrigger.textContent = '👆 3번 터치';
+  newTrigger.title = '3번 터치하면 추가시간 패널이 열립니다';
+  overlay.appendChild(newTrigger);
+  console.log('✅ 히든 트리거 생성 완료');
+  
+  // ⭐⭐⭐ 이벤트 연결
+  newTrigger.onclick = function(e) {
+    e.stopPropagation();
+    e.preventDefault();
+    console.log('🔥 버튼 클릭됨! (히든 트리거)');
+    lockClickCount++;
+    console.log('👆 클릭 카운트:', lockClickCount);
+    
+    clearTimeout(lockClickTimer);
+    lockClickTimer = setTimeout(function() {
+      console.log('⏰ 클릭 카운트 리셋 (3초 경과)');
+      lockClickCount = 0;
+    }, 3000);
+    
+    if (lockClickCount >= 3) {
+      console.log('🎯 3번 클릭 감지! 히든 패널 표시');
+      lockClickCount = 0;
+      toggleHiddenTimePanel();
+    }
+  };
+  
+  // 터치 이벤트도 연결 (모바일)
+  newTrigger.ontouchstart = function(e) {
+    e.stopPropagation();
+    e.preventDefault();
+    this.onclick(e);
+  };
+}
+
+// ⭐ 히든 트리거 재연결 함수 (잠금화면이 이미 활성화되어 있을 때)
+function reconnectHiddenTrigger() {
+  var trigger = document.getElementById('hiddenTrigger');
+  if (!trigger) {
+    console.log('🔍 트리거 없음, 새로 생성');
+    createHiddenTrigger();
+    return;
+  }
+  
+  console.log('🔍 트리거 재연결 중...');
+  // 기존 이벤트 제거 후 재연결
+  var newTrigger = trigger.cloneNode(true);
+  trigger.parentNode.replaceChild(newTrigger, trigger);
+  
+  newTrigger.onclick = function(e) {
+    e.stopPropagation();
+    e.preventDefault();
+    console.log('🔥 버튼 클릭됨! (재연결)');
+    lockClickCount++;
+    console.log('👆 클릭 카운트:', lockClickCount);
+    
+    clearTimeout(lockClickTimer);
+    lockClickTimer = setTimeout(function() {
+      console.log('⏰ 클릭 카운트 리셋 (3초 경과)');
+      lockClickCount = 0;
+    }, 3000);
+    
+    if (lockClickCount >= 3) {
+      console.log('🎯 3번 클릭 감지! 히든 패널 표시');
+      lockClickCount = 0;
+      toggleHiddenTimePanel();
+    }
+  };
+  
+  newTrigger.ontouchstart = function(e) {
+    e.stopPropagation();
+    e.preventDefault();
+    this.onclick(e);
+  };
+  
+  console.log('✅ 히든 트리거 재연결 완료!');
 }
 function hideLockScreen() {
   const overlay = document.getElementById('lockOverlay');
