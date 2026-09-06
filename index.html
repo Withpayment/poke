@@ -2698,6 +2698,7 @@ function loadState() {
       if (state.timeLimitMinutes === undefined) state.timeLimitMinutes = 15;
       if (state.dailyPlayTime === undefined) state.dailyPlayTime = 0;
       if (state._lastActiveDate === undefined) state._lastActiveDate = todayKey();
+      if (state._sessionStartTime === undefined) state._sessionStartTime = null; // ⭐ 추가
       console.log('✅ 저장된 상태 로드 완료!', Object.keys(state.owned).length + '마리 보유');
       updateStoneDisplay();
       updateTicketDisplay();
@@ -2791,10 +2792,10 @@ function checkTimeLimit() {
     const lockTime = new Date(state.lockUntil);
     const now = Date.now();
     
-    // 잠금 해제 조건: 현재 시간이 잠금 해제 시간을 넘었는지 확인
     if (now >= lockTime.getTime()) {
       state.lockUntil = null;
       state.dailyPlayTime = 0;
+      state._sessionStartTime = null;
       saveState();
       hideLockScreen();
       console.log('✅ 잠금 해제! (시간 경과)');
@@ -2806,10 +2807,21 @@ function checkTimeLimit() {
     }
   }
   
-  // 날짜 변경 체크 (자정 리셋)
+  // ⭐ 세션 시작 시간 저장 (최초 접속 시)
+  if (!state._sessionStartTime) {
+    state._sessionStartTime = Date.now();
+    saveState();
+    console.log('⏰ 세션 시작 시간 기록');
+  }
+  
+  // ⭐ 실제 경과 시간 계산 (보너스 시간 제외)
+  const elapsedMs = Date.now() - state._sessionStartTime;
+  
+  // 날짜 변경 체크
   if (state._lastActiveDate && state._lastActiveDate !== today) {
     state.dailyPlayTime = 0;
     state.lockUntil = null;
+    state._sessionStartTime = Date.now();
     state._lastActiveDate = today;
     saveState();
     hideLockScreen();
@@ -2817,22 +2829,29 @@ function checkTimeLimit() {
     return true;
   }
   
-  // ⏰ 사용시간 초과 확인
-  if (state.dailyPlayTime >= maxMs) {
+  // ⭐ 사용시간 초과 확인 (실제 경과 시간 기준)
+  if (elapsedMs >= maxMs) {
     const lockUntil = new Date();
     lockUntil.setHours(24, 0, 0, 0);
     state.lockUntil = lockUntil.toISOString();
     state._lastActiveDate = today;
     saveState();
     showLockScreen();
-    console.log(`🔒 잠금! (사용시간: ${Math.round(state.dailyPlayTime/60000)}분 / ${timeLimit}분)`);
+    console.log(`🔒 잠금! (경과시간: ${Math.round(elapsedMs/60000)}분 / ${timeLimit}분)`);
     return false;
+  }
+  
+  // ⭐ 남은 시간 로그 (디버깅용)
+  const remainingMs = maxMs - elapsedMs;
+  if (remainingMs < 60000) {
+    console.log(`⏰ 남은 시간: ${Math.round(remainingMs/1000)}초`);
   }
   
   state._lastActiveDate = today;
   return true;
 }
 function showLockScreen() {
+  console.log('🔒 잠금화면 표시!');
   const overlay = document.getElementById('lockOverlay');
   overlay.classList.add('active');
   document.querySelector('.app').style.opacity = '0.3';
@@ -2854,6 +2873,24 @@ function showLockScreen() {
   
   // 클릭 카운트 초기화
   lockClickCount = 0;
+  
+  // ⭐⭐⭐ 중요: 잠금화면이 열린 후 히든 트리거 재설정
+  setTimeout(function() {
+    console.log('🔍 잠금화면에서 히든 트리거 재설정');
+    setupHiddenTrigger();
+    
+    // 히든 트리거가 제대로 설정되었는지 확인
+    setTimeout(function() {
+      const trigger = document.getElementById('hiddenTrigger');
+      if (trigger) {
+        console.log('✅ 히든 트리거 확인됨!');
+        // 디버깅용으로 테두리 표시 (나중에 제거 가능)
+        trigger.style.border = '2px dashed rgba(255,255,255,0.2)';
+      } else {
+        console.error('❌ 히든 트리거가 없음!');
+      }
+    }, 200);
+  }, 300);
   
   updateLockTimer();
   
@@ -2908,23 +2945,26 @@ function updateLockTimer() {
 }
 
 function addPlayTime(ms) {
-  if (!state.dailyPlayTime) state.dailyPlayTime = 0;
-  state.dailyPlayTime += ms;
-  saveState();
+  // ⭐ 이 함수는 이제 "보너스 시간"으로만 작동
+  // 실제 사용시간은 checkTimeLimit()에서 별도로 측정
   
-  console.log(`⏰ 사용시간 추가: +${Math.round(ms/1000)}초 (총 ${Math.round(state.dailyPlayTime/1000)}초 / ${state.timeLimitMinutes * 60}초)`);
+  console.log(`🎁 보너스 시간 +${Math.round(ms/1000)}초`);
   
-  // 시간 초과 시 즉시 체크
-  const maxMs = (state.timeLimitMinutes || 15) * 60 * 1000;
-  if (state.dailyPlayTime >= maxMs) {
-    const lockUntil = new Date();
-    lockUntil.setHours(24, 0, 0, 0);
-    state.lockUntil = lockUntil.toISOString();
-    state._lastActiveDate = todayKey();
+  // 보너스 시간을 사용시간에 더하지 않음 (버그 수정)
+  // state.dailyPlayTime += ms;  ← 이 줄 제거!
+  
+  // 대신, 잠금 상태면 잠금 해제 시간을 연장 (보너스 효과)
+  if (state.lockUntil) {
+    const lockTime = new Date(state.lockUntil);
+    const newLockTime = new Date(lockTime.getTime() + ms);
+    state.lockUntil = newLockTime.toISOString();
     saveState();
-    showLockScreen();
-    alert('⏰ 오늘 사용시간이 모두 끝났어요! 내일 다시 만나요 😴');
+    updateLockTimer();
+    console.log(`⏰ 잠금 연장 +${Math.round(ms/1000)}초`);
   }
+  
+  // 잠금 상태가 아니면 그냥 보너스 로그만
+  saveState();
 }
 
 // ===== 관리자 패널 =====
@@ -3852,23 +3892,40 @@ const EXTRA_TIME_AMOUNT = 5; // 추가 시간 (분)
 
 // ⭐ 우측 상단 3번 터치 감지
 function setupHiddenTrigger() {
-  const trigger = document.getElementById('hiddenTrigger');
-  if (!trigger) return;
+  console.log('🔍 setupHiddenTrigger 실행됨!');
   
-  trigger.addEventListener('click', function(e) {
+  const trigger = document.getElementById('hiddenTrigger');
+  if (!trigger) {
+    console.error('❌ hiddenTrigger 요소를 찾을 수 없음!');
+    return;
+  }
+  
+  console.log('✅ hiddenTrigger 찾음!');
+  
+  // ⭐ 기존 이벤트 리스너 제거 (중복 방지)
+  const newTrigger = trigger.cloneNode(true);
+  trigger.parentNode.replaceChild(newTrigger, trigger);
+  
+  // 새로 연결
+  newTrigger.addEventListener('click', function(e) {
     e.stopPropagation();
     lockClickCount++;
+    console.log(`👆 클릭 카운트: ${lockClickCount}`);
     
     clearTimeout(lockClickTimer);
     lockClickTimer = setTimeout(() => {
+      console.log('⏰ 클릭 카운트 리셋 (3초 경과)');
       lockClickCount = 0;
     }, 3000);
     
     if (lockClickCount >= 3) {
+      console.log('🎯 3번 클릭 감지! 히든 패널 표시');
       lockClickCount = 0;
       toggleHiddenTimePanel();
     }
   });
+  
+  console.log('✅ 히든 트리거 설정 완료!');
 }
 
 // ⭐ 히든 패널 토글
@@ -5801,6 +5858,7 @@ function resetDailyContent() {
   // ⭐ 사용시간 초기화 (잠금 상태가 아닐 때만)
   if (!state.lockUntil || new Date(state.lockUntil).getTime() <= Date.now()) {
     state.dailyPlayTime = 0;
+    state._sessionStartTime = null; // ⭐ 추가
     state.lockUntil = null;
     hideLockScreen();
     console.log('✅ 사용시간 초기화 완료!');
