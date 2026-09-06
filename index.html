@@ -3973,6 +3973,7 @@ function renderRaidMission() {
   document.getElementById('raidAttackBtn')?.addEventListener('click', doRaidAttack);
 }
 // ===== 잠금화면 히든 기능 =====
+// ===== 잠금화면 히든 기능 =====
 const LOCK_PASSWORD = '1234';
 let lockClickCount = 0;
 let lockClickTimer = null;
@@ -3980,17 +3981,131 @@ let lastExtraTimeUsed = 0;
 const EXTRA_TIME_INTERVAL = 5 * 60 * 1000;
 const EXTRA_TIME_AMOUNT = 5;
 
-  const trigger = document.getElementById('hiddenTrigger');  // ← 여기서부터 잘못됨!
-  if (!trigger) {
-    console.error('❌ hiddenTrigger 요소를 찾을 수 없음!');
+// ⭐ 빈 함수 (showLockScreen에서 직접 처리)
+function setupHiddenTrigger() {
+  // 아무것도 하지 않음
+}
+
+// ⭐ 히든 패널 토글
+function toggleHiddenTimePanel() {
+  var panel = document.getElementById('hiddenTimePanel');
+  if (!panel) return;
+  
+  if (panel.style.display === 'none') {
+    panel.style.display = 'block';
+    var input = document.getElementById('lockPasswordInput');
+    if (input) setTimeout(function() { input.focus(); }, 100);
+    SFX.click();
+  } else {
+    panel.style.display = 'none';
+    var errorEl = document.getElementById('lockPasswordError');
+    var resultEl = document.getElementById('lockAddTimeResult');
+    var cooldownEl = document.getElementById('lockCooldownMsg');
+    if (errorEl) errorEl.style.display = 'none';
+    if (resultEl) resultEl.style.display = 'none';
+    if (cooldownEl) cooldownEl.style.display = 'none';
+  }
+}
+
+// ===== 잠금화면 추가시간 부여 (5분 간격) =====
+function addExtraTimeFromLock() {
+  var input = document.getElementById('lockPasswordInput');
+  var errorEl = document.getElementById('lockPasswordError');
+  var resultEl = document.getElementById('lockAddTimeResult');
+  var cooldownEl = document.getElementById('lockCooldownMsg');
+  var password = input.value.trim();
+  
+  errorEl.style.display = 'none';
+  resultEl.style.display = 'none';
+  cooldownEl.style.display = 'none';
+  
+  // 쿨다운 체크 (5분 간격)
+  var now = Date.now();
+  var timeSinceLastUse = now - lastExtraTimeUsed;
+  if (lastExtraTimeUsed > 0 && timeSinceLastUse < EXTRA_TIME_INTERVAL) {
+    var remaining = Math.ceil((EXTRA_TIME_INTERVAL - timeSinceLastUse) / 1000);
+    var mins = Math.floor(remaining / 60);
+    var secs = remaining % 60;
+    cooldownEl.style.display = 'block';
+    document.getElementById('lockCooldownTimer').textContent = String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
+    input.value = '';
+    input.focus();
     return;
   }
   
-  console.log('✅ hiddenTrigger 찾음!');
-  // ... 
+  // 비밀번호 확인
+  if (password !== LOCK_PASSWORD) {
+    errorEl.style.display = 'block';
+    input.value = '';
+    input.focus();
+    return;
+  }
   
-  console.log('✅ 히든 트리거 설정 완료!');
-}  // ← 여기서 함수가 끝나야 하는데 제대로 안 닫힘
+  // 추가 시간: 5분
+  var extraMinutes = EXTRA_TIME_AMOUNT;
+  var extraMs = extraMinutes * 60 * 1000;
+  
+  if (state.lockUntil) {
+    var lockTime = new Date(state.lockUntil);
+    var now2 = Date.now();
+    var remaining = lockTime.getTime() - now2;
+    
+    if (remaining > 0) {
+      var newLockTime = new Date(now2 + remaining + extraMs);
+      state.lockUntil = newLockTime.toISOString();
+      state.dailyPlayTime = Math.max(0, state.dailyPlayTime - extraMs);
+      lastExtraTimeUsed = Date.now();
+      saveState();
+      
+      resultEl.style.display = 'block';
+      resultEl.textContent = '✅ ' + extraMinutes + '분 추가! (남은 시간: ' + Math.round((remaining + extraMs) / 60000) + '분)';
+      
+      updateLockTimer();
+      
+      setTimeout(function() {
+        state.lockUntil = null;
+        state.dailyPlayTime = Math.max(0, state.dailyPlayTime);
+        saveState();
+        hideLockScreen();
+        renderAll();
+        toast('⏰ ' + extraMinutes + '분 추가되었습니다!');
+      }, 2000);
+      
+      SFX.missionDone();
+      input.value = '';
+      
+    } else {
+      state.lockUntil = null;
+      saveState();
+      hideLockScreen();
+      renderAll();
+      toast('⏰ 이미 잠금이 해제되었습니다!');
+    }
+  } else {
+    hideLockScreen();
+    renderAll();
+    toast('⏰ 잠금 상태가 아닙니다!');
+  }
+}
+
+// ⭐ 쿨다운 타이머 업데이트 (1초마다)
+function updateLockCooldown() {
+  var cooldownEl = document.getElementById('lockCooldownMsg');
+  var timerEl = document.getElementById('lockCooldownTimer');
+  if (!cooldownEl || !timerEl) return;
+  if (cooldownEl.style.display === 'none') return;
+  
+  var now = Date.now();
+  var timeSinceLastUse = now - lastExtraTimeUsed;
+  if (lastExtraTimeUsed > 0 && timeSinceLastUse < EXTRA_TIME_INTERVAL) {
+    var remaining = Math.ceil((EXTRA_TIME_INTERVAL - timeSinceLastUse) / 1000);
+    var mins = Math.floor(remaining / 60);
+    var secs = remaining % 60;
+    timerEl.textContent = String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
+  } else {
+    cooldownEl.style.display = 'none';
+  }
+}
   // ⭐ 기존 이벤트 리스너 제거 (중복 방지)
   const newTrigger = trigger.cloneNode(true);
   trigger.parentNode.replaceChild(newTrigger, trigger);
