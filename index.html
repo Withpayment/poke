@@ -4620,64 +4620,48 @@ function showRewardPopup(pokemon, title, subtitle) {
 
 // ===== 메가진화 실행 (수정: 카드 획득 보장) =====
 function performMegaEvolution(engName) {
-  const megaEvo = MEGA_EVOLUTIONS[engName];
+  var megaEvo = MEGA_EVOLUTIONS[engName];
   if (!megaEvo) { alert('메가진화할 수 없는 포켓몬입니다!'); return; }
   if (!useEvolutionStone('mega')) { alert('메가진화의돌이 부족합니다!'); return; }
   
-  const sourcePokemon = getPokemonByName(engName);
+  var sourcePokemon = getPokemonByName(engName);
   if (!sourcePokemon) { alert('포켓몬을 찾을 수 없어요!'); return; }
   
-  const sourceCard = state.owned[engName];
+  var sourceCard = state.owned[engName];
   if (!sourceCard || sourceCard.count < 1) { alert('⚠️ 진화할 카드가 없어요!'); return; }
   
-  // ⭐ 기존 카드 1장 차감
+  // 기존 카드 1장 차감
   sourceCard.count -= 1;
   if (sourceCard.count <= 0) delete state.owned[engName];
   
-  // ⭐ 메가 포켓몬 객체 생성 (POKEMON_LIST에 강제 추가)
-  let megaPokemon = getPokemonByName(megaEvo.id);
+  // ⭐ 메가 포켓몬을 POKEMON_LIST에 추가 (도감에 표시되도록)
+  var megaPokemon = getPokemonByName(megaEvo.id);
   if (!megaPokemon) {
-    const sourcePokemon2 = getPokemonByName(engName);
     megaPokemon = {
       id: megaEvo.id,
       name: megaEvo.name,
       engName: megaEvo.id,
-      type: sourcePokemon2 ? sourcePokemon2.type : 'normal',
-      types: sourcePokemon2 ? sourcePokemon2.types : ['normal'],
-      hp: sourcePokemon2 ? sourcePokemon2.hp + 20 : 100,
-      atk: sourcePokemon2 ? sourcePokemon2.atk + 20 : 100,
-      def: sourcePokemon2 ? sourcePokemon2.def + 20 : 100,
-      spd: sourcePokemon2 ? sourcePokemon2.spd + 20 : 100,
-      image: MEGA_IMAGE_MAP[megaEvo.id] || (sourcePokemon2 ? sourcePokemon2.image : ''),
+      type: sourcePokemon.type || 'normal',
+      types: sourcePokemon.types || ['normal'],
+      hp: (sourcePokemon.hp || 80) + 20,
+      atk: (sourcePokemon.atk || 80) + 20,
+      def: (sourcePokemon.def || 80) + 20,
+      spd: (sourcePokemon.spd || 80) + 20,
+      image: MEGA_IMAGE_MAP[megaEvo.id] || sourcePokemon.image || '',
       speciesUrl: null,
       cryUrl: null,
       isMega: true
     };
-    
-    // ⭐ POKEMON_LIST에 추가 (이미 있는지 확인 후)
-    const exists = POKEMON_LIST.some(p => p.engName === megaEvo.id);
-    if (!exists) {
-      POKEMON_LIST.push(megaPokemon);
-      console.log('✅ POKEMON_LIST에 메가 추가:', megaPokemon.name);
-      
-      // ⭐ 캐시에도 저장 (도감에서 보이도록)
-      try {
-        const cache = localStorage.getItem(CACHE_KEY);
-        if (cache) {
-          const list = JSON.parse(cache);
-          if (!list.find(p => p.engName === megaEvo.id)) {
-            list.push(megaPokemon);
-            localStorage.setItem(CACHE_KEY, JSON.stringify(list));
-          }
-        }
-      } catch(e) {}
-    }
-  } else {
-    // 이미 있으면 이미지 업데이트
-    megaPokemon.image = MEGA_IMAGE_MAP[megaEvo.id] || megaPokemon.image;
+    POKEMON_LIST.push(megaPokemon);
+    // 캐시 업데이트
+    try {
+      localStorage.setItem(CACHE_KEY, JSON.stringify(POKEMON_LIST));
+      localStorage.setItem(CACHE_TIME_KEY, String(Date.now()));
+    } catch(e) {}
+    console.log('✅ 메가 포켓몬 도감 추가:', megaPokemon.name);
   }
   
-  // ⭐ 메가 카드 추가 (강제 획득)
+  // 메가 카드 추가
   if (!state.owned[megaEvo.id]) {
     state.owned[megaEvo.id] = { count: 1, rarity: 'mega' };
   } else {
@@ -4685,9 +4669,9 @@ function performMegaEvolution(engName) {
     state.owned[megaEvo.id].rarity = 'mega';
   }
   
-  // ⭐ Pet도 함께 진화
+  // Pet도 함께 진화
   if (state.pet) {
-    const petCurrentId = state.pet.evolvedId || state.pet.baseId;
+    var petCurrentId = state.pet.evolvedId || state.pet.baseId;
     if (petCurrentId === engName) {
       state.pet.evolvedId = megaEvo.id;
       state.pet.evolved = true;
@@ -4699,15 +4683,14 @@ function performMegaEvolution(engName) {
   SFX.megaEvolution();
   closeModal();
   
-  // ⭐ 도감 새로고침 (메가 포켓몬이 보이도록)
+  // ⭐ 도감 새로고침
   renderDex();
   renderPetTab();
   updateStatline();
   
-  // ⭐ 획득한 메가 포켓몬 표시
-  const finalMegaPokemon = getPokemonByName(megaEvo.id);
+  var finalMegaPokemon = getPokemonByName(megaEvo.id);
   if (finalMegaPokemon) {
-    showRewardPopup(finalMegaPokemon, '💎 메가진화 성공!', `${finalMegaPokemon.name} 획득!`);
+    showRewardPopup(finalMegaPokemon, '💎 메가진화 성공!', finalMegaPokemon.name + ' 획득!');
   } else {
     alert('🎉 메가진화 완료! (도감에서 확인하세요)');
   }
@@ -4715,62 +4698,48 @@ function performMegaEvolution(engName) {
 
 // ===== 거다이맥스 실행 (수정: 카드 획득 보장) =====
 function performGigantamaxEvolution(engName) {
-  const gigaEvo = GIGANTAMAX_EVOLUTIONS[engName];
+  var gigaEvo = GIGANTAMAX_EVOLUTIONS[engName];
   if (!gigaEvo) { alert('거다이맥스할 수 없는 포켓몬입니다!'); return; }
   if (!useEvolutionStone('gigantamax')) { alert('거다이맥스돌이 부족합니다!'); return; }
   
-  const sourcePokemon = getPokemonByName(engName);
+  var sourcePokemon = getPokemonByName(engName);
   if (!sourcePokemon) { alert('포켓몬을 찾을 수 없어요!'); return; }
   
-  const sourceCard = state.owned[engName];
+  var sourceCard = state.owned[engName];
   if (!sourceCard || sourceCard.count < 1) { alert('⚠️ 진화할 카드가 없어요!'); return; }
   
-  // ⭐ 기존 카드 1장 차감
+  // 기존 카드 1장 차감
   sourceCard.count -= 1;
   if (sourceCard.count <= 0) delete state.owned[engName];
   
-  // ⭐ 거다이맥스 포켓몬 객체 생성 (POKEMON_LIST에 강제 추가)
-  let gigaPokemon = getPokemonByName(gigaEvo.id);
+  // ⭐ 거다이맥스 포켓몬을 POKEMON_LIST에 추가 (도감에 표시되도록)
+  var gigaPokemon = getPokemonByName(gigaEvo.id);
   if (!gigaPokemon) {
-    const sourcePokemon2 = getPokemonByName(engName);
     gigaPokemon = {
       id: gigaEvo.id,
       name: gigaEvo.name,
       engName: gigaEvo.id,
-      type: sourcePokemon2 ? sourcePokemon2.type : 'normal',
-      types: sourcePokemon2 ? sourcePokemon2.types : ['normal'],
-      hp: sourcePokemon2 ? sourcePokemon2.hp + 25 : 100,
-      atk: sourcePokemon2 ? sourcePokemon2.atk + 22 : 100,
-      def: sourcePokemon2 ? sourcePokemon2.def + 22 : 100,
-      spd: sourcePokemon2 ? sourcePokemon2.spd + 18 : 100,
-      image: GIGANTAMAX_IMAGE_MAP[gigaEvo.id] || (sourcePokemon2 ? sourcePokemon2.image : ''),
+      type: sourcePokemon.type || 'normal',
+      types: sourcePokemon.types || ['normal'],
+      hp: (sourcePokemon.hp || 80) + 25,
+      atk: (sourcePokemon.atk || 80) + 22,
+      def: (sourcePokemon.def || 80) + 22,
+      spd: (sourcePokemon.spd || 80) + 18,
+      image: GIGANTAMAX_IMAGE_MAP[gigaEvo.id] || sourcePokemon.image || '',
       speciesUrl: null,
       cryUrl: null,
       isGigantamax: true
     };
-    
-    // ⭐ POKEMON_LIST에 추가
-    const exists = POKEMON_LIST.some(p => p.engName === gigaEvo.id);
-    if (!exists) {
-      POKEMON_LIST.push(gigaPokemon);
-      console.log('✅ POKEMON_LIST에 거다이맥스 추가:', gigaPokemon.name);
-      
-      try {
-        const cache = localStorage.getItem(CACHE_KEY);
-        if (cache) {
-          const list = JSON.parse(cache);
-          if (!list.find(p => p.engName === gigaEvo.id)) {
-            list.push(gigaPokemon);
-            localStorage.setItem(CACHE_KEY, JSON.stringify(list));
-          }
-        }
-      } catch(e) {}
-    }
-  } else {
-    gigaPokemon.image = GIGANTAMAX_IMAGE_MAP[gigaEvo.id] || gigaPokemon.image;
+    POKEMON_LIST.push(gigaPokemon);
+    // 캐시 업데이트
+    try {
+      localStorage.setItem(CACHE_KEY, JSON.stringify(POKEMON_LIST));
+      localStorage.setItem(CACHE_TIME_KEY, String(Date.now()));
+    } catch(e) {}
+    console.log('✅ 거다이맥스 포켓몬 도감 추가:', gigaPokemon.name);
   }
   
-  // ⭐ 거다이맥스 카드 추가
+  // 거다이맥스 카드 추가
   if (!state.owned[gigaEvo.id]) {
     state.owned[gigaEvo.id] = { count: 1, rarity: 'gigantamax' };
   } else {
@@ -4778,9 +4747,9 @@ function performGigantamaxEvolution(engName) {
     state.owned[gigaEvo.id].rarity = 'gigantamax';
   }
   
-  // ⭐ Pet도 함께 진화
+  // Pet도 함께 진화
   if (state.pet) {
-    const petCurrentId = state.pet.evolvedId || state.pet.baseId;
+    var petCurrentId = state.pet.evolvedId || state.pet.baseId;
     if (petCurrentId === engName) {
       state.pet.evolvedId = gigaEvo.id;
       state.pet.evolved = true;
@@ -4797,9 +4766,9 @@ function performGigantamaxEvolution(engName) {
   renderPetTab();
   updateStatline();
   
-  const finalGigaPokemon = getPokemonByName(gigaEvo.id);
+  var finalGigaPokemon = getPokemonByName(gigaEvo.id);
   if (finalGigaPokemon) {
-    showRewardPopup(finalGigaPokemon, '🔥 거다이맥스 성공!', `${finalGigaPokemon.name} 획득!`);
+    showRewardPopup(finalGigaPokemon, '🔥 거다이맥스 성공!', finalGigaPokemon.name + ' 획득!');
   } else {
     alert('🎉 거다이맥스 완료! (도감에서 확인하세요)');
   }
@@ -5959,13 +5928,18 @@ setInterval(function() {
   }
 }, 60000);
 // ⭐ 새로운 함수: 모든 메가/거다이맥스 포켓몬을 POKEMON_LIST에 추가
+// ⭐ 모든 메가/거다이맥스 포켓몬을 POKEMON_LIST에 추가 (도감에 표시)
 function addAllMegaAndGigantamaxToPokedex() {
-  // 메가 포켓몬 추가
-  for (const [engName, megaEvo] of Object.entries(MEGA_EVOLUTIONS)) {
-    const exists = POKEMON_LIST.some(p => p.engName === megaEvo.id);
+  console.log('🔍 메가/거다이맥스 포켓몬 도감 추가 시작...');
+  
+  // ===== 메가 포켓몬 추가 =====
+  for (var engName in MEGA_EVOLUTIONS) {
+    var megaEvo = MEGA_EVOLUTIONS[engName];
+    var exists = POKEMON_LIST.some(function(p) { return p.engName === megaEvo.id; });
+    
     if (!exists) {
-      const sourcePokemon = getPokemonByName(engName);
-      const megaPokemon = {
+      var sourcePokemon = getPokemonByName(engName);
+      var megaPokemon = {
         id: megaEvo.id,
         name: megaEvo.name,
         engName: megaEvo.id,
@@ -5985,22 +5959,24 @@ function addAllMegaAndGigantamaxToPokedex() {
     }
   }
   
-  // 거다이맥스 포켓몬 추가
-  for (const [engName, gigaEvo] of Object.entries(GIGANTAMAX_EVOLUTIONS)) {
-    const exists = POKEMON_LIST.some(p => p.engName === gigaEvo.id);
-    if (!exists) {
-      const sourcePokemon = getPokemonByName(engName);
-      const gigaPokemon = {
+  // ===== 거다이맥스 포켓몬 추가 =====
+  for (var engName2 in GIGANTAMAX_EVOLUTIONS) {
+    var gigaEvo = GIGANTAMAX_EVOLUTIONS[engName2];
+    var exists2 = POKEMON_LIST.some(function(p) { return p.engName === gigaEvo.id; });
+    
+    if (!exists2) {
+      var sourcePokemon2 = getPokemonByName(engName2);
+      var gigaPokemon = {
         id: gigaEvo.id,
         name: gigaEvo.name,
         engName: gigaEvo.id,
-        type: sourcePokemon ? sourcePokemon.type : 'normal',
-        types: sourcePokemon ? sourcePokemon.types : ['normal'],
-        hp: sourcePokemon ? sourcePokemon.hp + 25 : 100,
-        atk: sourcePokemon ? sourcePokemon.atk + 22 : 100,
-        def: sourcePokemon ? sourcePokemon.def + 22 : 100,
-        spd: sourcePokemon ? sourcePokemon.spd + 18 : 100,
-        image: GIGANTAMAX_IMAGE_MAP[gigaEvo.id] || (sourcePokemon ? sourcePokemon.image : ''),
+        type: sourcePokemon2 ? sourcePokemon2.type : 'normal',
+        types: sourcePokemon2 ? sourcePokemon2.types : ['normal'],
+        hp: sourcePokemon2 ? sourcePokemon2.hp + 25 : 100,
+        atk: sourcePokemon2 ? sourcePokemon2.atk + 22 : 100,
+        def: sourcePokemon2 ? sourcePokemon2.def + 22 : 100,
+        spd: sourcePokemon2 ? sourcePokemon2.spd + 18 : 100,
+        image: GIGANTAMAX_IMAGE_MAP[gigaEvo.id] || (sourcePokemon2 ? sourcePokemon2.image : ''),
         speciesUrl: null,
         cryUrl: null,
         isGigantamax: true
@@ -6010,11 +5986,14 @@ function addAllMegaAndGigantamaxToPokedex() {
     }
   }
   
-  // 캐시 업데이트
+  // ⭐ 캐시 업데이트 (도감에 영구 저장)
   try {
     localStorage.setItem(CACHE_KEY, JSON.stringify(POKEMON_LIST));
     localStorage.setItem(CACHE_TIME_KEY, String(Date.now()));
-  } catch(e) {}
+    console.log('✅ 캐시 업데이트 완료! 총 ' + POKEMON_LIST.length + '마리');
+  } catch(e) {
+    console.error('⚠️ 캐시 저장 실패:', e);
+  }
 }
 // ===== 초기화 =====
 // ===== 게임 초기화 =====
@@ -6026,7 +6005,71 @@ async function initGame() {
   await loadAllPokemon();
   EVOLVABLE_POKEMON_LIST = await getAllEvolvablePokemon();
   
+    // ⭐ 모든 메가/거다이맥스 포켓몬을 POKEMON_LIST에 추가 (도감에 표시)
   addAllMegaAndGigantamaxToPokedex();
+  
+  // ⭐⭐⭐ 추가: 이미 획득한 메가/거다이맥스 카드도 도감에 등록
+  for (var key in state.owned) {
+    if (key.startsWith('mega-') || key.startsWith('gigantamax-')) {
+      var pokemon = getPokemonByName(key);
+      if (!pokemon) {
+        // 도감에 없으면 추가
+        if (key.startsWith('mega-')) {
+          var originalName = key.replace('mega-', '');
+          var megaEvo = MEGA_EVOLUTIONS[originalName];
+          if (megaEvo) {
+            var sourceP = getPokemonByName(originalName);
+            var newP = {
+              id: key,
+              name: megaEvo.name,
+              engName: key,
+              type: sourceP ? sourceP.type : 'normal',
+              types: sourceP ? sourceP.types : ['normal'],
+              hp: sourceP ? sourceP.hp + 20 : 100,
+              atk: sourceP ? sourceP.atk + 20 : 100,
+              def: sourceP ? sourceP.def + 20 : 100,
+              spd: sourceP ? sourceP.spd + 20 : 100,
+              image: MEGA_IMAGE_MAP[key] || (sourceP ? sourceP.image : ''),
+              speciesUrl: null,
+              cryUrl: null,
+              isMega: true
+            };
+            POKEMON_LIST.push(newP);
+            console.log('✅ 기존 메가 카드 도감 등록:', newP.name);
+          }
+        } else if (key.startsWith('gigantamax-')) {
+          var originalName2 = key.replace('gigantamax-', '');
+          var gigaEvo = GIGANTAMAX_EVOLUTIONS[originalName2];
+          if (gigaEvo) {
+            var sourceP2 = getPokemonByName(originalName2);
+            var newP2 = {
+              id: key,
+              name: gigaEvo.name,
+              engName: key,
+              type: sourceP2 ? sourceP2.type : 'normal',
+              types: sourceP2 ? sourceP2.types : ['normal'],
+              hp: sourceP2 ? sourceP2.hp + 25 : 100,
+              atk: sourceP2 ? sourceP2.atk + 22 : 100,
+              def: sourceP2 ? sourceP2.def + 22 : 100,
+              spd: sourceP2 ? sourceP2.spd + 18 : 100,
+              image: GIGANTAMAX_IMAGE_MAP[key] || (sourceP2 ? sourceP2.image : ''),
+              speciesUrl: null,
+              cryUrl: null,
+              isGigantamax: true
+            };
+            POKEMON_LIST.push(newP2);
+            console.log('✅ 기존 거다이맥스 카드 도감 등록:', newP2.name);
+          }
+        }
+      }
+    }
+  }
+  
+  // ⭐ 캐시 업데이트
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify(POKEMON_LIST));
+    localStorage.setItem(CACHE_TIME_KEY, String(Date.now()));
+  } catch(e) {}
   
   if (!state.playerAge) {
     showAgeInput();
