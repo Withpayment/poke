@@ -2885,17 +2885,14 @@ function showLockScreen() {
   
   overlay.classList.add('active');
   
-  // ⭐⭐⭐ app 영역만 투명하게 하고, 잠금화면 자체는 클릭 가능하도록
   var app = document.querySelector('.app');
   if (app) {
     app.style.opacity = '0.3';
     app.style.pointerEvents = 'none';
   }
   
-  // ⭐⭐⭐ 잠금화면 오버레이는 클릭 가능하도록 유지
   overlay.style.pointerEvents = 'auto';
   
-  // 에러 메시지 초기화
   var errorEl = document.getElementById('lockPasswordError');
   var resultEl = document.getElementById('lockAddTimeResult');
   var cooldownEl = document.getElementById('lockCooldownMsg');
@@ -2905,14 +2902,11 @@ function showLockScreen() {
   if (cooldownEl) cooldownEl.style.display = 'none';
   if (input) input.value = '';
   
-  // 히든 패널 숨기기
   var panel = document.getElementById('hiddenTimePanel');
   if (panel) panel.style.display = 'none';
   
-  // 클릭 카운트 초기화
   lockClickCount = 0;
   
-  // 히든 트리거 생성
   createHiddenTrigger();
   
   updateLockTimer();
@@ -2921,10 +2915,10 @@ function showLockScreen() {
   window._cooldownInterval = setInterval(updateLockCooldown, 1000);
 }
 // ⭐ 히든 트리거 생성 함수 (분리)
+// ⭐ 히든 트리거 생성 함수
 function createHiddenTrigger() {
   console.log('🔍 히든 트리거 생성 시작...');
   
-  // 기존 트리거 제거
   var oldTrigger = document.getElementById('hiddenTrigger');
   if (oldTrigger) oldTrigger.remove();
   
@@ -2936,18 +2930,16 @@ function createHiddenTrigger() {
   
   var newTrigger = document.createElement('div');
   newTrigger.id = 'hiddenTrigger';
-  // ⭐⭐⭐ z-index를 99999로 변경 (잠금화면보다 앞으로!)
   newTrigger.style.cssText = 'position:absolute;top:10px;right:10px;width:120px;height:120px;cursor:pointer;z-index:99999;background:rgba(255,200,0,0.5);border:3px solid #FFD700;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;color:#FFD700;font-weight:bold;text-shadow:0 0 10px rgba(0,0,0,0.8);';
   newTrigger.textContent = '👆 3번 터치';
   newTrigger.title = '3번 터치하면 추가시간 패널이 열립니다';
   overlay.appendChild(newTrigger);
-  console.log('✅ 히든 트리거 생성 완료 (z-index: 99999)');
+  console.log('✅ 히든 트리거 생성 완료');
   
-  // ⭐⭐⭐ 이벤트 연결
   newTrigger.onclick = function(e) {
     e.stopPropagation();
     e.preventDefault();
-    console.log('🔥 버튼 클릭됨! (히든 트리거)');
+    console.log('🔥 히든 트리거 클릭!');
     lockClickCount++;
     console.log('👆 클릭 카운트:', lockClickCount);
     
@@ -2964,19 +2956,55 @@ function createHiddenTrigger() {
     }
   };
   
-  // 터치 이벤트도 연결 (모바일)
   newTrigger.ontouchstart = function(e) {
     e.stopPropagation();
     e.preventDefault();
     this.onclick(e);
   };
+  
+  // +5분 버튼 이벤트 연결
+  setTimeout(function() {
+    var addBtn = document.getElementById('lockAddTimeBtn');
+    if (addBtn) {
+      var newBtn = addBtn.cloneNode(true);
+      addBtn.parentNode.replaceChild(newBtn, addBtn);
+      newBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        e.preventDefault();
+        console.log('🔥 +5분 버튼 클릭됨!');
+        addExtraTimeFromLock();
+      });
+      newBtn.addEventListener('touchstart', function(e) {
+        e.stopPropagation();
+        e.preventDefault();
+        console.log('🔥 +5분 버튼 터치됨!');
+        addExtraTimeFromLock();
+      });
+      console.log('✅ +5분 버튼 이벤트 연결 완료!');
+    }
+    
+    var pwInput = document.getElementById('lockPasswordInput');
+    if (pwInput) {
+      var newInput = pwInput.cloneNode(true);
+      pwInput.parentNode.replaceChild(newInput, pwInput);
+      newInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+          e.stopPropagation();
+          e.preventDefault();
+          console.log('🔥 엔터키 입력됨!');
+          addExtraTimeFromLock();
+        }
+      });
+      console.log('✅ 비밀번호 입력창 엔터키 이벤트 연결 완료!');
+    }
+  }, 200);
 }
 
 // ⭐ 히든 트리거 재연결 함수 (잠금화면이 이미 활성화되어 있을 때)
+// ⭐ 히든 트리거 재연결 함수
 function reconnectHiddenTrigger() {
   var trigger = document.getElementById('hiddenTrigger');
   if (!trigger) {
-    console.log('🔍 트리거 없음, 새로 생성');
     createHiddenTrigger();
     return;
   }
@@ -2985,13 +3013,11 @@ function reconnectHiddenTrigger() {
   var newTrigger = trigger.cloneNode(true);
   trigger.parentNode.replaceChild(newTrigger, trigger);
   
-  // ⭐⭐⭐ z-index 강제 설정
   newTrigger.style.zIndex = '99999';
   newTrigger.style.width = '120px';
   newTrigger.style.height = '120px';
   newTrigger.style.background = 'rgba(255,200,0,0.5)';
   newTrigger.style.border = '3px solid #FFD700';
-  newTrigger.style.fontSize = '18px';
   newTrigger.textContent = '👆 3번 터치';
   
   newTrigger.onclick = function(e) {
@@ -3020,27 +3046,38 @@ function reconnectHiddenTrigger() {
     this.onclick(e);
   };
   
-  console.log('✅ 히든 트리거 재연결 완료! (z-index: 99999)');
+  console.log('✅ 히든 트리거 재연결 완료!');
 }
 function hideLockScreen() {
-  const overlay = document.getElementById('lockOverlay');
-  overlay.classList.remove('active');
-  document.querySelector('.app').style.opacity = '1';
-  document.querySelector('.app').style.pointerEvents = 'auto';
+  console.log('🔓 hideLockScreen 실행!');
+  var overlay = document.getElementById('lockOverlay');
+  if (overlay) {
+    overlay.classList.remove('active');
+    overlay.style.pointerEvents = 'none';
+  }
   
-  // 에러 메시지 초기화
-  const errorEl = document.getElementById('lockPasswordError');
-  const resultEl = document.getElementById('lockAddTimeResult');
-  const cooldownEl = document.getElementById('lockCooldownMsg');
+  var app = document.querySelector('.app');
+  if (app) {
+    app.style.opacity = '1';
+    app.style.pointerEvents = 'auto';
+  }
+  
+  var errorEl = document.getElementById('lockPasswordError');
+  var resultEl = document.getElementById('lockAddTimeResult');
+  var cooldownEl = document.getElementById('lockCooldownMsg');
   if (errorEl) errorEl.style.display = 'none';
   if (resultEl) resultEl.style.display = 'none';
   if (cooldownEl) cooldownEl.style.display = 'none';
   
-  // 쿨다운 타이머 정리
+  var panel = document.getElementById('hiddenTimePanel');
+  if (panel) panel.style.display = 'none';
+  
   if (window._cooldownInterval) {
     clearInterval(window._cooldownInterval);
     window._cooldownInterval = null;
   }
+  
+  console.log('✅ 잠금 해제 완료!');
 }
 
 function updateLockTimer() {
