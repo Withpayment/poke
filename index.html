@@ -2877,17 +2877,23 @@ function showLockScreen() {
     return;
   }
   
-  // ⭐ 이미 잠금화면이 활성화되어 있으면 중복 생성 방지
   if (overlay.classList.contains('active')) {
     console.log('⏳ 이미 잠금화면 활성화됨, 히든 트리거만 재연결');
-    // 히든 트리거만 재연결
     reconnectHiddenTrigger();
     return;
   }
   
   overlay.classList.add('active');
-  document.querySelector('.app').style.opacity = '0.3';
-  document.querySelector('.app').style.pointerEvents = 'none';
+  
+  // ⭐⭐⭐ app 영역만 투명하게 하고, 잠금화면 자체는 클릭 가능하도록
+  var app = document.querySelector('.app');
+  if (app) {
+    app.style.opacity = '0.3';
+    app.style.pointerEvents = 'none';
+  }
+  
+  // ⭐⭐⭐ 잠금화면 오버레이는 클릭 가능하도록 유지
+  overlay.style.pointerEvents = 'auto';
   
   // 에러 메시지 초기화
   var errorEl = document.getElementById('lockPasswordError');
@@ -2906,7 +2912,7 @@ function showLockScreen() {
   // 클릭 카운트 초기화
   lockClickCount = 0;
   
-  // ⭐ 히든 트리거 생성 (최초 1회만)
+  // 히든 트리거 생성
   createHiddenTrigger();
   
   updateLockTimer();
@@ -2914,7 +2920,6 @@ function showLockScreen() {
   if (window._cooldownInterval) clearInterval(window._cooldownInterval);
   window._cooldownInterval = setInterval(updateLockCooldown, 1000);
 }
-
 // ⭐ 히든 트리거 생성 함수 (분리)
 function createHiddenTrigger() {
   console.log('🔍 히든 트리거 생성 시작...');
@@ -2931,11 +2936,12 @@ function createHiddenTrigger() {
   
   var newTrigger = document.createElement('div');
   newTrigger.id = 'hiddenTrigger';
-  newTrigger.style.cssText = 'position:absolute;top:10px;right:10px;width:100px;height:100px;cursor:pointer;z-index:9999;background:rgba(255,200,0,0.3);border:3px solid #FFD700;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:16px;color:#FFD700;font-weight:bold;';
+  // ⭐⭐⭐ z-index를 99999로 변경 (잠금화면보다 앞으로!)
+  newTrigger.style.cssText = 'position:absolute;top:10px;right:10px;width:120px;height:120px;cursor:pointer;z-index:99999;background:rgba(255,200,0,0.5);border:3px solid #FFD700;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;color:#FFD700;font-weight:bold;text-shadow:0 0 10px rgba(0,0,0,0.8);';
   newTrigger.textContent = '👆 3번 터치';
   newTrigger.title = '3번 터치하면 추가시간 패널이 열립니다';
   overlay.appendChild(newTrigger);
-  console.log('✅ 히든 트리거 생성 완료');
+  console.log('✅ 히든 트리거 생성 완료 (z-index: 99999)');
   
   // ⭐⭐⭐ 이벤트 연결
   newTrigger.onclick = function(e) {
@@ -2976,9 +2982,17 @@ function reconnectHiddenTrigger() {
   }
   
   console.log('🔍 트리거 재연결 중...');
-  // 기존 이벤트 제거 후 재연결
   var newTrigger = trigger.cloneNode(true);
   trigger.parentNode.replaceChild(newTrigger, trigger);
+  
+  // ⭐⭐⭐ z-index 강제 설정
+  newTrigger.style.zIndex = '99999';
+  newTrigger.style.width = '120px';
+  newTrigger.style.height = '120px';
+  newTrigger.style.background = 'rgba(255,200,0,0.5)';
+  newTrigger.style.border = '3px solid #FFD700';
+  newTrigger.style.fontSize = '18px';
+  newTrigger.textContent = '👆 3번 터치';
   
   newTrigger.onclick = function(e) {
     e.stopPropagation();
@@ -3006,7 +3020,7 @@ function reconnectHiddenTrigger() {
     this.onclick(e);
   };
   
-  console.log('✅ 히든 트리거 재연결 완료!');
+  console.log('✅ 히든 트리거 재연결 완료! (z-index: 99999)');
 }
 function hideLockScreen() {
   const overlay = document.getElementById('lockOverlay');
