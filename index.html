@@ -3000,8 +3000,6 @@ function createHiddenTrigger() {
   }, 200);
 }
 
-// ⭐ 히든 트리거 재연결 함수 (잠금화면이 이미 활성화되어 있을 때)
-// ⭐ 히든 트리거 재연결 함수
 function reconnectHiddenTrigger() {
   var trigger = document.getElementById('hiddenTrigger');
   if (!trigger) {
@@ -3130,9 +3128,6 @@ function addPlayTime(ms) {
       console.log(`⏰ 보너스: 세션 시작 시간을 ${Math.round(ms/1000)}초 앞당김`);
     }
   }
-  
-  saveState();
-}
   
   saveState();
 }
