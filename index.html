@@ -5692,15 +5692,11 @@ window.openCardDetailFromCraft = function(engName) {
 let musicPlayer = null;
 
 function renderMusicTab() {
-  // ⭐ 음악도감 접근 제한
-  if (!isAllRequiredMissionsDone()) {
-    document.getElementById('musicPanel').innerHTML = `<div class="empty-note" style="padding:40px 16px;text-align:center;color:#8d84b0;border:2px dashed rgba(255,201,60,.2);border-radius:14px;">
-      <div style="font-size:48px;margin-bottom:8px;">🔒</div>
-      <div style="font-size:18px;font-family:var(--font-display);">음악도감이 잠겨있어요!</div>
-      <div style="font-size:14px;color:#6b6395;margin-top:4px;">오늘의 생활미션 8개를 모두 완료하면 열 수 있어요!</div>
-    </div>`;
-    return;
-  }
+  // ⭐⭐⭐ 생활미션 체크 제거 (감상권만 있으면 누구나 접근 가능)
+  // if (!isAllRequiredMissionsDone()) {
+  //   document.getElementById('musicPanel').innerHTML = `...`;
+  //   return;
+  // }
   
   // ⭐⭐⭐ 시간제한 체크 제거 (음악감상권이 있으면 언제든 들을 수 있도록)
   // if (!checkTimeLimit()) { 
@@ -5722,7 +5718,7 @@ function renderMusicTab() {
       <div style="font-family:var(--font-display);font-size:18px;color:var(--music);">🎵 포켓몬 음악도감</div>
       <div class="ticket-display" style="font-size:16px;padding:4px 16px;">🎵 감상권: <b>${tickets}</b>개</div>
     </div>
-    <div style="font-size:13px;color:#B7AFDE;margin-bottom:12px;text-align:center;">💡 수학퀴즈 100% 정답 시 음악 획득! 감상권으로 감상 가능</div>
+    <div style="font-size:13px;color:#B7AFDE;margin-bottom:12px;text-align:center;">💡 감상권으로 자유롭게 음악을 감상할 수 있어요!</div>
     <div class="music-grid">
       ${MUSIC_LIST.map(function(music) {
         var isUnlocked = unlocked.includes(music.id);
@@ -5737,7 +5733,6 @@ function renderMusicTab() {
     </div>
   `;
 }
-
 function playMusic(videoId, title, artist) {
   const tickets = state.musicTickets || 0;
   if (tickets <= 0) {
