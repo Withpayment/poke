@@ -2783,17 +2783,17 @@ function grantCardReward() {
 
 // ===== 시간제한 관리 =====
 function checkTimeLimit() {
-  const timeLimit = state.timeLimitMinutes || 15;
-  const maxMs = timeLimit * 60 * 1000;
-  const today = todayKey();
+  var timeLimit = state.timeLimitMinutes || 15;
+  var maxMs = timeLimit * 60 * 1000;
+  var today = todayKey();
   
   console.log('🔍 checkTimeLimit 실행됨!');
   console.log('⏰ 설정 시간: ' + timeLimit + '분, 최대: ' + maxMs + 'ms');
   
   // 🔒 잠금 상태 확인
   if (state.lockUntil) {
-    const lockTime = new Date(state.lockUntil);
-    const now = Date.now();
+    var lockTime = new Date(state.lockUntil);
+    var now = Date.now();
     
     console.log('🔒 잠금 상태: ' + lockTime.toLocaleTimeString() + ', 현재: ' + new Date(now).toLocaleTimeString());
     
@@ -2827,7 +2827,7 @@ function checkTimeLimit() {
     saveState();
   }
   
-  // ⭐ 실제 경과 시간 계산
+  // ⭐⭐⭐ 실제 경과 시간 계산 (보너스 시간 제외)
   var elapsedMs = Date.now() - state._sessionStartTime;
   var elapsedMinutes = Math.round(elapsedMs / 60000);
   console.log('⏱️ 경과 시간: ' + elapsedMinutes + '분 / ' + timeLimit + '분 (' + Math.round(elapsedMs/1000) + '초)');
@@ -3110,20 +3110,19 @@ function addPlayTime(ms) {
   // ⭐ 이 함수는 이제 "보너스 시간"으로만 작동
   // 실제 사용시간은 checkTimeLimit()에서 별도로 측정
   
-  // 보너스 시간을 사용시간에 더하지 않음
-  // state.dailyPlayTime += ms;  ← 이 줄 제거!
+  // ⭐⭐⭐ 보너스 시간을 사용시간에 더하지 않음 (이 줄 제거!)
+  // state.dailyPlayTime += ms;  ← 이 줄을 삭제하거나 주석 처리!
   
   // 대신, 잠금 상태면 잠금 해제 시간을 연장 (보너스 효과)
   if (state.lockUntil) {
-    const lockTime = new Date(state.lockUntil);
-    const newLockTime = new Date(lockTime.getTime() + ms);
+    var lockTime = new Date(state.lockUntil);
+    var newLockTime = new Date(lockTime.getTime() + ms);
     state.lockUntil = newLockTime.toISOString();
     saveState();
     updateLockTimer();
     console.log(`⏰ 잠금 연장 +${Math.round(ms/1000)}초`);
   } else {
     // 잠금 상태가 아니면 세션 시작 시간을 당겨서 보너스 효과
-    // (사용시간을 줄이는 효과)
     if (state._sessionStartTime) {
       state._sessionStartTime = state._sessionStartTime - ms;
       localStorage.setItem('sessionStartTime', String(state._sessionStartTime));
@@ -3131,6 +3130,9 @@ function addPlayTime(ms) {
       console.log(`⏰ 보너스: 세션 시작 시간을 ${Math.round(ms/1000)}초 앞당김`);
     }
   }
+  
+  saveState();
+}
   
   saveState();
 }
@@ -5705,17 +5707,17 @@ function renderMusicTab() {
     return;
   }
   
-  if (!checkTimeLimit()) { 
-    document.getElementById('musicPanel').innerHTML = ''; 
-    return; 
-  }
+  // ⭐⭐⭐ 시간제한 체크 제거 (음악감상권이 있으면 언제든 들을 수 있도록)
+  // if (!checkTimeLimit()) { 
+  //   document.getElementById('musicPanel').innerHTML = ''; 
+  //   return; 
+  // }
   
-  const panel = document.getElementById('musicPanel');
-  const unlocked = state.unlockedMusic || [];
-  const tickets = state.musicTickets || 0;
+  var panel = document.getElementById('musicPanel');
+  var unlocked = state.unlockedMusic || [];
+  var tickets = state.musicTickets || 0;
   
-  // ⭐ 기존 musicPlayerArea 초기화 (중복 생성 방지)
-  const existingPlayer = document.getElementById('musicPlayerArea');
+  var existingPlayer = document.getElementById('musicPlayerArea');
   if (existingPlayer) {
     existingPlayer.remove();
   }
@@ -5727,15 +5729,15 @@ function renderMusicTab() {
     </div>
     <div style="font-size:13px;color:#B7AFDE;margin-bottom:12px;text-align:center;">💡 수학퀴즈 100% 정답 시 음악 획득! 감상권으로 감상 가능</div>
     <div class="music-grid">
-      ${MUSIC_LIST.map(music => {
-        const isUnlocked = unlocked.includes(music.id);
-        return `<div class="music-card ${isUnlocked ? 'unlocked' : 'locked'}" onclick="${isUnlocked ? `playMusic('${music.videoId}','${music.title}','${music.artist}')` : `alert('아직 획득하지 못했어요! 수학퀴즈 100% 정답에 도전해보세요!')`}">
-          <span class="music-emoji">${music.emoji}</span>
-          <div class="music-title">${music.title}</div>
-          <div class="music-artist">${music.artist}</div>
-          <div class="music-year">${music.year}</div>
-          ${isUnlocked ? '<div style="color:var(--good);font-size:11px;margin-top:4px;">✅ 획득 완료</div>' : '<span class="lock-icon">🔒</span>'}
-        </div>`;
+      ${MUSIC_LIST.map(function(music) {
+        var isUnlocked = unlocked.includes(music.id);
+        return '<div class="music-card ' + (isUnlocked ? 'unlocked' : 'locked') + '" onclick="' + (isUnlocked ? "playMusic('" + music.videoId + "','" + music.title + "','" + music.artist + "')" : "alert('아직 획득하지 못했어요! 수학퀴즈 100% 정답에 도전해보세요!')") + '">'
+          + '<span class="music-emoji">' + music.emoji + '</span>'
+          + '<div class="music-title">' + music.title + '</div>'
+          + '<div class="music-artist">' + music.artist + '</div>'
+          + '<div class="music-year">' + music.year + '</div>'
+          + (isUnlocked ? '<div style="color:var(--good);font-size:11px;margin-top:4px;">✅ 획득 완료</div>' : '<span class="lock-icon">🔒</span>')
+        + '</div>';
       }).join('')}
     </div>
   `;
