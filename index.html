@@ -3411,18 +3411,19 @@ function clearAllData() {
 }
 
 // ===== 탭 전환 =====
-// ===== 탭 전환 (미션 완료 체크 추가) =====
 document.querySelectorAll('nav.tabbar button').forEach(btn => {
   btn.addEventListener('click', function() {
     const tabId = this.dataset.tab;
     
-    // ⭐ 도감탭, 배틀탭, 음악도감탭은 미션 완료 체크
-    if (tabId === 'tab-dex' || tabId === 'tab-battle' || tabId === 'tab-music') {
+    // ⭐⭐⭐ 음악도감은 생활미션 체크에서 제외!
+    if (tabId === 'tab-dex' || tabId === 'tab-battle') {
       if (!isAllRequiredMissionsDone()) {
         alert('⚠️ 오늘의 생활미션 8개를 모두 완료해야 사용할 수 있어요!');
         return;
       }
     }
+    
+    // ⭐ 음악도감은 별도 체크 없이 바로 접근 가능
     
     document.querySelectorAll('nav.tabbar button').forEach(b => b.classList.remove('active'));
     document.querySelectorAll('main section').forEach(s => s.classList.remove('active'));
