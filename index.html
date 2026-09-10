@@ -16,6 +16,126 @@
     FIREBASE_APP_ID: "1:26507760702:web:3b2b9c75a0c4f98efcad6f",
     FIREBASE_MEASUREMENT_ID: "G-E3EP9HGWEE"
   };
+  // ===== 🔧 생활미션 수정 기능 =====
+const MISSION_EDIT_PASSWORD = '1234';
+
+function openMissionEditor() {
+  document.getElementById('missionEditOverlay').classList.add('open');
+  document.getElementById('editPasswordSection').style.display = 'block';
+  document.getElementById('editContentSection').style.display = 'none';
+  document.getElementById('editPasswordInput').value = '';
+  document.getElementById('editPwError').style.display = 'none';
+  document.getElementById('editPasswordInput').focus();
+}
+
+function closeMissionEditor() {
+  document.getElementById('missionEditOverlay').classList.remove('open');
+}
+
+function checkEditPassword() {
+  const input = document.getElementById('editPasswordInput').value;
+  const errorEl = document.getElementById('editPwError');
+  if (input === MISSION_EDIT_PASSWORD) {
+    errorEl.style.display = 'none';
+    document.getElementById('editPasswordSection').style.display = 'none';
+    document.getElementById('editContentSection').style.display = 'block';
+    renderEditMissionList();
+  } else {
+    errorEl.style.display = 'block';
+    document.getElementById('editPasswordInput').value = '';
+    document.getElementById('editPasswordInput').focus();
+  }
+}
+
+function renderEditMissionList() {
+  const list = document.getElementById('editMissionList');
+  if (!state.customMissionOverrides) state.customMissionOverrides = {};
+  
+  list.innerHTML = DEFAULT_LIFE_MISSIONS.map(m => {
+    const override = state.customMissionOverrides[m.id] || {};
+    const label = override.label !== undefined ? override.label : m.label;
+    const emoji = override.emoji !== undefined ? override.emoji : m.emoji;
+    return `<div class="edit-item" data-mid="${m.id}">
+      <input class="edit-emoji-input" value="${emoji}" maxlength="2" data-emoji="${m.id}">
+      <input class="edit-input" value="${label}" maxlength="20" data-label="${m.id}">
+    </div>`;
+  }).join('');
+}
+
+function saveMissionEdits() {
+  if (!state.customMissionOverrides) state.customMissionOverrides = {};
+  
+  DEFAULT_LIFE_MISSIONS.forEach(m => {
+    const emojiInput = document.querySelector(`[data-emoji="${m.id}"]`);
+    const labelInput = document.querySelector(`[data-label="${m.id}"]`);
+    if (emojiInput && labelInput) {
+      const newEmoji = emojiInput.value.trim() || m.emoji;
+      const newLabel = labelInput.value.trim() || m.label;
+      if (newEmoji !== m.emoji || newLabel !== m.label) {
+        state.customMissionOverrides[m.id] = { emoji: newEmoji, label: newLabel };
+      } else {
+        delete state.customMissionOverrides[m.id];
+      }
+    }
+  });
+  
+  saveState();
+  closeMissionEditor();
+  renderLifeMissions();
+  toast('💾 미션 수정 완료!');
+}
+
+function bindMissionEditEvents() {
+  const editPwConfirmBtn = document.getElementById('editPwConfirmBtn');
+  if (editPwConfirmBtn) editPwConfirmBtn.addEventListener('click', checkEditPassword);
+  
+  const editPwCancelBtn = document.getElementById('editPwCancelBtn');
+  if (editPwCancelBtn) editPwCancelBtn.addEventListener('click', closeMissionEditor);
+  
+  const editPasswordInput = document.getElementById('editPasswordInput');
+  if (editPasswordInput) {
+    editPasswordInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') checkEditPassword();
+    });
+  }
+  
+  const editSaveBtn = document.getElementById('editSaveBtn');
+  if (editSaveBtn) editSaveBtn.addEventListener('click', saveMissionEdits);
+  
+  const editCloseBtn = document.getElementById('editCloseBtn');
+  if (editCloseBtn) editCloseBtn.addEventListener('click', closeMissionEditor);
+  
+  const editAddBtn = document.getElementById('editAddBtn');
+  if (editAddBtn) {
+    editAddBtn.addEventListener('click', function() {
+      const input = document.getElementById('editNewMissionInput');
+      const emojiInput = document.getElementById('editNewEmojiInput');
+      const label = input.value.trim();
+      const emoji = emojiInput.value.trim() || '📌';
+      if (!label) { alert('미션 이름을 입력해주세요'); return; }
+      if ((state.customMissions || []).length >= 10) { alert('최대 10개까지 추가할 수 있어요'); return; }
+      if (!state.customMissions) state.customMissions = [];
+      state.customMissions.push({ id: 'custom-' + Date.now(), label, emoji, cardReward: 1 });
+      input.value = '';
+      emojiInput.value = '';
+      saveState();
+      renderLifeMissions();
+      toast('➕ 새 미션 추가됨!');
+    });
+  }
+  
+  const overlay = document.getElementById('missionEditOverlay');
+  if (overlay) {
+    overlay.addEventListener('click', function(e) {
+      if (e.target === this) closeMissionEditor();
+    });
+  }
+}
+
+// initGame 마지막에 호출되도록
+window.addEventListener('load', function() {
+  setTimeout(bindMissionEditEvents, 500);
+});
 </script>
 
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
